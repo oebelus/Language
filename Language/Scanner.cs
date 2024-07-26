@@ -63,7 +63,10 @@ class Scanner
             case '\r':
             case '\t': break;
             case '\n': line++; break;
-            default: Console.WriteLine("Unexpected Character"); break;
+            case '"': String(); break;
+            default:
+                if (int.TryParse(c.ToString(), out _)) IsNumber();
+                else Console.WriteLine("Unexpected Character"); break;
         }
     }
 
@@ -71,7 +74,7 @@ class Scanner
     {
         string text = Code[start..current];
 
-        Tokens.Add(new Token(type, text, new object(), line));
+        Tokens.Add(new Token(type, text, literal ?? "", line));
     }
 
     private static bool Match(char expected)
@@ -89,8 +92,49 @@ class Scanner
         return Code[current];
     }
 
+    private static char PeekNext()
+    {
+        if (IsAtEnd()) return '\0';
+        return Code[current += 1];
+    }
+
     private static char Advance()
     {
         return Code[current++];
+    }
+
+    private static void String()
+    {
+        while (Peek() != '"' && !IsAtEnd())
+        {
+            if (Peek() == '\n') line++;
+            Advance();
+        }
+
+        if (IsAtEnd())
+        {
+            Console.WriteLine("Unterminated string.");
+            return;
+        }
+
+        Advance(); // to find the closing "
+
+        string value = Code.Substring(start + 1, current - start - 2);
+        AddToken(TokenType.STRING, value);
+    }
+
+    private static void IsNumber()
+    {
+        while (int.TryParse(Peek().ToString(), out _)) Advance();
+
+        if (Peek() == '.' && int.TryParse(PeekNext().ToString(), out _))
+        {
+            Advance();
+
+            while (int.TryParse(Peek().ToString(), out _)) Advance();
+        }
+
+        float value = float.Parse(Code[start..current]);
+        AddToken(TokenType.NUMBER, value);
     }
 }
