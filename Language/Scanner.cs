@@ -1,12 +1,12 @@
 class Scanner
 {
-    private static string Code;
+    private static string Code = Code ?? "";
     private static readonly List<Token> Tokens = [];
     private static int start = 0; // the first character in the lexeme being scanned
     private static int current = 0; // the character currently being considered
-    private static readonly int line = 1;
+    private static int line = 1;
 
-    Scanner(string code)
+    public Scanner(string code)
     {
         Code = code;
     }
@@ -16,9 +16,10 @@ class Scanner
         while (!IsAtEnd())
         {
             start = current;
+            ScanToken();
         }
 
-        Tokens.Add(new Token(TokenType.EOF, "", null, line));
+        Tokens.Add(new Token(TokenType.EOF, "", new object(), line));
         return Tokens;
     }
 
@@ -29,7 +30,7 @@ class Scanner
 
     private static void ScanToken()
     {
-        char c = Code[current++];
+        char c = Advance();
 
         switch (c)
         {
@@ -47,22 +48,49 @@ class Scanner
             case '=': AddToken(Match('=') ? TokenType.EQUAL_EQUAL : TokenType.EQUAL, null); break;
             case '<': AddToken(Match('=') ? TokenType.LESS_EQUAL : TokenType.LESS, null); break;
             case '>': AddToken(Match('=') ? TokenType.GREATER_EQUAL : TokenType.GREATER, null); break;
+            case '/':
+                if (Match('/'))
+                {
+                    // A comment goes until the end of the line.
+                    while (Peek() != '\n' && !IsAtEnd())
+                    {
+                        Advance();
+                    }
+                }
+                else AddToken(TokenType.SLASH, null);
+                break;
+            case ' ':
+            case '\r':
+            case '\t': break;
+            case '\n': line++; break;
             default: Console.WriteLine("Unexpected Character"); break;
         }
     }
 
     private static void AddToken(TokenType type, object? literal)
     {
-        string text = Code.Substring(start, current);
-        Tokens.Add(new Token(type, text, literal, line));
+        string text = Code[start..current];
+
+        Tokens.Add(new Token(type, text, new object(), line));
     }
 
-    private static Boolean Match(char expected)
+    private static bool Match(char expected)
     {
         if (IsAtEnd()) return false;
         if (Code[current] != expected) return false;
 
         current++;
         return true;
+    }
+
+    private static char Peek()
+    {
+        if (IsAtEnd()) return '\0';
+        return Code[current];
+    }
+
+    private static char Advance()
+    {
+        return Code[current++];
     }
 }
