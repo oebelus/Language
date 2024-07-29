@@ -5,6 +5,20 @@ class Scanner
     private static int start = 0; // the first character in the lexeme being scanned
     private static int current = 0; // the character currently being considered
     private static int line = 1;
+    private static readonly Dictionary<string, TokenType> Keywords = new() {
+        { "class", TokenType.CLASS },
+        { "else", TokenType.ELSE },
+        { "false", TokenType.FALSE },
+        { "->", TokenType.FUN },
+        { "for", TokenType.FOR },
+        { "if", TokenType.IF },
+        { "nil", TokenType.NIL },
+        { "log", TokenType.LOG },
+        { "return", TokenType.RETURN },
+        { "true", TokenType.TRUE },
+        { "var", TokenType.VAR },
+        { "while", TokenType.WHILE },
+    };
 
     public Scanner(string code)
     {
@@ -44,6 +58,8 @@ class Scanner
             case '+': AddToken(TokenType.PLUS, null); break;
             case ';': AddToken(TokenType.SEMICOLON, null); break;
             case '*': AddToken(TokenType.STAR, null); break;
+            case '|': AddToken(TokenType.OR, null); break;
+            case '&': AddToken(TokenType.AND, null); break;
             case '!': AddToken(Match('=') ? TokenType.BANG_EQUAL : TokenType.BANG, null); break;
             case '=': AddToken(Match('=') ? TokenType.EQUAL_EQUAL : TokenType.EQUAL, null); break;
             case '<': AddToken(Match('=') ? TokenType.LESS_EQUAL : TokenType.LESS, null); break;
@@ -65,8 +81,9 @@ class Scanner
             case '\n': line++; break;
             case '"': String(); break;
             default:
-                if (int.TryParse(c.ToString(), out _)) IsNumber();
-                else Console.WriteLine("Unexpected Character"); break;
+                if (char.IsDigit(c)) HandleNumber();
+                else if (IsAlpha(c)) HandleAlpha();
+                else throw new InvalidOperationException("Unexpected Character"); break;
         }
     }
 
@@ -94,7 +111,7 @@ class Scanner
 
     private static char PeekNext()
     {
-        if (IsAtEnd()) return '\0';
+        if (current + 1 >= Code.Length) return '\0';
         return Code[current += 1];
     }
 
@@ -123,18 +140,39 @@ class Scanner
         AddToken(TokenType.STRING, value);
     }
 
-    private static void IsNumber()
+    private static void HandleNumber()
     {
-        while (int.TryParse(Peek().ToString(), out _)) Advance();
+        while (char.IsDigit(Peek())) Advance();
 
-        if (Peek() == '.' && int.TryParse(PeekNext().ToString(), out _))
+        if (Peek() == '.' && char.IsDigit(PeekNext()))
         {
             Advance();
 
-            while (int.TryParse(Peek().ToString(), out _)) Advance();
+            while (char.IsDigit(Peek())) Advance();
         }
 
         float value = float.Parse(Code[start..current]);
         AddToken(TokenType.NUMBER, value);
+    }
+
+    private static void HandleAlpha()
+    {
+        while (IsAlphaNumeric(Peek())) Advance();
+
+        string text = Code[start..current];
+
+        TokenType type = Keywords.ContainsKey(text) ? Keywords[text] : TokenType.IDENTIFIER;
+
+        AddToken(type, null);
+    }
+
+    private static bool IsAlpha(char c)
+    {
+        return c == '_' || char.IsLetter(c);
+    }
+
+    private static bool IsAlphaNumeric(char c)
+    {
+        return IsAlpha(c) || char.IsDigit(c);
     }
 }

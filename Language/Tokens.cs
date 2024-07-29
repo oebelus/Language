@@ -1,8 +1,9 @@
 enum TokenType
 {
-    // Single-character tokens.
+    // Punctuators.
     LEFT_PAREN, RIGHT_PAREN, LEFT_BRACE, RIGHT_BRACE,
     COMMA, DOT, MINUS, PLUS, SEMICOLON, SLASH, STAR,
+    OR, AND,
 
     // One or two character tokens.
     BANG, BANG_EQUAL,
@@ -14,8 +15,8 @@ enum TokenType
     IDENTIFIER, STRING, NUMBER,
 
     // Keywords.
-    AND, CLASS, ELSE, FALSE, FUN, FOR, IF, NIL, OR,
-    PRINT, RETURN, TRUE, VAR, WHILE,
+    CLASS, ELSE, FALSE, FUN, FOR, IF, NIL,
+    LOG, RETURN, TRUE, VAR, WHILE,
 
     EOF
 }

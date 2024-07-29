@@ -2,7 +2,13 @@ class Parse
 {
     readonly static string[] separators = ["->", ":"];
     readonly static char[] binaryOperations = ['=', '-', '+', '/', '*', '%', '/', '&', '|'];
-
+    public static Dictionary<char, Instructions> Operations = new()
+    {
+        { '+', Instructions.ADD },
+        { '-', Instructions.SUB },
+        { '/', Instructions.DIV },
+        { '*', Instructions.MUL }
+    };
     public static List<Function> ParseFunctions(string str)
     {
         List<Function> functions = [];
@@ -107,7 +113,7 @@ class Parse
             function.Print();
             foreach (var op in function.Operations)
             {
-                bytecode += Token.Operations[op] + " ";
+                bytecode += Operations[op] + " ";
             }
             bytecode += "RET";
         }
