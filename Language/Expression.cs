@@ -12,9 +12,9 @@ abstract class Expr
 
     public class Binary(Expr left, Token operation, Expr right) : Expr
     {
-        private readonly Expr Left = left;
-        private readonly Token Operation = operation;
-        private readonly Expr Right = right;
+        public readonly Expr Left = left;
+        public readonly Token Operation = operation;
+        public readonly Expr Right = right;
 
         public override T Accept<T>(IVisitor<T> visitor)
         {
@@ -24,8 +24,8 @@ abstract class Expr
 
     public class Unary(Expr right, Token operation) : Expr
     {
-        private readonly Expr Right = right;
-        private readonly Token Operation = operation;
+        public readonly Expr Right = right;
+        public readonly Token Operation = operation;
 
         public override T Accept<T>(IVisitor<T> visitor)
         {
@@ -35,7 +35,7 @@ abstract class Expr
 
     public class Literal(object value) : Expr
     {
-        private readonly object Value = value;
+        public readonly object Value = value;
 
         public override T Accept<T>(IVisitor<T> visitor)
         {
@@ -45,7 +45,7 @@ abstract class Expr
 
     public class Grouping(Expr expression) : Expr
     {
-        private readonly Expr Expression = expression;
+        public readonly Expr Expression = expression;
 
         public override T Accept<T>(IVisitor<T> visitor)
         {
