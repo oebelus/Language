@@ -1,4 +1,6 @@
-﻿namespace Language
+﻿using System.Linq.Expressions;
+
+namespace Language
 {
     class Program
     {
@@ -22,6 +24,12 @@
                     new Expr.Literal(45.67)));
 
             Console.WriteLine(new AstPrinter().Print(expression));
+
+            Parser parser = new(tokens);
+
+            Expr expr = parser.Parse();
+
+            Console.WriteLine(expr);
         }
     }
 }

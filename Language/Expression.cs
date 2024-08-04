@@ -33,9 +33,9 @@ abstract class Expr
         }
     }
 
-    public class Literal(object value) : Expr
+    public class Literal(object? value) : Expr
     {
-        public readonly object Value = value;
+        public readonly object? Value = value;
 
         public override T Accept<T>(IVisitor<T> visitor)
         {
