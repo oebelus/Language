@@ -6,7 +6,7 @@ namespace Language
     {
         public static void Main()
         {
-            Scanner _ = new("5==7*4");
+            Scanner _ = new("7*4-(5+4)");
 
             List<Token> tokens = Scanner.ScanTokens();
 
@@ -28,6 +28,9 @@ namespace Language
             Expr expr = parser.Parse();
 
             Console.WriteLine(new AstPrinter().Print(expr));
+
+            Interpreter interpreter = new();
+            interpreter.Interpret(expr);
         }
     }
 }

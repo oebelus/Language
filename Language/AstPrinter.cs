@@ -27,7 +27,7 @@ class AstPrinter : Expr.IVisitor<string>
         return Parenthesize(expr.Operation.Lexeme, expr.Right);
     }
 
-    private String Parenthesize(string name, params Expr[] exprs)
+    private string Parenthesize(string name, params Expr[] exprs)
     {
         StringBuilder builder = new();
 
