@@ -15,7 +15,7 @@ enum TokenType
     IDENTIFIER, STRING, NUMBER,
 
     // Keywords.
-    CLASS, ELSE, FALSE, FUN, FOR, IF, NIL,
+    ELSE, FALSE, FUN, FOR, IF, NIL,
     LOG, RETURN, TRUE, VAR, WHILE,
 
     EOF

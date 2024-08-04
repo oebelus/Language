@@ -6,7 +6,7 @@ namespace Language
     {
         public static void Main()
         {
-            Scanner _ = new("!*+-/\"Hello this is a string!\"54618.5457 =< var if   dffgd> \n <= ==54898.111 \"sedsdfsdf\"");
+            Scanner _ = new("5==7*4");
 
             List<Token> tokens = Scanner.ScanTokens();
 
@@ -23,13 +23,11 @@ namespace Language
                 new Expr.Grouping(
                     new Expr.Literal(45.67)));
 
-            Console.WriteLine(new AstPrinter().Print(expression));
-
             Parser parser = new(tokens);
 
             Expr expr = parser.Parse();
 
-            Console.WriteLine(expr);
+            Console.WriteLine(new AstPrinter().Print(expr));
         }
     }
 }

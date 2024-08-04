@@ -6,10 +6,9 @@ class Scanner
     private static int current = 0; // the character currently being considered
     private static int line = 1;
     private static readonly Dictionary<string, TokenType> Keywords = new() {
-        { "class", TokenType.CLASS },
         { "else", TokenType.ELSE },
         { "false", TokenType.FALSE },
-        { "->", TokenType.FUN },
+        { "function", TokenType.FUN },
         { "for", TokenType.FOR },
         { "if", TokenType.IF },
         { "nil", TokenType.NIL },

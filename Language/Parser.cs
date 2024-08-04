@@ -75,6 +75,7 @@ class Parser(List<Token> tokens)
         {
             Token operation = Previous();
             Expr right = Unary();
+            Console.WriteLine("> BINARY: " + operation.Lexeme + " " + right);
             return new Expr.Unary(right, operation);
         }
 
@@ -143,5 +144,29 @@ class Parser(List<Token> tokens)
     private Token Previous()
     {
         return Tokens[current - 1];
+    }
+
+    private void Synchronize()
+    {
+        Advance();
+
+        while (!IsAtEnd())
+        {
+            if (Previous().Type == TokenType.SEMICOLON) return;
+
+            switch (Peek().Type)
+            {
+                case TokenType.FUN:
+                case TokenType.FOR:
+                case TokenType.IF:
+                case TokenType.LOG:
+                case TokenType.VAR:
+                case TokenType.WHILE:
+                case TokenType.RETURN:
+                    return;
+            }
+
+            Advance();
+        }
     }
 }
