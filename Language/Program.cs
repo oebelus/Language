@@ -9,7 +9,7 @@
             var x = stdout(9);
             var result = stdout(func(23))/20)
             */
-            Scanner _ = new("log \"hello\"; log 5/20;");
+            Scanner _ = new("log \"hello\"; log 5/20; var x = \"55\"; log x");
 
             List<Token> tokens = Scanner.ScanTokens();
 

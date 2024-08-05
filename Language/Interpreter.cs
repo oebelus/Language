@@ -1,5 +1,7 @@
 class Interpreter : Expr.IVisitor<object>, Statement.IVisitor<Action>
 {
+    private readonly Environment environment = new();
+
     public void Interpret(List<Statement> statements)
     {
         foreach (var statement in statements)
@@ -68,13 +70,24 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor<Action>
         return Evaluate(grouping.Expression);
     }
 
+    public object VisitAssign(Expr.Assign expression)
+    {
+        throw new NotImplementedException();
+    }
+
+    public object VisitVariable(Statement.Variable statement)
+    {
+        object value = null!;
+        if ()
+    }
+
     public Action VisitExpression(Statement.Expression statement) {
-        Evaluate(statement.Express);
+        Evaluate(statement.expression);
         return null!;
     }
 
     public Action VisitLog(Statement.Log statement) {
-        object value = Evaluate(statement.Express);
+        object value = Evaluate(statement.expression);
         Console.WriteLine(Stringify(value));
         return null!;
     }
@@ -128,10 +141,4 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor<Action>
 
         return obj.ToString()!;
     }
-
-    public object VisitAssign(Expr.Assign expression)
-    {
-        throw new NotImplementedException();
-    }
-
 }

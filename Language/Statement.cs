@@ -10,6 +10,7 @@ abstract class Statement
         T VisitWhile(While Statement);
         T VisitReturn(Return Statement);
         T VisitExpression(Expression Statement);
+        T VisitVariable(Variable expression);
     }
 
     public abstract T Accept<T>(IVisitor<T> visitor);
@@ -105,6 +106,16 @@ abstract class Statement
         public override T Accept<T>(IVisitor<T> visitor)
         {
             return visitor.VisitReturn(this);
+        }
+    }
+
+    public class Variable(Token name) : Statement
+    {
+        public readonly Token Name = name;
+        
+        public override T Accept<T>(IVisitor<T> visitor)
+        {
+            return visitor.VisitVariable(this);
         }
     }
 }
