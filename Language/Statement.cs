@@ -25,10 +25,10 @@ abstract class Statement
         }
     }
 
-    public class Expression(Expr express) : Statement
+    public class Expression(Expr expression) : Statement
     {
 
-        public readonly Expr Express = express;
+        public readonly Expr expression = expression;
 
         public override T Accept<T>(IVisitor<T> visitor)
         {
@@ -62,10 +62,10 @@ abstract class Statement
         }
     }
 
-    public class Log(Expr express) : Statement
+    public class Log(Expr expression) : Statement
     {
 
-        public readonly Expr Express = express;
+        public readonly Expr expression = expression;
 
         public override T Accept<T>(IVisitor<T> visitor)
         {
@@ -97,10 +97,10 @@ abstract class Statement
         }
     }
 
-    public class Return(Token keyword, Expr express) : Statement
+    public class Return(Token keyword, Expr expression) : Statement
     {
         public readonly Token Keyworkd = keyword;
-        public readonly Expr Express = express;
+        public readonly Expr expression = expression;
 
         public override T Accept<T>(IVisitor<T> visitor)
         {

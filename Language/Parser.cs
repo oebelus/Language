@@ -1,3 +1,5 @@
+using System.Linq.Expressions;
+
 class Parser(List<Token> tokens)
 {
     private readonly List<Token> Tokens = tokens;
@@ -6,18 +8,31 @@ class Parser(List<Token> tokens)
     public List<Statement> Parse()
     {
         List<Statement> statements = [];
-        while (!IsAtEnd()) statements.Add(Statement());
+        while (!IsAtEnd()) statements.Add(Declaration());
         return statements;
     }
 
     private Statement Declaration() {
-        //if (Match(TokenType.VAR)) return VarDeclaration();
-        return Statement();
+        try {
+            if (Match(TokenType.VAR)) return VarDeclaration();
+
+            return Statement();
+        } catch (Exception) {
+            Synchronize();
+            return null!;
+        }
     }
 
-    // private Statement VarDeclaration() {
+    private Statement.Var VarDeclaration() {
+        Token name = Consume(TokenType.IDENTIFIER);
+
+        Expr initializer = null!; 
+        if (Match(TokenType.EQUAL)) initializer = Expression();
         
-    // } 
+        Consume(TokenType.SEMICOLON);
+
+        return new Statement.Var(name, initializer!);
+    } 
 
     private Statement Statement()
     {
@@ -122,6 +137,8 @@ class Parser(List<Token> tokens)
 
         if (Match(TokenType.NUMBER, TokenType.STRING)) return new Expr.Literal(Previous().Literal);
 
+        if (Match(TokenType.IDENTIFIER)) return new Expr.Variable(Previous());
+
         if (Match(TokenType.LEFT_PAREN))
         {
             Expr expr = Expression();
@@ -132,9 +149,10 @@ class Parser(List<Token> tokens)
         return new Expr.Literal(null);
     }
 
-    private void Consume(TokenType type)
+    private Token Consume(TokenType type)
     {
-        if (Check(type)) Advance();
+        if (Check(type)) return Advance();
+        return null!;
     }
 
 

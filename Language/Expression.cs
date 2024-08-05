@@ -7,6 +7,7 @@ abstract class Expr
         T VisitLiteral(Literal expression);
         T VisitGrouping(Grouping expression);
         T VisitAssign(Assign expression);
+        T VisitVariable(Variable expression);
     }
 
     public abstract T Accept<T>(IVisitor<T> visitor);
@@ -60,6 +61,16 @@ abstract class Expr
         public override T Accept<T>(IVisitor<T> visitor)
         {
             return visitor.VisitAssign(this);
+        }
+    }
+
+    public class Variable(Token name) : Expr
+    {
+        public readonly Token Name = name;
+        
+        public override T Accept<T>(IVisitor<T> visitor)
+        {
+            return visitor.VisitVariable(this);
         }
     }
 }
