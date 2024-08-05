@@ -1,6 +1,4 @@
-﻿using System.Linq.Expressions;
-
-namespace Language
+﻿namespace Language
 {
     class Program
     {

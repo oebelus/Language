@@ -1,73 +1,43 @@
 {
   "version": 3,
   "targets": {
-    "net8.0": {
-      "vm/1.0.0": {
-        "type": "project",
-        "framework": ".NETCoreApp,Version=v8.0",
-        "compile": {
-          "bin/placeholder/vm.dll": {}
-        },
-        "runtime": {
-          "bin/placeholder/vm.dll": {}
-        }
-      }
-    }
+    "net8.0": {}
   },
-  "libraries": {
-    "vm/1.0.0": {
-      "type": "project",
-      "path": "../stackVM/vm.csproj",
-      "msbuildProject": "../stackVM/vm.csproj"
-    }
-  },
+  "libraries": {},
   "projectFileDependencyGroups": {
-    "net8.0": [
-      "vm >= 1.0.0"
-    ]
+    "net8.0": []
   },
   "packageFolders": {
-    "C:\\Users\\imane\\.nuget\\packages\\": {}
+    "C:\\Users\\Imane\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\imane\\Downloads\\code\\Language\\Language\\Language.csproj",
+      "projectUniqueName": "C:\\Users\\Imane\\OneDrive\\Desktop\\documents\\Language\\Language\\Language.csproj",
       "projectName": "Language",
-      "projectPath": "C:\\Users\\imane\\Downloads\\code\\Language\\Language\\Language.csproj",
-      "packagesPath": "C:\\Users\\imane\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\imane\\Downloads\\code\\Language\\Language\\obj\\",
+      "projectPath": "C:\\Users\\Imane\\OneDrive\\Desktop\\documents\\Language\\Language\\Language.csproj",
+      "packagesPath": "C:\\Users\\Imane\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\Imane\\OneDrive\\Desktop\\documents\\Language\\Language\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\imane\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        "C:\\Users\\Imane\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net8.0"
       ],
       "sources": {
-        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
         "net8.0": {
           "targetAlias": "net8.0",
-          "projectReferences": {
-            "C:\\Users\\imane\\Downloads\\code\\Language\\stackVM\\vm.csproj": {
-              "projectPath": "C:\\Users\\imane\\Downloads\\code\\Language\\stackVM\\vm.csproj"
-            }
-          }
+          "projectReferences": {}
         }
       },
       "warningProperties": {
         "warnAsError": [
           "NU1605"
         ]
-      },
-      "restoreAuditProperties": {
-        "enableAudit": "true",
-        "auditLevel": "low",
-        "auditMode": "direct"
       }
     },
     "frameworks": {
@@ -89,7 +59,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.301/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.101/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

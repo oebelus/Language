@@ -22,11 +22,11 @@ class Parser(List<Token> tokens)
         return ExpressionStatement();
     }
 
-    private Statement.Log PrintStatement()
+    private Statement.Expression PrintStatement()
     {
-        Expr value = Expression();
+        Expr expr = Expression();
         Consume(TokenType.SEMICOLON);
-        return new Statement.Log(value);
+        return new Statement.Expression(expr);
     }
 
     private Statement.Log ExpressionStatement()
