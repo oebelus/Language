@@ -25,12 +25,7 @@ namespace Language
 
             Parser parser = new(tokens);
 
-            Expr expr = parser.Parse();
-
-            Console.WriteLine(new AstPrinter().Print(expr));
-
-            Interpreter interpreter = new();
-            interpreter.Interpret(expr);
+            //      
         }
     }
 }

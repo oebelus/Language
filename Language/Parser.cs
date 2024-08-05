@@ -3,14 +3,37 @@ class Parser(List<Token> tokens)
     private readonly List<Token> Tokens = tokens;
     private int current = 0;
 
-    public Expr Parse()
+    public List<Statement> Parse()
     {
-        return Expression();
+        List<Statement> statements = [];
+        while (!IsAtEnd()) statements.Add(Statement());
+        return statements;
     }
 
     private Expr Expression()
     {
         return Equality();
+    }
+
+    private Statement Statement()
+    {
+        if (Match(TokenType.LOG)) return PrintStatement();
+
+        return ExpressionStatement();
+    }
+
+    private Statement.Log PrintStatement()
+    {
+        Expr value = Expression();
+        Consume(TokenType.SEMICOLON);
+        return new Statement.Log(value);
+    }
+
+    private Statement.Log ExpressionStatement()
+    {
+        Expr value = Expression();
+        Consume(TokenType.SEMICOLON);
+        return new Statement.Log(value);
     }
 
     private Expr Equality()
