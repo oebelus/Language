@@ -1,9 +1,16 @@
-class Interpreter : Expr.IVisitor<object>
+class Interpreter : Expr.IVisitor<object>, Statement.IVisitor<Action>
 {
-    public void Interpret(Expr expression)
+    public void Interpret(List<Statement> statements)
     {
-        Console.WriteLine(Stringify(Evaluate(expression)));
+        foreach (var statement in statements)
+        {
+            Execute(statement);
+        }
     }
+
+    private void Execute(Statement statement) {
+        statement.Accept(this);
+    } 
 
     public object VisitBinary(Expr.Binary binary)
     {
@@ -42,14 +49,13 @@ class Interpreter : Expr.IVisitor<object>
     {
         object right = Evaluate(unary.Right);
 
-        switch (unary.Operation.Type)
+        return unary.Operation.Type switch
         {
-            case TokenType.MINUS:
-                return -(float)right;
-            case TokenType.BANG:
-                return !IsTruthy(right);
-        }
-        return "null";
+            TokenType.MINUS => -(float)right,
+            TokenType.BANG => !IsTruthy(right),
+            _ => "null",
+        };
+
     }
 
     public object VisitLiteral(Expr.Literal literal)
@@ -60,6 +66,41 @@ class Interpreter : Expr.IVisitor<object>
     public object VisitGrouping(Expr.Grouping grouping)
     {
         return Evaluate(grouping.Expression);
+    }
+
+    public Action VisitExpression(Statement.Expression statement) {
+        Evaluate(statement.Express);
+        return null!;
+    }
+
+    public Action VisitLog(Statement.Log statement) {
+        object value = Evaluate(statement.Express);
+        Console.WriteLine(Stringify(value));
+        return null!;
+    }
+
+    public Action VisitBlock(Statement.Block statement) {
+        return null!;
+    }
+
+    public Action VisitFunction(Statement.Function statement) {
+        return null!;
+    }
+
+    public Action VisitIf(Statement.If statement) {
+        return null!;
+    }
+
+    public Action VisitWhile(Statement.While statement) {
+        return null!;
+    }
+
+    public Action VisitReturn(Statement.Return statement) {
+        return null!;
+    }
+
+    public Action VisitVar(Statement.Var statement) {
+        return null!;
     }
 
     private object Evaluate(Expr expr)

@@ -10,30 +10,30 @@ class Parser(List<Token> tokens)
         return statements;
     }
 
-    private Expr Expression()
-    {
-        return Equality();
-    }
-
     private Statement Statement()
     {
-        if (Match(TokenType.LOG)) return PrintStatement();
+        if (Match(TokenType.LOG)) return LogStatement();
 
         return ExpressionStatement();
     }
 
-    private Statement.Expression PrintStatement()
+    private Statement.Log LogStatement()
     {
         Expr expr = Expression();
         Consume(TokenType.SEMICOLON);
-        return new Statement.Expression(expr);
+        return new Statement.Log(expr);
     }
 
-    private Statement.Log ExpressionStatement()
+    private Statement.Expression ExpressionStatement()
     {
         Expr value = Expression();
         Consume(TokenType.SEMICOLON);
-        return new Statement.Log(value);
+        return new Statement.Expression(value);
+    }
+
+    private Expr Expression()
+    {
+        return Equality();
     }
 
     private Expr Equality()
