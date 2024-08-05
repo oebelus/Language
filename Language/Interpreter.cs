@@ -128,4 +128,10 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor<Action>
 
         return obj.ToString()!;
     }
+
+    public object VisitAssign(Expr.Assign expression)
+    {
+        throw new NotImplementedException();
+    }
+
 }

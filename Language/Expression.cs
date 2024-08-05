@@ -6,6 +6,7 @@ abstract class Expr
         T VisitUnary(Unary expression);
         T VisitLiteral(Literal expression);
         T VisitGrouping(Grouping expression);
+        T VisitAssign(Assign expression);
     }
 
     public abstract T Accept<T>(IVisitor<T> visitor);
@@ -50,6 +51,15 @@ abstract class Expr
         public override T Accept<T>(IVisitor<T> visitor)
         {
             return visitor.VisitGrouping(this);
+        }
+    }
+
+    public class Assign(Token name, Expr value) : Expr {
+        public readonly Token Name = name;
+        public readonly Expr Value = value;
+        public override T Accept<T>(IVisitor<T> visitor)
+        {
+            return visitor.VisitAssign(this);
         }
     }
 }

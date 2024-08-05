@@ -4,7 +4,12 @@
     {
         public static void Main()
         {
-            Scanner _ = new("log \"hello\";");
+
+            /*
+            var x = stdout(9);
+            var result = stdout(func(23))/20)
+            */
+            Scanner _ = new("log \"hello\"; log 5/20;");
 
             List<Token> tokens = Scanner.ScanTokens();
 

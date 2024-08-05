@@ -10,6 +10,15 @@ class Parser(List<Token> tokens)
         return statements;
     }
 
+    private Statement Declaration() {
+        //if (Match(TokenType.VAR)) return VarDeclaration();
+        return Statement();
+    }
+
+    // private Statement VarDeclaration() {
+        
+    // } 
+
     private Statement Statement()
     {
         if (Match(TokenType.LOG)) return LogStatement();
