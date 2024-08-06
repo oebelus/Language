@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using System.Text;
 
 class AstPrinter : Expr.IVisitor<string>
@@ -34,7 +35,12 @@ class AstPrinter : Expr.IVisitor<string>
         return Parenthesize(expr.Operation.Lexeme, expr.Right);
     }
 
-    public string VisitVariable(Statement.Variable expression)
+    public string VisitVariable(Expr.VariableExpression variable)
+    {
+        throw new NotImplementedException();
+    }
+
+    public string VisitVariableExpression(Expr.VariableExpression expression)
     {
         throw new NotImplementedException();
     }

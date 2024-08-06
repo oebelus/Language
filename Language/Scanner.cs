@@ -66,8 +66,7 @@ class Scanner
             case '/':
                 if (Match('/'))
                 {
-                    // A comment goes until the end of the line.
-                    while (Peek() != '\n' && !IsAtEnd())
+                    while (Peek() != '\n' && !IsAtEnd()) // A comment goes until the end of the line.
                     {
                         Advance();
                     }
@@ -160,7 +159,7 @@ class Scanner
 
         string text = Code[start..current];
 
-        TokenType type = Keywords.ContainsKey(text) ? Keywords[text] : TokenType.IDENTIFIER;
+        TokenType type = Keywords.TryGetValue(text, out TokenType value) ? value : TokenType.IDENTIFIER;
 
         AddToken(type, null);
     }

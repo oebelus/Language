@@ -1,7 +1,6 @@
 class Interpreter : Expr.IVisitor<object>, Statement.IVisitor<Action>
 {
-    private readonly Environment environment = new();
-
+    Environment Environment = new();
     public void Interpret(List<Statement> statements)
     {
         foreach (var statement in statements)
@@ -10,9 +9,33 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor<Action>
         }
     }
 
-    private void Execute(Statement statement) {
+    private void Execute(Statement statement)
+    {
         statement.Accept(this);
-    } 
+    }
+
+    private void ExecuteBlock(List<Statement> statements, Environment environment)
+    {
+        Environment previous = Environment;
+
+        try
+        {
+            Environment = environment;
+
+            foreach (var statement in statements) Execute(statement);
+        }
+        finally
+        {
+            Environment = previous;
+        }
+    }
+
+    public Action? VisitBlock(Statement.Block statement)
+    {
+        ExecuteBlock(statement.Statements, new Environment(Environment));
+        return null;
+    }
+
 
     public object VisitBinary(Expr.Binary binary)
     {
@@ -57,7 +80,6 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor<Action>
             TokenType.BANG => !IsTruthy(right),
             _ => "null",
         };
-
     }
 
     public object VisitLiteral(Expr.Literal literal)
@@ -72,48 +94,64 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor<Action>
 
     public object VisitAssign(Expr.Assign expression)
     {
-        throw new NotImplementedException();
+        object value = Evaluate(expression.Value);
+        Environment.Assign(expression.Name, value);
+        return value; // log a = 2; assign can be nested inside other expressions
     }
 
-    public object VisitVariable(Statement.Variable statement)
+    public Action VisitExpression(Statement.Expression statement)
     {
-        object value = null!;
-        if ()
-    }
-
-    public Action VisitExpression(Statement.Expression statement) {
         Evaluate(statement.expression);
         return null!;
     }
 
-    public Action VisitLog(Statement.Log statement) {
+    public Action VisitLog(Statement.Log statement)
+    {
         object value = Evaluate(statement.expression);
         Console.WriteLine(Stringify(value));
         return null!;
     }
 
-    public Action VisitBlock(Statement.Block statement) {
+    public Action VisitFunction(Statement.Function statement)
+    {
         return null!;
     }
 
-    public Action VisitFunction(Statement.Function statement) {
+    public Action VisitIf(Statement.If statement)
+    {
         return null!;
     }
 
-    public Action VisitIf(Statement.If statement) {
+    public Action VisitWhile(Statement.While statement)
+    {
         return null!;
     }
 
-    public Action VisitWhile(Statement.While statement) {
+    public Action VisitReturn(Statement.Return statement)
+    {
         return null!;
     }
 
-    public Action VisitReturn(Statement.Return statement) {
+    public Action VisitVariableStatement(Statement.VariableStatement variable)
+    {
+        object value = null!;
+
+        /* 
+         * sends the expression back into the interpreter’s visitor implementation, 
+         * nested evaluation, 
+         * for example, `if var x = 5-4;, 5-4 will get evaluated to 1; 
+        */
+
+        if (variable.initializer != null) value = Evaluate(variable.initializer);
+
+        Environment.Define(variable.name.Lexeme, value);
         return null!;
     }
 
-    public Action VisitVar(Statement.Var statement) {
-        return null!;
+    // smol hint: Evaluate(variable.initializer) goes to this
+    public object VisitVariableExpression(Expr.VariableExpression expression)
+    {
+        return Environment.Get(expression.Name);
     }
 
     private object Evaluate(Expr expr)

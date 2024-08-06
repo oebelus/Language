@@ -1,5 +1,3 @@
-using System.Linq.Expressions;
-
 class Parser(List<Token> tokens)
 {
     private readonly List<Token> Tokens = tokens;
@@ -12,31 +10,29 @@ class Parser(List<Token> tokens)
         return statements;
     }
 
-    private Statement Declaration() {
-        try {
-            if (Match(TokenType.VAR)) return VarDeclaration();
+    private Statement Declaration()
+    {
+        if (Match(TokenType.VAR)) return VarDeclaration();
 
-            return Statement();
-        } catch (Exception) {
-            Synchronize();
-            return null!;
-        }
+        return Statement();
     }
 
-    private Statement.Var VarDeclaration() {
+    private Statement.VariableStatement VarDeclaration()
+    {
         Token name = Consume(TokenType.IDENTIFIER);
 
-        Expr initializer = null!; 
+        Expr initializer = null!;
         if (Match(TokenType.EQUAL)) initializer = Expression();
-        
+
         Consume(TokenType.SEMICOLON);
 
-        return new Statement.Var(name, initializer!);
-    } 
+        return new Statement.VariableStatement(name, initializer!);
+    }
 
     private Statement Statement()
     {
         if (Match(TokenType.LOG)) return LogStatement();
+        if (Match(TokenType.LEFT_BRACE)) return new Statement.Block(Block());
 
         return ExpressionStatement();
     }
@@ -57,7 +53,45 @@ class Parser(List<Token> tokens)
 
     private Expr Expression()
     {
-        return Equality();
+        return Assignment();
+    }
+
+    private List<Statement> Block()
+    {
+        List<Statement> statements = [];
+
+        while (!Check(TokenType.RIGHT_BRACE) && !IsAtEnd())
+        {
+            statements.Add(Declaration());
+        }
+
+        Consume(TokenType.RIGHT_BRACE);
+
+        return statements;
+    }
+
+    /*
+     * Assignment: Uses recursion to handle the right-hand side of the assignment, right-associativity.
+     * Binary: Uses a loop to handle sequences of the same operator, left-associativity.
+    */
+
+    private Expr Assignment()
+    {
+        Expr expression = Equality();
+
+        if (Match(TokenType.EQUAL))
+        {
+            Expr value = Assignment();
+
+            if (expression is Expr.VariableExpression varExpr)
+            {
+                // Token equals = Previous();
+                Token name = varExpr.Name;
+                return new Expr.Assign(name, value);
+            }
+            Console.WriteLine("Invalid assignment target: " + Previous().Lexeme);
+        }
+        return expression;
     }
 
     private Expr Equality()
@@ -133,11 +167,11 @@ class Parser(List<Token> tokens)
     {
         if (Match(TokenType.TRUE)) return new Expr.Literal(true);
         if (Match(TokenType.FALSE)) return new Expr.Literal(false);
-        if (Match(TokenType.NIL)) return new Expr.Literal(null);
+        if (Match(TokenType.NIL)) return new Expr.Literal(null!);
 
         if (Match(TokenType.NUMBER, TokenType.STRING)) return new Expr.Literal(Previous().Literal);
 
-        if (Match(TokenType.IDENTIFIER)) return new Expr.Variable(Previous());
+        if (Match(TokenType.IDENTIFIER)) return new Expr.VariableExpression(Previous());
 
         if (Match(TokenType.LEFT_PAREN))
         {
@@ -146,7 +180,7 @@ class Parser(List<Token> tokens)
             return new Expr.Grouping(expr);
         }
 
-        return new Expr.Literal(null);
+        return new Expr.Literal(null!);
     }
 
     private Token Consume(TokenType type)

@@ -9,7 +9,32 @@
             var x = stdout(9);
             var result = stdout(func(23))/20)
             */
-            Scanner _ = new("log \"hello\"; log 5/20; var x = \"55\"; log x");
+
+            string code =
+            @"
+            
+            var a = ""global a"";
+            var b = ""global b"";
+            var c = ""global c"";
+            {
+                var a = ""outer a"";
+                var b = ""outer b"";
+                {
+                    var a = ""inner a"";
+                    log a;
+                    log b;
+                    log c;
+                }
+                log a;
+                log b;
+                log c;
+            }
+            log a;
+            log b;
+            log c;
+
+            ";
+            Scanner _ = new(code);
 
             List<Token> tokens = Scanner.ScanTokens();
 
@@ -22,11 +47,13 @@
 
             List<Statement> statements = parser.Parse();
 
+            Console.WriteLine();
             foreach (var statement in statements)
             {
                 Console.WriteLine(statement);
             }
 
+            Console.WriteLine();
             Interpreter interpreter = new();
             interpreter.Interpret(statements);
         }
