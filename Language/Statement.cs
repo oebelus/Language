@@ -9,7 +9,7 @@ abstract class Statement
         T? VisitWhile(While Statement);
         T? VisitReturn(Return Statement);
         T? VisitExpression(Expression Statement);
-        T? VisitVariableStatement(VariableStatement variable);
+        T? VisitVariableStatement(VariableStatement statement);
     }
 
     public abstract T Accept<T>(IVisitor<T> visitor);
@@ -49,12 +49,12 @@ abstract class Statement
         }
     }
 
-    public class If(Expr condition, Statement thenBlock, Statement elseBlock) : Statement
+    public class If(Expr condition, Statement thenBranch, Statement elseBranch) : Statement
     {
 
         public readonly Expr Condition = condition;
-        public readonly Statement ThenBlock = thenBlock;
-        public readonly Statement ElseBlock = elseBlock;
+        public readonly Statement ThenBranch = thenBranch;
+        public readonly Statement ElseBranch = elseBranch;
 
         public override T Accept<T>(IVisitor<T> visitor)
         {

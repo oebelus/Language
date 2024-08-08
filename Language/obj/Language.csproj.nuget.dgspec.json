@@ -1,91 +1,25 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\imane\\Downloads\\code\\Language\\Language\\Language.csproj": {}
+    "C:\\Users\\Imane\\OneDrive\\Desktop\\documents\\Language\\Language\\Language.csproj": {}
   },
   "projects": {
-    "C:\\Users\\imane\\Downloads\\code\\Language\\Language\\Language.csproj": {
+    "C:\\Users\\Imane\\OneDrive\\Desktop\\documents\\Language\\Language\\Language.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\imane\\Downloads\\code\\Language\\Language\\Language.csproj",
+        "projectUniqueName": "C:\\Users\\Imane\\OneDrive\\Desktop\\documents\\Language\\Language\\Language.csproj",
         "projectName": "Language",
-        "projectPath": "C:\\Users\\imane\\Downloads\\code\\Language\\Language\\Language.csproj",
-        "packagesPath": "C:\\Users\\imane\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\imane\\Downloads\\code\\Language\\Language\\obj\\",
+        "projectPath": "C:\\Users\\Imane\\OneDrive\\Desktop\\documents\\Language\\Language\\Language.csproj",
+        "packagesPath": "C:\\Users\\Imane\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Imane\\OneDrive\\Desktop\\documents\\Language\\Language\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\imane\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "C:\\Users\\Imane\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-          "https://api.nuget.org/v3/index.json": {}
-        },
-        "frameworks": {
-          "net8.0": {
-            "targetAlias": "net8.0",
-            "projectReferences": {
-              "C:\\Users\\imane\\Downloads\\code\\Language\\stackVM\\vm.csproj": {
-                "projectPath": "C:\\Users\\imane\\Downloads\\code\\Language\\stackVM\\vm.csproj"
-              }
-            }
-          }
-        },
-        "warningProperties": {
-          "warnAsError": [
-            "NU1605"
-          ]
-        },
-        "restoreAuditProperties": {
-          "enableAudit": "true",
-          "auditLevel": "low",
-          "auditMode": "direct"
-        }
-      },
-      "frameworks": {
-        "net8.0": {
-          "targetAlias": "net8.0",
-          "imports": [
-            "net461",
-            "net462",
-            "net47",
-            "net471",
-            "net472",
-            "net48",
-            "net481"
-          ],
-          "assetTargetFallback": true,
-          "warn": true,
-          "frameworkReferences": {
-            "Microsoft.NETCore.App": {
-              "privateAssets": "all"
-            }
-          },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.301/PortableRuntimeIdentifierGraph.json"
-        }
-      }
-    },
-    "C:\\Users\\imane\\Downloads\\code\\Language\\stackVM\\vm.csproj": {
-      "version": "1.0.0",
-      "restore": {
-        "projectUniqueName": "C:\\Users\\imane\\Downloads\\code\\Language\\stackVM\\vm.csproj",
-        "projectName": "vm",
-        "projectPath": "C:\\Users\\imane\\Downloads\\code\\Language\\stackVM\\vm.csproj",
-        "packagesPath": "C:\\Users\\imane\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\imane\\Downloads\\code\\Language\\stackVM\\obj\\",
-        "projectStyle": "PackageReference",
-        "configFilePaths": [
-          "C:\\Users\\imane\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
-        ],
-        "originalTargetFrameworks": [
-          "net8.0"
-        ],
-        "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -98,11 +32,6 @@
           "warnAsError": [
             "NU1605"
           ]
-        },
-        "restoreAuditProperties": {
-          "enableAudit": "true",
-          "auditLevel": "low",
-          "auditMode": "direct"
         }
       },
       "frameworks": {
@@ -124,7 +53,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.301/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.101/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

@@ -1,3 +1,5 @@
+using System.Security.AccessControl;
+
 class Parser(List<Token> tokens)
 {
     private readonly List<Token> Tokens = tokens;
@@ -32,9 +34,72 @@ class Parser(List<Token> tokens)
     private Statement Statement()
     {
         if (Match(TokenType.LOG)) return LogStatement();
+        if (Match(TokenType.IF)) return IfStatement();
+        if (Match(TokenType.WHILE)) return WhileStatement();
+        if (Match(TokenType.FOR)) return ForStatement();
         if (Match(TokenType.LEFT_BRACE)) return new Statement.Block(Block());
-
         return ExpressionStatement();
+    }
+
+    private Statement ForStatement() {
+        Consume(TokenType.LEFT_PAREN);
+
+        Statement? initializer;
+        if (Match(TokenType.SEMICOLON)) initializer = null;
+        else if (Match(TokenType.VAR)) initializer = VarDeclaration();
+        else initializer = ExpressionStatement();
+
+        Expr? condition = null;
+
+        if (!Check(TokenType.SEMICOLON))
+            condition = Expression();
+
+        Consume(TokenType.SEMICOLON);
+
+        Expr? increment = null;
+        if (!Check(TokenType.RIGHT_PAREN))
+            increment = Expression();
+
+        Consume(TokenType.RIGHT_PAREN);
+
+        Statement body = Statement();
+
+        if (increment != null) {
+            List<Statement> alist = [body, new Statement.Expression(increment)];
+            body = new Statement.Block(alist);
+        }
+
+        condition ??= new Expr.Literal(true);
+        body = new Statement.While(condition, body);
+
+        List<Statement> list = [initializer, body];
+        if (initializer != null) body = new Statement.Block(list);
+
+        return body;
+    }
+
+    private Statement.If IfStatement() {
+        Consume(TokenType.LEFT_PAREN);
+        Expr condition = Expression();
+        Consume(TokenType.RIGHT_PAREN);
+
+        Statement thenBranch = Statement();
+        Statement elseBranch = null!;
+
+        if (Match(TokenType.ELSE))
+            elseBranch = Statement();
+
+        return new Statement.If(condition, thenBranch, elseBranch);
+    }
+
+    private Statement.While WhileStatement() {
+        Consume(TokenType.LEFT_PAREN);
+        Expr condition = Expression();
+        Consume(TokenType.RIGHT_PAREN);
+
+        Statement body = Statement();
+
+        return new Statement.While(condition, body);
     }
 
     private Statement.Log LogStatement()
@@ -77,7 +142,7 @@ class Parser(List<Token> tokens)
 
     private Expr Assignment()
     {
-        Expr expression = Equality();
+        Expr expression = Or();
 
         if (Match(TokenType.EQUAL))
         {
@@ -92,6 +157,32 @@ class Parser(List<Token> tokens)
             Console.WriteLine("Invalid assignment target: " + Previous().Lexeme);
         }
         return expression;
+    }
+
+    private Expr Or() {
+        Expr expr = And();
+
+        while (Match(TokenType.OR)) {
+            Token operation = Previous();
+            Expr right = And();
+            
+            expr = new Expr.Logical(expr, operation, right);
+        }
+
+        return expr;
+    }
+
+    private Expr And() {
+        Expr expr = Equality();
+
+        while (Match(TokenType.AND)) {
+            Token operation = Previous();
+            Expr right = And();
+            
+            expr = new Expr.Logical(expr, operation, right);
+        }
+
+        return expr;
     }
 
     private Expr Equality()
@@ -160,7 +251,39 @@ class Parser(List<Token> tokens)
             return new Expr.Unary(right, operation);
         }
 
-        return Primary();
+        return Call();
+    }
+
+    private Expr Call() {
+        Expr expr = Primary();
+        
+        while (true) {
+            if (Match(TokenType.LEFT_PAREN))
+                expr = FinishCall(expr);
+            else
+                break;
+        }
+
+        return expr;
+    }
+
+    private Expr.Call FinishCall(Expr expr) {
+        List<Expr> arguments = [];
+
+        if (!Check(TokenType.RIGHT_PAREN)) {
+            do {
+                if (arguments.Count >= 255) {
+                    Console.WriteLine("We can't have more than 255 arguments.");
+                    break;
+                }
+                arguments.Add(Expression());
+            } 
+            while (Match(TokenType.COMMA));
+        }
+
+        Token paren = Consume(TokenType.RIGHT_PAREN);
+
+        return new Expr.Call(expr, paren, arguments);
     }
 
     private Expr Primary()

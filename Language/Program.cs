@@ -13,25 +13,14 @@
             string code =
             @"
             
-            var a = ""global a"";
-            var b = ""global b"";
-            var c = ""global c"";
-            {
-                var a = ""outer a"";
-                var b = ""outer b"";
-                {
-                    var a = ""inner a"";
-                    log a;
-                    log b;
-                    log c;
-                }
+            var a = 0;
+            var temp;
+
+            for (var b = 1; a < 1000; b = temp + b) {
                 log a;
-                log b;
-                log c;
+                temp = a;
+                a = b;
             }
-            log a;
-            log b;
-            log c;
 
             ";
             Scanner _ = new(code);

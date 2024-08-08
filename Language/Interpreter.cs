@@ -70,6 +70,20 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor<Action>
         return "null";
     }
 
+    public object VisitLogical(Expr.Logical expression)
+    {
+        object left = Evaluate(expression.Left);
+
+        if (expression.Operation.Type == TokenType.OR) {
+            if (IsTruthy(left)) return left;
+        }
+        else {
+            if (!IsTruthy(left)) return left;
+        }
+
+        return Evaluate(expression.Right);
+    }
+
     public object VisitUnary(Expr.Unary unary)
     {
         object right = Evaluate(unary.Right);
@@ -99,42 +113,64 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor<Action>
         return value; // log a = 2; assign can be nested inside other expressions
     }
 
-    public Action VisitExpression(Statement.Expression statement)
+    public Action? VisitExpression(Statement.Expression statement)
     {
         Evaluate(statement.expression);
-        return null!;
+        return null;
     }
 
-    public Action VisitLog(Statement.Log statement)
+    public Action? VisitLog(Statement.Log statement)
     {
         object value = Evaluate(statement.expression);
         Console.WriteLine(Stringify(value));
-        return null!;
+        return null;
     }
 
-    public Action VisitFunction(Statement.Function statement)
+     public object VisitCall(Expr.Call expression)
     {
-        return null!;
+        object callee = Evaluate(expression.Callee);
+
+        List<object> arguments = [];
+
+        foreach (Expr argument in expression.Arguments)
+            arguments.Add(argument);
+
+        ICallable function = (ICallable) callee;
+
+        return function.Call(this, arguments);
     }
 
-    public Action VisitIf(Statement.If statement)
+    public Action? VisitFunction(Statement.Function statement)
     {
-        return null!;
+        return null;
     }
 
-    public Action VisitWhile(Statement.While statement)
+    public Action? VisitIf(Statement.If statement)
     {
-        return null!;
+        if (IsTruthy(Evaluate(statement.Condition)))
+            Execute(statement.ThenBranch);
+        else if (statement.ElseBranch != null)
+            Execute(statement.ElseBranch);
+
+        return null;
     }
 
-    public Action VisitReturn(Statement.Return statement)
+    public Action? VisitWhile(Statement.While statement)
     {
-        return null!;
+        while (IsTruthy(Evaluate(statement.Condition)))
+            Execute(statement.Body);
+
+        return null;
     }
 
-    public Action VisitVariableStatement(Statement.VariableStatement variable)
+    public Action? VisitReturn(Statement.Return statement)
     {
-        object value = null!;
+        return null;
+    }
+
+    public Action? VisitVariableStatement(Statement.VariableStatement variable)
+    {
+        object? value = null;
 
         /* 
          * sends the expression back into the interpreter’s visitor implementation, 
@@ -144,7 +180,7 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor<Action>
 
         if (variable.initializer != null) value = Evaluate(variable.initializer);
 
-        Environment.Define(variable.name.Lexeme, value);
+        Environment.Define(variable.name.Lexeme, value!);
         return null!;
     }
 
