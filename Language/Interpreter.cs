@@ -1,6 +1,12 @@
 class Interpreter : Expr.IVisitor<object>, Statement.IVisitor<Action>
 {
-    Environment Environment = new();
+    static  readonly Environment Globals = new();
+    private Environment Environment = Globals;
+
+    Interpreter() {
+        Globals.Define("clock", new Callable(0, (double)DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(), "<native fn>"));
+    }
+    
     public void Interpret(List<Statement> statements)
     {
         foreach (var statement in statements)
@@ -128,16 +134,22 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor<Action>
 
      public object VisitCall(Expr.Call expression)
     {
-        object callee = Evaluate(expression.Callee);
+        object callee = Evaluate(expression.Callee); // Callee()()
 
         List<object> arguments = [];
 
         foreach (Expr argument in expression.Arguments)
             arguments.Add(argument);
 
+        // check if callee is instance of Callable
+
         ICallable function = (ICallable) callee;
 
-        return function.Call(this, arguments);
+        if (arguments.Count != function.Arity()) {
+            Console.WriteLine("Expecred " + function.Arity() + "arguments but got " + arguments.Count + ".");
+        }
+
+        return function.Call(arguments);
     }
 
     public Action? VisitFunction(Statement.Function statement)
