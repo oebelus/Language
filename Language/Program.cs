@@ -27,10 +27,10 @@
             string code_1 = 
             @"
                 function sayHi(first, last) {
-                    log fist + last;
+                    log ""first: "" + first + "", last: "" + last;
                 }
 S
-                sayHi(1, 4);
+                sayHi(""Imane"", 23);
             ";
 
             Scanner _ = new(code_1);

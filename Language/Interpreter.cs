@@ -1,3 +1,5 @@
+using System.Linq.Expressions;
+
 class Interpreter : Expr.IVisitor<object>, Statement.IVisitor<Action>
 {
     public static readonly Environment Globals = new();
@@ -135,7 +137,7 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor<Action>
         List<object> arguments = [];
 
         foreach (Expr argument in expression.Arguments)
-            arguments.Add(argument);
+            arguments.Add(Evaluate(argument)); // Ayman caught this bug :3 
 
         LangFunction function = (LangFunction)callee;
 
@@ -187,7 +189,6 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor<Action>
         */
 
         if (variable.initializer != null) value = Evaluate(variable.initializer);
-
         Environment.Define(variable.name.Lexeme, value!);
         return null!;
     }
