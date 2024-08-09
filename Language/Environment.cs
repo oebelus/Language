@@ -24,7 +24,7 @@ class Environment
 
     public object Get(Token name)
     {
-        if (IsVarDeclared(name)) return values[name.Lexeme];
+        if (IsDeclared(name)) return values[name.Lexeme];
 
         else if (Enclosing != null) return Enclosing.Get(name);
 
@@ -33,7 +33,7 @@ class Environment
 
     public void Assign(Token name, object value)
     {
-        if (IsVarDeclared(name))
+        if (IsDeclared(name))
         {
             values[name.Lexeme] = value;
             return;
@@ -46,7 +46,7 @@ class Environment
         }
     }
 
-    public bool IsVarDeclared(Token name)
+    public bool IsDeclared(Token name)
     {
         if (values.TryGetValue(name.Lexeme, out object? _)) return true;
         return false;

@@ -15,6 +15,7 @@ class Parser(List<Token> tokens)
     private Statement Declaration()
     {
         if (Match(TokenType.VAR)) return VarDeclaration();
+        if (Match(TokenType.FUN)) return Function("function");
 
         return Statement();
     }
@@ -29,6 +30,32 @@ class Parser(List<Token> tokens)
         Consume(TokenType.SEMICOLON);
 
         return new Statement.VariableStatement(name, initializer!);
+    }
+
+    private Statement.Function Function(string kind) {
+        Token name = Consume(TokenType.IDENTIFIER);
+
+        Consume(TokenType.LEFT_PAREN);
+        List<Token> arguments = [];
+
+        if (!Check(TokenType.RIGHT_PAREN)) {
+            do {
+                
+                if (arguments.Count >= 255) {
+                    Console.WriteLine("Function can't have more than 255 arguments.");
+                }
+
+                arguments.Add(Consume(TokenType.IDENTIFIER));
+
+            } while (Match(TokenType.COMMA));
+        }
+        
+        Consume(TokenType.RIGHT_PAREN);
+
+        Consume(TokenType.LEFT_BRACE);
+        List<Statement> body = Block();
+
+        return new Statement.Function(name, arguments, body);
     }
 
     private Statement Statement()
@@ -273,7 +300,7 @@ class Parser(List<Token> tokens)
         if (!Check(TokenType.RIGHT_PAREN)) {
             do {
                 if (arguments.Count >= 255) {
-                    Console.WriteLine("We can't have more than 255 arguments.");
+                    Console.WriteLine("Function can't have more than 255 arguments.");
                     break;
                 }
                 arguments.Add(Expression());
@@ -290,7 +317,7 @@ class Parser(List<Token> tokens)
     {
         if (Match(TokenType.TRUE)) return new Expr.Literal(true);
         if (Match(TokenType.FALSE)) return new Expr.Literal(false);
-        if (Match(TokenType.NIL)) return new Expr.Literal(null!);
+        if (Match(TokenType.NIL)) return new Expr.Literal(null);
 
         if (Match(TokenType.NUMBER, TokenType.STRING)) return new Expr.Literal(Previous().Literal);
 
@@ -351,29 +378,5 @@ class Parser(List<Token> tokens)
     private Token Previous()
     {
         return Tokens[current - 1];
-    }
-
-    private void Synchronize()
-    {
-        Advance();
-
-        while (!IsAtEnd())
-        {
-            if (Previous().Type == TokenType.SEMICOLON) return;
-
-            switch (Peek().Type)
-            {
-                case TokenType.FUN:
-                case TokenType.FOR:
-                case TokenType.IF:
-                case TokenType.LOG:
-                case TokenType.VAR:
-                case TokenType.WHILE:
-                case TokenType.RETURN:
-                    return;
-            }
-
-            Advance();
-        }
     }
 }

@@ -10,7 +10,7 @@
             var result = stdout(func(23))/20)
             */
 
-            string code =
+            /* string code =
             @"
             
             var a = 0;
@@ -22,8 +22,18 @@
                 a = b;
             }
 
+            "; */
+
+            string code_1 = 
+            @"
+                function sayHi(first, last) {
+                    log fist + last;
+                }
+S
+                sayHi(1, 4);
             ";
-            Scanner _ = new(code);
+
+            Scanner _ = new(code_1);
 
             List<Token> tokens = Scanner.ScanTokens();
 

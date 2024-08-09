@@ -1,11 +1,7 @@
 class Interpreter : Expr.IVisitor<object>, Statement.IVisitor<Action>
 {
-    static  readonly Environment Globals = new();
+    public static readonly Environment Globals = new();
     private Environment Environment = Globals;
-
-    Interpreter() {
-        Globals.Define("clock", new Callable(0, (double)DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(), "<native fn>"));
-    }
     
     public void Interpret(List<Statement> statements)
     {
@@ -20,7 +16,7 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor<Action>
         statement.Accept(this);
     }
 
-    private void ExecuteBlock(List<Statement> statements, Environment environment)
+    public void ExecuteBlock(List<Statement> statements, Environment environment)
     {
         Environment previous = Environment;
 
@@ -141,19 +137,19 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor<Action>
         foreach (Expr argument in expression.Arguments)
             arguments.Add(argument);
 
-        // check if callee is instance of Callable
-
-        ICallable function = (ICallable) callee;
+        LangFunction function = (LangFunction)callee;
 
         if (arguments.Count != function.Arity()) {
             Console.WriteLine("Expecred " + function.Arity() + "arguments but got " + arguments.Count + ".");
         }
 
-        return function.Call(arguments);
+        return function.Call(this, arguments)!;
     }
 
     public Action? VisitFunction(Statement.Function statement)
     {
+        LangFunction function = new(statement);
+        Environment.Define(statement.Name.Lexeme, function);
         return null;
     }
 

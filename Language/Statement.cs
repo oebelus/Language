@@ -38,7 +38,6 @@ abstract class Statement
 
     public class Function(Token name, List<Token> args, List<Statement> body) : Statement
     {
-
         public readonly Token Name = name;
         public readonly List<Token> Args = args;
         public readonly List<Statement> Body = body;
@@ -51,7 +50,6 @@ abstract class Statement
 
     public class If(Expr condition, Statement thenBranch, Statement elseBranch) : Statement
     {
-
         public readonly Expr Condition = condition;
         public readonly Statement ThenBranch = thenBranch;
         public readonly Statement ElseBranch = elseBranch;
