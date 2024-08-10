@@ -19,6 +19,12 @@ class AstPrinter : Expr.IVisitor<string>
         return Parenthesize(expr.Operation.Lexeme, expr.Left, expr.Right);
     }
 
+    public string VisitCall(Expr.Call expression)
+    {
+        throw new NotImplementedException();
+    }
+
+
     public string VisitGrouping(Expr.Grouping expr)
     {
         return Parenthesize("group", expr.Expression);
@@ -29,6 +35,12 @@ class AstPrinter : Expr.IVisitor<string>
         if (expr.Value == null) return "nil";
         return expr.Value.ToString()!;
     }
+
+    public string VisitLogical(Expr.Logical expression)
+    {
+        throw new NotImplementedException();
+    }
+
 
     public string VisitUnary(Expr.Unary expr)
     {

@@ -10,31 +10,30 @@
             var result = stdout(func(23))/20)
             */
 
-            string code =
+            /* string code =
             @"
             
-            var a = ""global a"";
-            var b = ""global b"";
-            var c = ""global c"";
-            {
-                var a = ""outer a"";
-                var b = ""outer b"";
-                {
-                    var a = ""inner a"";
-                    log a;
-                    log b;
-                    log c;
-                }
-                log a;
-                log b;
-                log c;
-            }
-            log a;
-            log b;
-            log c;
+            var a = 0;
+            var temp;
 
+            for (var b = 1; a < 1000; b = temp + b) {
+                log a;
+                temp = a;
+                a = b;
+            }
+
+            "; */
+
+            string code_1 = 
+            @"
+                function sayHi(first, last) {
+                    log ""first: "" + first + "", last: "" + last;
+                }
+S
+                sayHi(""Imane"", 23);
             ";
-            Scanner _ = new(code);
+
+            Scanner _ = new(code_1);
 
             List<Token> tokens = Scanner.ScanTokens();
 

@@ -8,6 +8,8 @@ abstract class Expr
         T VisitGrouping(Grouping expression);
         T VisitAssign(Assign expression);
         T VisitVariableExpression(VariableExpression expression);
+        T VisitLogical(Logical expression);
+        T VisitCall(Call expression);
     }
 
     public abstract T Accept<T>(IVisitor<T> visitor);
@@ -21,6 +23,17 @@ abstract class Expr
         public override T Accept<T>(IVisitor<T> visitor)
         {
             return visitor.VisitBinary(this);
+        }
+    }
+
+    public class Logical(Expr left, Token operation, Expr right) : Expr {
+         public readonly Expr Left = left;
+        public readonly Token Operation = operation;
+        public readonly Expr Right = right;
+
+        public override T Accept<T>(IVisitor<T> visitor)
+        {
+            return visitor.VisitLogical(this);
         }
     }
 
@@ -71,6 +84,17 @@ abstract class Expr
         public override T Accept<T>(IVisitor<T> visitor)
         {
             return visitor.VisitVariableExpression(this);
+        }
+    }
+
+    public class Call(Expr callee, Token paren, List<Expr> arguments) : Expr
+    {
+        public readonly Expr Callee = callee;
+        public readonly Token Paren = paren;
+        public readonly List<Expr> Arguments = arguments;
+        public override T Accept<T>(IVisitor<T> visitor)
+        {
+            return visitor.VisitCall(this);
         }
     }
 }

@@ -57,8 +57,6 @@ class Scanner
             case '+': AddToken(TokenType.PLUS, null); break;
             case ';': AddToken(TokenType.SEMICOLON, null); break;
             case '*': AddToken(TokenType.STAR, null); break;
-            case '|': AddToken(TokenType.OR, null); break;
-            case '&': AddToken(TokenType.AND, null); break;
             case '!': AddToken(Match('=') ? TokenType.BANG_EQUAL : TokenType.BANG, null); break;
             case '=': AddToken(Match('=') ? TokenType.EQUAL_EQUAL : TokenType.EQUAL, null); break;
             case '<': AddToken(Match('=') ? TokenType.LESS_EQUAL : TokenType.LESS, null); break;
