@@ -41,7 +41,15 @@ class LangFunction(Statement.Function declaration) : ICallable
                 , arguments[i]);
         }
 
-        interpreter.ExecuteBlock(Declaration.Body, environment);
+
+        try
+        {
+            interpreter.ExecuteBlock(Declaration.Body, environment);
+        }
+        catch (Return returnValue)
+        {
+            return returnValue.Value;
+        }
 
         return null;
     }

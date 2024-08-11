@@ -82,10 +82,10 @@ abstract class Statement
         }
     }
 
-    public class Return(Token keyword, Expr expression) : Statement
+    public class Return(Token keyword, Expr value) : Statement
     {
         public readonly Token Keyworkd = keyword;
-        public readonly Expr expression = expression;
+        public readonly Expr Value = value;
 
         public override T Accept<T>(IVisitor<T> visitor)
         {

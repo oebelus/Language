@@ -22,11 +22,6 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor<Action>
         return null;
     }
 
-    public object VisitAssign(Expr.Assign expression)
-    {
-        throw new NotImplementedException();
-    }
-
     public object? VisitBinary(Expr.Binary binary)
     {
         CompileExpr(binary.Left);
@@ -79,6 +74,20 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor<Action>
 
         ByteCode.Add(Instruction.instruction[Instructions.STORE]);
         AddressCount++;
+        return null;
+    }
+
+    public object? VisitAssign(Expr.Assign expression)
+    {
+        CompileExpr(expression.Value);
+
+        object address = Environment.Get(expression.Name);
+
+        ByteCode.Add(Instruction.instruction[Instructions.PUSH]);
+        ByteCode.AddRange(ToByteArray(address.ToString()!));
+
+        ByteCode.Add(Instruction.instruction[Instructions.STORE]);
+
         return null;
     }
 

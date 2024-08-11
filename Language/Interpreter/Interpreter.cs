@@ -176,7 +176,11 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor<Action>
 
     public Action? VisitReturn(Statement.Return statement)
     {
-        return null;
+        object? value = null;
+
+        if (statement.Value != null) value = Evaluate(statement.Value);
+
+        throw new Return(value!);
     }
 
     public Action? VisitVariableStatement(Statement.VariableStatement variable)

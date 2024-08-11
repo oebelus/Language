@@ -67,7 +67,20 @@ class Parser(List<Token> tokens)
         if (Match(TokenType.WHILE)) return WhileStatement();
         if (Match(TokenType.FOR)) return ForStatement();
         if (Match(TokenType.LEFT_BRACE)) return new Statement.Block(Block());
+        if (Match(TokenType.RETURN)) return ReturnStatement();
         return ExpressionStatement();
+    }
+
+    private Statement ReturnStatement()
+    {
+        Token keyword = Previous();
+        Expr? value = null;
+
+        if (!Check(TokenType.SEMICOLON))
+            value = Expression();
+
+        Consume(TokenType.SEMICOLON);
+        return new Statement.Return(keyword, value!);
     }
 
     private Statement ForStatement()
