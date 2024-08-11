@@ -27,7 +27,6 @@ abstract class Statement
 
     public class Expression(Expr expression) : Statement
     {
-
         public readonly Expr expression = expression;
 
         public override T Accept<T>(IVisitor<T> visitor)

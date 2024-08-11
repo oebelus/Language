@@ -1,5 +1,3 @@
-using System.Security.AccessControl;
-
 class Parser(List<Token> tokens)
 {
     private readonly List<Token> Tokens = tokens;
@@ -32,16 +30,20 @@ class Parser(List<Token> tokens)
         return new Statement.VariableStatement(name, initializer!);
     }
 
-    private Statement.Function Function(string kind) {
+    private Statement.Function Function(string kind)
+    {
         Token name = Consume(TokenType.IDENTIFIER);
 
         Consume(TokenType.LEFT_PAREN);
         List<Token> arguments = [];
 
-        if (!Check(TokenType.RIGHT_PAREN)) {
-            do {
-                
-                if (arguments.Count >= 255) {
+        if (!Check(TokenType.RIGHT_PAREN))
+        {
+            do
+            {
+
+                if (arguments.Count >= 255)
+                {
                     Console.WriteLine("Function can't have more than 255 arguments.");
                 }
 
@@ -49,7 +51,7 @@ class Parser(List<Token> tokens)
 
             } while (Match(TokenType.COMMA));
         }
-        
+
         Consume(TokenType.RIGHT_PAREN);
 
         Consume(TokenType.LEFT_BRACE);
@@ -68,7 +70,8 @@ class Parser(List<Token> tokens)
         return ExpressionStatement();
     }
 
-    private Statement ForStatement() {
+    private Statement ForStatement()
+    {
         Consume(TokenType.LEFT_PAREN);
 
         Statement? initializer;
@@ -91,7 +94,8 @@ class Parser(List<Token> tokens)
 
         Statement body = Statement();
 
-        if (increment != null) {
+        if (increment != null)
+        {
             List<Statement> alist = [body, new Statement.Expression(increment)];
             body = new Statement.Block(alist);
         }
@@ -105,7 +109,8 @@ class Parser(List<Token> tokens)
         return body;
     }
 
-    private Statement.If IfStatement() {
+    private Statement.If IfStatement()
+    {
         Consume(TokenType.LEFT_PAREN);
         Expr condition = Expression();
         Consume(TokenType.RIGHT_PAREN);
@@ -119,7 +124,8 @@ class Parser(List<Token> tokens)
         return new Statement.If(condition, thenBranch, elseBranch);
     }
 
-    private Statement.While WhileStatement() {
+    private Statement.While WhileStatement()
+    {
         Consume(TokenType.LEFT_PAREN);
         Expr condition = Expression();
         Consume(TokenType.RIGHT_PAREN);
@@ -186,26 +192,30 @@ class Parser(List<Token> tokens)
         return expression;
     }
 
-    private Expr Or() {
+    private Expr Or()
+    {
         Expr expr = And();
 
-        while (Match(TokenType.OR)) {
+        while (Match(TokenType.OR))
+        {
             Token operation = Previous();
             Expr right = And();
-            
+
             expr = new Expr.Logical(expr, operation, right);
         }
 
         return expr;
     }
 
-    private Expr And() {
+    private Expr And()
+    {
         Expr expr = Equality();
 
-        while (Match(TokenType.AND)) {
+        while (Match(TokenType.AND))
+        {
             Token operation = Previous();
             Expr right = And();
-            
+
             expr = new Expr.Logical(expr, operation, right);
         }
 
@@ -274,17 +284,19 @@ class Parser(List<Token> tokens)
         {
             Token operation = Previous();
             Expr right = Unary();
-            Console.WriteLine("> BINARY: " + operation.Lexeme + " " + right);
+
             return new Expr.Unary(right, operation);
         }
 
         return Call();
     }
 
-    private Expr Call() {
+    private Expr Call()
+    {
         Expr expr = Primary();
-        
-        while (true) {
+
+        while (true)
+        {
             if (Match(TokenType.LEFT_PAREN))
                 expr = FinishCall(expr);
             else
@@ -294,17 +306,21 @@ class Parser(List<Token> tokens)
         return expr;
     }
 
-    private Expr.Call FinishCall(Expr expr) {
+    private Expr.Call FinishCall(Expr expr)
+    {
         List<Expr> arguments = [];
 
-        if (!Check(TokenType.RIGHT_PAREN)) {
-            do {
-                if (arguments.Count >= 255) {
+        if (!Check(TokenType.RIGHT_PAREN))
+        {
+            do
+            {
+                if (arguments.Count >= 255)
+                {
                     Console.WriteLine("Function can't have more than 255 arguments.");
                     break;
                 }
                 arguments.Add(Expression());
-            } 
+            }
             while (Match(TokenType.COMMA));
         }
 
@@ -330,7 +346,7 @@ class Parser(List<Token> tokens)
             return new Expr.Grouping(expr);
         }
 
-        return new Expr.Literal(null!);
+        return new Expr.Literal(null);
     }
 
     private Token Consume(TokenType type)

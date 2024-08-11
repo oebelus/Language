@@ -1,16 +1,16 @@
 
-class Environment
+class InterpreterEnv
 {
-    readonly Environment Enclosing;
+    readonly InterpreterEnv Enclosing;
 
     // local scope nested inside an outer one
-    public Environment(Environment enclosing)
+    public InterpreterEnv(InterpreterEnv enclosing)
     {
         Enclosing = enclosing;
     }
 
     // global scope’s environment
-    public Environment()
+    public InterpreterEnv()
     {
         Enclosing = null!;
     }

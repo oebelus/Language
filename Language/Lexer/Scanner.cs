@@ -15,7 +15,7 @@ class Scanner
         { "log", TokenType.LOG },
         { "return", TokenType.RETURN },
         { "true", TokenType.TRUE },
-        { "var", TokenType.VAR },
+        { "let", TokenType.VAR },
         { "while", TokenType.WHILE },
     };
 

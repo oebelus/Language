@@ -6,17 +6,17 @@
         {
 
             /*
-            var x = stdout(9);
-            var result = stdout(func(23))/20)
+            let x = stdout(9);
+            let result = stdout(func(23))/20)
             */
 
             /* string code =
             @"
             
-            var a = 0;
-            var temp;
+            let a = 0;
+            let temp;
 
-            for (var b = 1; a < 1000; b = temp + b) {
+            for (let b = 1; a < 1000; b = temp + b) {
                 log a;
                 temp = a;
                 a = b;
@@ -24,16 +24,16 @@
 
             "; */
 
-            string code_1 = 
+            /* string code_1 =
             @"
                 function sayHi(first, last) {
                     log ""first: "" + first + "", last: "" + last;
                 }
 S
-                sayHi(""Imane"", 23);
-            ";
+                sayHi(""Imane"", ""23"");
+            "; */
 
-            Scanner _ = new(code_1);
+            Scanner _ = new("a + 10");
 
             List<Token> tokens = Scanner.ScanTokens();
 
@@ -53,8 +53,17 @@ S
             }
 
             Console.WriteLine();
-            Interpreter interpreter = new();
-            interpreter.Interpret(statements);
+            Compiler compiler = new();
+            compiler.Compile(statements);
+
+            List<byte> code = compiler.ByteCode;
+
+            Console.Write("[ ");
+            foreach (var item in code)
+            {
+                Console.Write(item + " ");
+            }
+            Console.Write("]");
         }
     }
 }

@@ -1,10 +1,8 @@
-using System.Linq.Expressions;
-
 class Interpreter : Expr.IVisitor<object>, Statement.IVisitor<Action>
 {
-    public static readonly Environment Globals = new();
-    private Environment Environment = Globals;
-    
+    public static readonly InterpreterEnv Globals = new();
+    private InterpreterEnv Environment = Globals;
+
     public void Interpret(List<Statement> statements)
     {
         foreach (var statement in statements)
@@ -18,9 +16,9 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor<Action>
         statement.Accept(this);
     }
 
-    public void ExecuteBlock(List<Statement> statements, Environment environment)
+    public void ExecuteBlock(List<Statement> statements, InterpreterEnv environment)
     {
-        Environment previous = Environment;
+        InterpreterEnv previous = Environment;
 
         try
         {
@@ -36,7 +34,7 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor<Action>
 
     public Action? VisitBlock(Statement.Block statement)
     {
-        ExecuteBlock(statement.Statements, new Environment(Environment));
+        ExecuteBlock(statement.Statements, new InterpreterEnv(Environment));
         return null;
     }
 
@@ -78,10 +76,12 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor<Action>
     {
         object left = Evaluate(expression.Left);
 
-        if (expression.Operation.Type == TokenType.OR) {
+        if (expression.Operation.Type == TokenType.OR)
+        {
             if (IsTruthy(left)) return left;
         }
-        else {
+        else
+        {
             if (!IsTruthy(left)) return left;
         }
 
@@ -130,7 +130,7 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor<Action>
         return null;
     }
 
-     public object VisitCall(Expr.Call expression)
+    public object VisitCall(Expr.Call expression)
     {
         object callee = Evaluate(expression.Callee); // Callee()()
 
@@ -141,7 +141,8 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor<Action>
 
         LangFunction function = (LangFunction)callee;
 
-        if (arguments.Count != function.Arity()) {
+        if (arguments.Count != function.Arity())
+        {
             Console.WriteLine("Expecred " + function.Arity() + "arguments but got " + arguments.Count + ".");
         }
 

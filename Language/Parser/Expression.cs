@@ -2,14 +2,14 @@ abstract class Expr
 {
     public interface IVisitor<T>
     {
-        T VisitBinary(Binary expression);
-        T VisitUnary(Unary expression);
-        T VisitLiteral(Literal expression);
-        T VisitGrouping(Grouping expression);
-        T VisitAssign(Assign expression);
-        T VisitVariableExpression(VariableExpression expression);
-        T VisitLogical(Logical expression);
-        T VisitCall(Call expression);
+        T? VisitBinary(Binary expression);
+        T? VisitUnary(Unary expression);
+        T? VisitLiteral(Literal expression);
+        T? VisitGrouping(Grouping expression);
+        T? VisitAssign(Assign expression);
+        T? VisitVariableExpression(VariableExpression expression);
+        T? VisitLogical(Logical expression);
+        T? VisitCall(Call expression);
     }
 
     public abstract T Accept<T>(IVisitor<T> visitor);
@@ -22,18 +22,19 @@ abstract class Expr
 
         public override T Accept<T>(IVisitor<T> visitor)
         {
-            return visitor.VisitBinary(this);
+            return visitor.VisitBinary(this)!;
         }
     }
 
-    public class Logical(Expr left, Token operation, Expr right) : Expr {
-         public readonly Expr Left = left;
+    public class Logical(Expr left, Token operation, Expr right) : Expr
+    {
+        public readonly Expr Left = left;
         public readonly Token Operation = operation;
         public readonly Expr Right = right;
 
         public override T Accept<T>(IVisitor<T> visitor)
         {
-            return visitor.VisitLogical(this);
+            return visitor.VisitLogical(this)!;
         }
     }
 
@@ -44,7 +45,7 @@ abstract class Expr
 
         public override T Accept<T>(IVisitor<T> visitor)
         {
-            return visitor.VisitUnary(this);
+            return visitor.VisitUnary(this)!;
         }
     }
 
@@ -54,7 +55,7 @@ abstract class Expr
 
         public override T Accept<T>(IVisitor<T> visitor)
         {
-            return visitor.VisitLiteral(this);
+            return visitor.VisitLiteral(this)!;
         }
     }
 
@@ -64,7 +65,7 @@ abstract class Expr
 
         public override T Accept<T>(IVisitor<T> visitor)
         {
-            return visitor.VisitGrouping(this);
+            return visitor.VisitGrouping(this)!;
         }
     }
 
@@ -74,7 +75,7 @@ abstract class Expr
         public readonly Expr Value = value;
         public override T Accept<T>(IVisitor<T> visitor)
         {
-            return visitor.VisitAssign(this);
+            return visitor.VisitAssign(this)!;
         }
     }
 
@@ -83,7 +84,7 @@ abstract class Expr
         public readonly Token Name = name;
         public override T Accept<T>(IVisitor<T> visitor)
         {
-            return visitor.VisitVariableExpression(this);
+            return visitor.VisitVariableExpression(this)!;
         }
     }
 
@@ -94,7 +95,7 @@ abstract class Expr
         public readonly List<Expr> Arguments = arguments;
         public override T Accept<T>(IVisitor<T> visitor)
         {
-            return visitor.VisitCall(this);
+            return visitor.VisitCall(this)!;
         }
     }
 }
