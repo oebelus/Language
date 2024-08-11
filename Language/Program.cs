@@ -36,7 +36,7 @@
                 function sayHi(first, last) {
                     return ""first: "" + first + "", last: "" + last;
                 }
-S
+
                 log sayHi(""Imane"", ""23"");
             ";
 
