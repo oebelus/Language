@@ -1,22 +1,22 @@
 class Compiler : Expr.IVisitor<object>, Statement.IVisitor<Action>
 {
     public List<byte> ByteCode = [];
+    private int AddressCount = 0;
+
+    public static readonly CompilerEnv Globals = new();
+    private readonly CompilerEnv Environment = Globals;
 
     public void Compile(List<Statement> statements)
     {
         foreach (var statement in statements)
         {
-            Execute(statement);
+            statement.Accept(this);
         }
-    }
-
-    private void Execute(Statement statement)
-    {
-        statement.Accept(this);
     }
 
     public object? VisitLiteral(Expr.Literal literal)
     {
+        ByteCode.Add(Instruction.instruction[Instructions.PUSH]);
         ByteCode.AddRange(ToByteArray(literal.Value!.ToString()!));
 
         return null;
@@ -29,18 +29,18 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor<Action>
 
     public object? VisitBinary(Expr.Binary binary)
     {
-        Compile(binary.Left);
-        Compile(binary.Right);
+        CompileExpr(binary.Left);
+        CompileExpr(binary.Right);
 
-        ByteCode.Add(Instruction.instruction[binary.Operation.Type]);
+        ByteCode.Add(Instruction.operation[binary.Operation.Type]);
         return null;
     }
 
     public object? VisitUnary(Expr.Unary unary)
     {
-        Compile(unary.Right);
+        CompileExpr(unary.Right);
 
-        ByteCode.Add(Instruction.instruction[unary.Operation.Type]);
+        ByteCode.Add(Instruction.operation[unary.Operation.Type]);
 
         return null;
     }
@@ -62,6 +62,23 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor<Action>
 
     public object? VisitVariableExpression(Expr.VariableExpression expression)
     {
+        ByteCode.Add(Instruction.instruction[Instructions.PUSH]);
+        ByteCode.AddRange(ToByteArray(Environment.Get(expression.Name).ToString()!));
+        ByteCode.Add(Instruction.instruction[Instructions.LOAD]);
+        return null;
+    }
+
+    public Action? VisitVariableStatement(Statement.VariableStatement variable)
+    {
+        Environment.Define(variable.name.Lexeme, AddressCount);
+
+        CompileExpr(variable.initializer);
+
+        ByteCode.Add(Instruction.instruction[Instructions.PUSH]);
+        ByteCode.AddRange(ToByteArray(AddressCount.ToString()));
+
+        ByteCode.Add(Instruction.instruction[Instructions.STORE]);
+        AddressCount++;
         return null;
     }
 
@@ -97,16 +114,11 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor<Action>
 
     public Action? VisitExpression(Statement.Expression statement)
     {
-        Compile(statement.expression);
+        CompileExpr(statement.expression);
         return null;
     }
 
-    public Action? VisitVariableStatement(Statement.VariableStatement statement)
-    {
-        throw new NotImplementedException();
-    }
-
-    private object Compile(Expr expr)
+    private object CompileExpr(Expr expr)
     {
         return expr.Accept(this);
     }

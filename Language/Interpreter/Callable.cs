@@ -1,9 +1,11 @@
-interface ICallable {
+interface ICallable
+{
     int Arity();
     object? Call(Interpreter interpreter, List<object> arguments);
 }
 
-class Callable(int arity, object call, string representation) : ICallable {
+class Callable(int arity, object call, string representation) : ICallable
+{
     public int Arity()
     {
         return arity;
@@ -14,7 +16,8 @@ class Callable(int arity, object call, string representation) : ICallable {
         return call;
     }
 
-    public override string ToString() {
+    public override string ToString()
+    {
         return representation; // representation of the callable
     }
 }
@@ -30,9 +33,10 @@ class LangFunction(Statement.Function declaration) : ICallable
 
     public object? Call(Interpreter interpreter, List<object> arguments)
     {
-        Environment environment = new(Interpreter.Globals);
+        InterpreterEnv environment = new(Interpreter.Globals);
 
-        for (int i = 0; i < Declaration.Args.Count; i++) {
+        for (int i = 0; i < Declaration.Args.Count; i++)
+        {
             environment.Define(Declaration.Args[i].Lexeme
                 , arguments[i]);
         }
@@ -42,7 +46,8 @@ class LangFunction(Statement.Function declaration) : ICallable
         return null;
     }
 
-    public override string ToString() {
+    public override string ToString()
+    {
         return "<fn " + Declaration.Name.Lexeme + ">";
     }
 }

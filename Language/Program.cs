@@ -10,19 +10,13 @@
             let result = stdout(func(23))/20)
             */
 
-            /* string code =
+            string code_1 =
             @"
             
-            let a = 0;
-            let temp;
+            let a = 10;
+            23 - a;
 
-            for (let b = 1; a < 1000; b = temp + b) {
-                log a;
-                temp = a;
-                a = b;
-            }
-
-            "; */
+            ";
 
             /* string code_1 =
             @"
@@ -33,7 +27,7 @@ S
                 sayHi(""Imane"", ""23"");
             "; */
 
-            Scanner _ = new("a + 10");
+            Scanner _ = new(code_1);
 
             List<Token> tokens = Scanner.ScanTokens();
 

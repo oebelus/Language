@@ -1,43 +1,6 @@
-enum Instructions : byte
-{
-    PUSH,
-    POP,
-
-    ADD,
-    SUB,
-    MUL,
-    DIV,
-    NEG,
-    EXP,
-    MOD,
-    LT,
-    GT,
-    EQ,
-
-    AND,
-    OR,
-    NOT,
-    XOR,
-    LS,
-    RS,
-
-    LOAD, // load local val or fct arg
-    GLOAD,
-    STORE,
-    GSTORE,
-
-    JUMP,
-    CJUMP,
-
-    CALL,
-    RET,
-
-    HALT
-}
-
 class Instruction
 {
-    public static Dictionary<TokenType, byte> instruction = new()
+    public static Dictionary<TokenType, byte> operation = new()
     {
         {TokenType.PLUS, 2},
         {TokenType.MINUS, 3},
@@ -49,5 +12,15 @@ class Instruction
         {TokenType.AND, 12},
         {TokenType.OR, 13},
         {TokenType.BANG, 14},
+    };
+
+    public static Dictionary<Instructions, byte> instruction = new()
+    {
+        {Instructions.PUSH, 0},
+        {Instructions.POP, 1},
+        {Instructions.LOAD, 18},
+        {Instructions.GLOAD, 19},
+        {Instructions.STORE, 20},
+        {Instructions.GSTORE, 21},
     };
 }

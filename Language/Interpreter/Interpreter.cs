@@ -191,7 +191,7 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor<Action>
 
         if (variable.initializer != null) value = Evaluate(variable.initializer);
         Environment.Define(variable.name.Lexeme, value!);
-        return null!;
+        return null;
     }
 
     // smol hint: Evaluate(variable.initializer) goes to this
