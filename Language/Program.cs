@@ -1,4 +1,6 @@
-﻿namespace Language
+﻿using vm;
+
+namespace Language
 {
     class Program
     {
@@ -10,14 +12,19 @@
             let result = stdout(func(23))/20)
             */
 
-            // string code_1 =
-            // @"
+            string code_1 =
+            @"
 
-            // let a = 10;
-            // a = 7;
-            // 23 - a;
+            let a = 10;
 
-            // ";
+            {
+                let a = 5;
+                let y = 7;
+            }
+
+            a = 23;
+            
+            ";
 
             /*
 
@@ -31,14 +38,14 @@
 
             */
 
-            string code_1 =
-            @"
-                function sayHi(first, last) {
-                    return ""first: "" + first + "", last: "" + last;
-                }
+            // string code_1 =
+            // @"
+            //     function sayHi(first, last) {
+            //         return ""first: "" + first + "", last: "" + last;
+            //     }
 
-                log sayHi(""Imane"", ""23"");
-            ";
+            //     log sayHi(""Imane"", ""23"");
+            // ";
 
             Scanner _ = new(code_1);
 
@@ -60,19 +67,16 @@
             }
 
             Console.WriteLine();
-            // Compiler compiler = new();
-            // compiler.Compile(statements);
+
             Interpreter interpreter = new();
             interpreter.Interpret(statements);
 
-            // List<byte> code = compiler.ByteCode;
+            Console.WriteLine();
 
-            // Console.Write("[ ");
-            // foreach (var item in code)
-            // {
-            //     Console.Write(item + " ");
-            // }
-            // Console.Write("]");
+            Compiler compiler = new();
+            string mnemo = compiler.Compile(statements);
+            Console.WriteLine(mnemo);
+
         }
     }
 }

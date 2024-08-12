@@ -17,6 +17,8 @@ class Scanner
         { "true", TokenType.TRUE },
         { "let", TokenType.VAR },
         { "while", TokenType.WHILE },
+        { "or", TokenType.OR },
+        { "and", TokenType.AND },
     };
 
     public Scanner(string code)

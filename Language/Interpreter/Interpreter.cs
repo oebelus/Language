@@ -143,7 +143,7 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor<Action>
 
         if (arguments.Count != function.Arity())
         {
-            Console.WriteLine("Expecred " + function.Arity() + "arguments but got " + arguments.Count + ".");
+            Console.WriteLine("Expected " + function.Arity() + "arguments but got " + arguments.Count + ".");
         }
 
         return function.Call(this, arguments)!;

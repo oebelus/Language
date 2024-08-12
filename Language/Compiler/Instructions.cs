@@ -1,26 +1,27 @@
 class Instruction
 {
-    public static Dictionary<TokenType, byte> operation = new()
+    public static Dictionary<TokenType, string> operation = new()
     {
-        {TokenType.PLUS, 2},
-        {TokenType.MINUS, 3},
-        {TokenType.STAR, 4},
-        {TokenType.SLASH, 5},
-        {TokenType.LESS, 9},
-        {TokenType.GREATER, 10},
-        {TokenType.EQUAL_EQUAL, 11},
-        {TokenType.AND, 12},
-        {TokenType.OR, 13},
-        {TokenType.BANG, 14},
+        {TokenType.PLUS, "ADD"},
+        {TokenType.MINUS, "SUB"},
+        {TokenType.STAR, "MUL"},
+        {TokenType.SLASH, "DIV"},
+        {TokenType.LESS, "LT"},
+        {TokenType.GREATER, "GT"},
+        {TokenType.EQUAL_EQUAL, "EQ"},
+        {TokenType.AND, "AND"},
+        {TokenType.OR, "OR"},
+        {TokenType.BANG, "NEG"},
     };
 
-    public static Dictionary<Instructions, byte> instruction = new()
+    public static Dictionary<Instructions, string> instruction = new()
     {
-        {Instructions.PUSH, 0},
-        {Instructions.POP, 1},
-        {Instructions.LOAD, 18},
-        {Instructions.GLOAD, 19},
-        {Instructions.STORE, 20},
-        {Instructions.GSTORE, 21},
+        {Instructions.PUSH, "PUSH"},
+        {Instructions.POP, "POP"},
+        {Instructions.LOAD, "LOAD"},
+        {Instructions.GLOAD, "GLOAD"},
+        {Instructions.STORE, "STORE"},
+        {Instructions.GSTORE, "GSTORE"},
+        {Instructions.RET, "RET"},
     };
 }

@@ -1,23 +1,25 @@
 class Compiler : Expr.IVisitor<object>, Statement.IVisitor<Action>
 {
-    public List<byte> ByteCode = [];
+    public string ByteCode = "";
     private int AddressCount = 0;
 
     public static readonly CompilerEnv Globals = new();
-    private readonly CompilerEnv Environment = Globals;
+    private static CompilerEnv Environment = Globals;
 
-    public void Compile(List<Statement> statements)
+    public string Compile(List<Statement> statements)
     {
         foreach (var statement in statements)
         {
             statement.Accept(this);
         }
+
+        return ByteCode.Trim();
     }
 
     public object? VisitLiteral(Expr.Literal literal)
     {
-        ByteCode.Add(Instruction.instruction[Instructions.PUSH]);
-        ByteCode.AddRange(ToByteArray(literal.Value!.ToString()!));
+        ByteCode += " " + Instruction.instruction[Instructions.PUSH];
+        ByteCode += " " + literal.Value!.ToString()!;
 
         return null;
     }
@@ -27,7 +29,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor<Action>
         CompileExpr(binary.Left);
         CompileExpr(binary.Right);
 
-        ByteCode.Add(Instruction.operation[binary.Operation.Type]);
+        ByteCode += " " + Instruction.operation[binary.Operation.Type];
         return null;
     }
 
@@ -35,19 +37,23 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor<Action>
     {
         CompileExpr(unary.Right);
 
-        ByteCode.Add(Instruction.operation[unary.Operation.Type]);
+        ByteCode += " " + Instruction.operation[unary.Operation.Type];
 
         return null;
     }
 
-    public object VisitLogical(Expr.Logical expression)
+    public object? VisitLogical(Expr.Logical logical)
     {
-        return 0;
+        CompileExpr(logical.Left);
+        CompileExpr(logical.Right);
+
+        ByteCode += " " + Instruction.operation[logical.Operation.Type];
+        return null;
     }
 
-    public object VisitCall(Expr.Call expression)
+    public object? VisitCall(Expr.Call call)
     {
-        throw new NotImplementedException();
+        return null;
     }
 
     public object VisitGrouping(Expr.Grouping expression)
@@ -57,9 +63,9 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor<Action>
 
     public object? VisitVariableExpression(Expr.VariableExpression expression)
     {
-        ByteCode.Add(Instruction.instruction[Instructions.PUSH]);
-        ByteCode.AddRange(ToByteArray(Environment.Get(expression.Name).ToString()!));
-        ByteCode.Add(Instruction.instruction[Instructions.LOAD]);
+        ByteCode += " " + Instruction.instruction[Instructions.PUSH];
+        ByteCode += " " + Environment.Get(expression.Name).ToString()!;
+        ByteCode += " " + Instruction.instruction[Instructions.GLOAD];
         return null;
     }
 
@@ -69,10 +75,10 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor<Action>
 
         CompileExpr(variable.initializer);
 
-        ByteCode.Add(Instruction.instruction[Instructions.PUSH]);
-        ByteCode.AddRange(ToByteArray(AddressCount.ToString()));
+        ByteCode += " " + Instruction.instruction[Instructions.PUSH];
+        ByteCode += " " + AddressCount.ToString();
 
-        ByteCode.Add(Instruction.instruction[Instructions.STORE]);
+        ByteCode += " " + Instruction.instruction[Instructions.GSTORE];
         AddressCount++;
         return null;
     }
@@ -83,22 +89,42 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor<Action>
 
         object address = Environment.Get(expression.Name);
 
-        ByteCode.Add(Instruction.instruction[Instructions.PUSH]);
-        ByteCode.AddRange(ToByteArray(address.ToString()!));
+        ByteCode += " " + Instruction.instruction[Instructions.PUSH];
+        ByteCode += " " + address.ToString()!;
 
-        ByteCode.Add(Instruction.instruction[Instructions.STORE]);
+        ByteCode += " " + Instruction.instruction[Instructions.GSTORE];
 
         return null;
     }
 
-    public Action? VisitBlock(Statement.Block Statement)
+    public Action? VisitBlock(Statement.Block block)
     {
-        throw new NotImplementedException();
+        CompileBlock(block.Statements, new CompilerEnv(Environment));
+        return null;
     }
 
-    public Action? VisitFunction(Statement.Function Statement)
+    public void CompileBlock(List<Statement> statements, CompilerEnv environment)
     {
-        throw new NotImplementedException();
+        CompilerEnv previous = Environment;
+
+        try
+        {
+            Environment = environment;
+
+            foreach (var statement in statements) statement.Accept(this);
+        }
+        finally
+        {
+            Environment = previous;
+        }
+    }
+
+    public Action? VisitFunction(Statement.Function function)
+    {
+        ByteCode += " </" + function.Name.Lexeme + ">";
+        CompileBlock(function.Body, Environment);
+
+        return null;
     }
 
     public Action? VisitIf(Statement.If Statement)
@@ -116,40 +142,25 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor<Action>
         throw new NotImplementedException();
     }
 
-    public Action? VisitReturn(Statement.Return Statement)
+    public Action? VisitReturn(Statement.Return statement)
     {
-        throw new NotImplementedException();
+        if (statement.Value != null)
+            CompileExpr(statement.Value);
+
+        ByteCode += " " + Instruction.instruction[Instructions.RET];
+
+        return null;
     }
 
     public Action? VisitExpression(Statement.Expression statement)
     {
         CompileExpr(statement.expression);
+        //ByteCode += " " + Instruction.instruction[Instructions.GSTORE];
         return null;
     }
 
     private object CompileExpr(Expr expr)
     {
         return expr.Accept(this);
-    }
-
-    private static byte[] ToByteArray(string str)
-    {
-        int nbr = int.Parse(str);
-
-        byte[] nbrArray = BitConverter.GetBytes(nbr);
-
-        if (BitConverter.IsLittleEndian)
-        {
-            Array.Reverse(nbrArray);
-        }
-
-        return nbrArray;
-    }
-
-    private static bool IsTruthy(object obj)
-    {
-        if (obj == null) return false;
-        if (obj is bool v) return v;
-        return true;
     }
 }
