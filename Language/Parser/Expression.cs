@@ -88,9 +88,9 @@ abstract class Expr
         }
     }
 
-    public class Call(Expr callee, Token paren, List<Expr> arguments) : Expr
+    public class Call(VariableExpression callee, Token paren, List<Expr> arguments) : Expr
     {
-        public readonly Expr Callee = callee;
+        public readonly VariableExpression Callee = callee;
         public readonly Token Paren = paren;
         public readonly List<Expr> Arguments = arguments;
         public override T Accept<T>(IVisitor<T> visitor)

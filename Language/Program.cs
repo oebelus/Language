@@ -14,38 +14,18 @@ namespace Language
 
             string code_1 =
             @"
-
-            let a = 10;
-
-            {
-                let a = 5;
-                let y = 7;
+            function div(a, b) {
+                return a / b; 
             }
 
-            a = 23;
+            function add(a, b) {
+                return a + b; 
+            }
+
+            div(10, 5);
+            add(7, 23);
             
             ";
-
-            /*
-
-                PUSH 10
-                PUSH ads
-                STORE
-
-                PUSH 7
-                PUSH ads
-                STORE
-
-            */
-
-            // string code_1 =
-            // @"
-            //     function sayHi(first, last) {
-            //         return ""first: "" + first + "", last: "" + last;
-            //     }
-
-            //     log sayHi(""Imane"", ""23"");
-            // ";
 
             Scanner _ = new(code_1);
 

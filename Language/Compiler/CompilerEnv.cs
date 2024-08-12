@@ -22,13 +22,13 @@ class CompilerEnv
         addresses.Add(name, value);
     }
 
-    public object Get(Token name)
+    public object? Get(Token name, bool isFunction)
     {
         if (IsDeclared(name)) return addresses[name.Lexeme];
 
-        else if (Enclosing != null) return Enclosing.Get(name);
+        else if (Enclosing != null) return Enclosing.Get(name, isFunction);
 
-        else return "Undefined Variable '" + name.Lexeme + "'.";
+        else return $"Undefined Variable '{name.Lexeme}'.";
     }
 
     public void Assign(Token name, object value)

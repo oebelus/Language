@@ -1,6 +1,7 @@
 interface ICallable
 {
     int Arity();
+    string Name();
     object? Call(Interpreter interpreter, List<object> arguments);
     object? Call(Compiler compiler, List<object> arguments);
 }
@@ -12,6 +13,11 @@ class LangFunction(Statement.Function declaration) : ICallable
     public int Arity()
     {
         return Declaration.Args.Count;
+    }
+
+    public string Name()
+    {
+        return Declaration.Name.Lexeme;
     }
 
     public object? Call(Interpreter interpreter, List<object> arguments)

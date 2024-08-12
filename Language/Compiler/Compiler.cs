@@ -1,7 +1,9 @@
 class Compiler : Expr.IVisitor<object>, Statement.IVisitor<Action>
 {
     public string ByteCode = "";
+    public string functions = "";
     private int AddressCount = 0;
+    private bool isFunction = false;
 
     public static readonly CompilerEnv Globals = new();
     private static CompilerEnv Environment = Globals;
@@ -13,13 +15,16 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor<Action>
             statement.Accept(this);
         }
 
-        return ByteCode.Trim();
+        return $"{ByteCode.Trim()} HALT {functions.Trim()}";
     }
 
     public object? VisitLiteral(Expr.Literal literal)
     {
-        ByteCode += " " + Instruction.instruction[Instructions.PUSH];
-        ByteCode += " " + literal.Value!.ToString()!;
+        if (!isFunction)
+        {
+            ByteCode += $" {Instruction.instruction[Instructions.PUSH]}";
+            ByteCode += $" {literal.Value}";
+        }
 
         return null;
     }
@@ -29,7 +34,8 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor<Action>
         CompileExpr(binary.Left);
         CompileExpr(binary.Right);
 
-        ByteCode += " " + Instruction.operation[binary.Operation.Type];
+        if (!isFunction) ByteCode += $" {Instruction.operation[binary.Operation.Type]}";
+        else functions += $" {Instruction.operation[binary.Operation.Type]}";
         return null;
     }
 
@@ -37,7 +43,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor<Action>
     {
         CompileExpr(unary.Right);
 
-        ByteCode += " " + Instruction.operation[unary.Operation.Type];
+        ByteCode += $" {Instruction.operation[unary.Operation.Type]}";
 
         return null;
     }
@@ -47,12 +53,8 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor<Action>
         CompileExpr(logical.Left);
         CompileExpr(logical.Right);
 
-        ByteCode += " " + Instruction.operation[logical.Operation.Type];
-        return null;
-    }
+        ByteCode += $" {Instruction.operation[logical.Operation.Type]}";
 
-    public object? VisitCall(Expr.Call call)
-    {
         return null;
     }
 
@@ -63,9 +65,13 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor<Action>
 
     public object? VisitVariableExpression(Expr.VariableExpression expression)
     {
-        ByteCode += " " + Instruction.instruction[Instructions.PUSH];
-        ByteCode += " " + Environment.Get(expression.Name).ToString()!;
-        ByteCode += " " + Instruction.instruction[Instructions.GLOAD];
+        if (!isFunction)
+        {
+            ByteCode += $" {Instruction.instruction[Instructions.PUSH]}";
+            ByteCode += $" {Environment.Get(expression.Name, isFunction)?.ToString()}";
+            ByteCode += $" {Instruction.instruction[Instructions.GLOAD]}";
+        }
+
         return null;
     }
 
@@ -75,8 +81,8 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor<Action>
 
         CompileExpr(variable.initializer);
 
-        ByteCode += " " + Instruction.instruction[Instructions.PUSH];
-        ByteCode += " " + AddressCount.ToString();
+        ByteCode += $" {Instruction.instruction[Instructions.PUSH]}";
+        ByteCode += $" {AddressCount}";
 
         ByteCode += " " + Instruction.instruction[Instructions.GSTORE];
         AddressCount++;
@@ -87,12 +93,12 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor<Action>
     {
         CompileExpr(expression.Value);
 
-        object address = Environment.Get(expression.Name);
+        object address = Environment.Get(expression.Name, isFunction)!;
 
-        ByteCode += " " + Instruction.instruction[Instructions.PUSH];
-        ByteCode += " " + address.ToString()!;
+        ByteCode += $" {Instruction.instruction[Instructions.PUSH]}";
+        ByteCode += $" {address}";
 
-        ByteCode += " " + Instruction.instruction[Instructions.GSTORE];
+        ByteCode += $" {Instruction.instruction[Instructions.GSTORE]}";
 
         return null;
     }
@@ -121,9 +127,25 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor<Action>
 
     public Action? VisitFunction(Statement.Function function)
     {
-        ByteCode += " </" + function.Name.Lexeme + ">";
-        CompileBlock(function.Body, Environment);
+        functions += $" </{function.Name.Lexeme}>";
 
+        isFunction = true;
+        CompileBlock(function.Body, Environment);
+        isFunction = false;
+
+        Environment.Define(function.Name.Lexeme, function);
+
+        return null;
+    }
+
+    public object? VisitCall(Expr.Call call)
+    {
+        foreach (Expr argument in call.Arguments)
+        {
+            CompileExpr(argument);
+        }
+
+        ByteCode += $" CALL <{call.Callee.Name.Lexeme}>";
         return null;
     }
 
@@ -147,7 +169,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor<Action>
         if (statement.Value != null)
             CompileExpr(statement.Value);
 
-        ByteCode += " " + Instruction.instruction[Instructions.RET];
+        functions += $" {Instruction.instruction[Instructions.RET]}";
 
         return null;
     }
@@ -155,7 +177,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor<Action>
     public Action? VisitExpression(Statement.Expression statement)
     {
         CompileExpr(statement.expression);
-        //ByteCode += " " + Instruction.instruction[Instructions.GSTORE];
+
         return null;
     }
 

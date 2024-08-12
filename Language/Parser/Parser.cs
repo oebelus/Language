@@ -71,7 +71,7 @@ class Parser(List<Token> tokens)
         return ExpressionStatement();
     }
 
-    private Statement ReturnStatement()
+    private Statement.Return ReturnStatement()
     {
         Token keyword = Previous();
         Expr? value = null;
@@ -308,13 +308,8 @@ class Parser(List<Token> tokens)
     {
         Expr expr = Primary();
 
-        while (true)
-        {
-            if (Match(TokenType.LEFT_PAREN))
-                expr = FinishCall(expr);
-            else
-                break;
-        }
+        while (Match(TokenType.LEFT_PAREN))
+            expr = FinishCall(expr);
 
         return expr;
     }
@@ -339,7 +334,7 @@ class Parser(List<Token> tokens)
 
         Token paren = Consume(TokenType.RIGHT_PAREN);
 
-        return new Expr.Call(expr, paren, arguments);
+        return new Expr.Call((Expr.VariableExpression)expr, paren, arguments);
     }
 
     private Expr Primary()
