@@ -68,6 +68,8 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor<Action>
                 return left != right;
             case TokenType.EQUAL_EQUAL:
                 return left == right;
+            default:
+                break;
         }
         return "null";
     }

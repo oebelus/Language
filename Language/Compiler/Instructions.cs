@@ -23,5 +23,7 @@ class Instruction
         {Instructions.STORE, "STORE"},
         {Instructions.GSTORE, "GSTORE"},
         {Instructions.RET, "RET"},
+        {Instructions.CJUMP, "CJUMP"},
+        {Instructions.JUMP, "JUMP"},
     };
 }

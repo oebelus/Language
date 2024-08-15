@@ -14,18 +14,48 @@ namespace Language
 
             string code_1 =
             @"
-            function div(a, b) {
-                return a / b; 
-            }
+            let a = 5;
+            let b = 5;
+            let c = 7;
 
-            function add(a, b) {
-                return a + b; 
-            }
-
-            div(10, 5);
-            add(7, 23);
-            
+            if (a == b) c = 1;
+            else c = 0;
             ";
+
+            /*
+                PUSH 5
+                PUSH 0
+                GSTORE
+
+                PUSH 5
+                PUSH 1
+                GSTORE
+
+                PUSH 7
+                PUSH 2
+                GSTORE
+
+                PUSH 0
+                GLOAD
+
+                PUSH 1
+                GLOAD
+
+                EQ
+
+                PUSH 1
+                PUSH 2
+                GSTORE
+
+                CJUMP <LOC>
+
+                HALT
+
+                LOC:
+                PUSH 0
+                PUSH 2
+                GSTORE
+            */
 
             Scanner _ = new(code_1);
 

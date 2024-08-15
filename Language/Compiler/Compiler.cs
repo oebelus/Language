@@ -81,10 +81,8 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor<Action>
 
         CompileExpr(variable.initializer);
 
-        ByteCode += $" {Instruction.instruction[Instructions.PUSH]}";
-        ByteCode += $" {AddressCount}";
+        ByteCode += $" {Instruction.instruction[Instructions.PUSH]} {AddressCount} {Instruction.instruction[Instructions.GSTORE]}";
 
-        ByteCode += " " + Instruction.instruction[Instructions.GSTORE];
         AddressCount++;
         return null;
     }
@@ -95,10 +93,11 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor<Action>
 
         object address = Environment.Get(expression.Name, isFunction)!;
 
-        ByteCode += $" {Instruction.instruction[Instructions.PUSH]}";
-        ByteCode += $" {address}";
+        if (!isFunction)
+            ByteCode += $" {Instruction.instruction[Instructions.PUSH]} {address} {Instruction.instruction[Instructions.GSTORE]}";
 
-        ByteCode += $" {Instruction.instruction[Instructions.GSTORE]}";
+        else
+            functions += $" {Instruction.instruction[Instructions.PUSH]} {address} {Instruction.instruction[Instructions.GSTORE]}";
 
         return null;
     }
@@ -151,7 +150,19 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor<Action>
 
     public Action? VisitIf(Statement.If Statement)
     {
-        throw new NotImplementedException();
+        string label = GenerateRandomString();
+        CompileExpr(Statement.Condition);
+
+        Statement.ThenBranch.Accept(this);
+
+        ByteCode += $" {Instruction.instruction[Instructions.CJUMP]} <{label}>";
+
+        functions += $" {label}:";
+        isFunction = true;
+        Statement.ElseBranch.Accept(this);
+        isFunction = false;
+
+        return null;
     }
 
     public Action? VisitLog(Statement.Log Statement)
@@ -184,5 +195,14 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor<Action>
     private object CompileExpr(Expr expr)
     {
         return expr.Accept(this);
+    }
+
+    private static string GenerateRandomString()
+    {
+        Random random = new();
+        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+        return new string(Enumerable.Repeat(chars, 5)
+            .Select(s => s[random.Next(s.Length)]).ToArray());
     }
 }
