@@ -4,6 +4,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor<Action>
     public string functions = "";
     private int AddressCount = 0;
     private bool isFunction = false;
+    private bool isCondition = false;
 
     public static readonly CompilerEnv Globals = new();
     private static CompilerEnv Environment = Globals;
@@ -20,11 +21,10 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor<Action>
 
     public object? VisitLiteral(Expr.Literal literal)
     {
-        if (!isFunction)
-        {
-            ByteCode += $" {Instruction.instruction[Instructions.PUSH]}";
-            ByteCode += $" {literal.Value}";
-        }
+
+        ByteCode += !isFunction && !isCondition ? $" {Instruction.instruction[Instructions.PUSH]} {literal.Value}" : string.Empty;
+
+        functions += isCondition ? $" {Instruction.instruction[Instructions.PUSH]} {literal.Value}" : string.Empty;
 
         return null;
     }
@@ -66,11 +66,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor<Action>
     public object? VisitVariableExpression(Expr.VariableExpression expression)
     {
         if (!isFunction)
-        {
-            ByteCode += $" {Instruction.instruction[Instructions.PUSH]}";
-            ByteCode += $" {Environment.Get(expression.Name, isFunction)?.ToString()}";
-            ByteCode += $" {Instruction.instruction[Instructions.GLOAD]}";
-        }
+            ByteCode += $" {Instruction.instruction[Instructions.PUSH]} {Environment.Get(expression.Name, isFunction)?.ToString()} {Instruction.instruction[Instructions.GLOAD]}";
 
         return null;
     }
@@ -93,7 +89,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor<Action>
 
         object address = Environment.Get(expression.Name, isFunction)!;
 
-        if (!isFunction)
+        if (!isFunction && !isCondition)
             ByteCode += $" {Instruction.instruction[Instructions.PUSH]} {address} {Instruction.instruction[Instructions.GSTORE]}";
 
         else
@@ -158,9 +154,10 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor<Action>
         ByteCode += $" {Instruction.instruction[Instructions.CJUMP]} <{label}>";
 
         functions += $" {label}:";
-        isFunction = true;
+
+        isCondition = true;
         Statement.ElseBranch.Accept(this);
-        isFunction = false;
+        isCondition = false;
 
         return null;
     }
