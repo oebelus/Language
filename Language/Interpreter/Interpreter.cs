@@ -1,4 +1,4 @@
-class Interpreter : Expr.IVisitor<object>, Statement.IVisitor<Action>
+class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
 {
     public static readonly InterpreterEnv Globals = new();
     private InterpreterEnv Environment = Globals;
@@ -32,10 +32,9 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor<Action>
         }
     }
 
-    public Action? VisitBlock(Statement.Block statement)
+    public void VisitBlock(Statement.Block statement)
     {
         ExecuteBlock(statement.Statements, new InterpreterEnv(Environment));
-        return null;
     }
 
 
@@ -119,17 +118,15 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor<Action>
         return value; // log a = 2; assign can be nested inside other expressions
     }
 
-    public Action? VisitExpression(Statement.Expression statement)
+    public void VisitExpression(Statement.Expression statement)
     {
         Evaluate(statement.expression);
-        return null;
     }
 
-    public Action? VisitLog(Statement.Log statement)
+    public void VisitLog(Statement.Log statement)
     {
         object value = Evaluate(statement.expression);
         Console.WriteLine(Stringify(value));
-        return null;
     }
 
     public object VisitCall(Expr.Call expression)
@@ -151,32 +148,27 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor<Action>
         return function.Call(this, arguments)!;
     }
 
-    public Action? VisitFunction(Statement.Function statement)
+    public void VisitFunction(Statement.Function statement)
     {
         LangFunction function = new(statement);
         Environment.Define(statement.Name.Lexeme, function);
-        return null;
     }
 
-    public Action? VisitIf(Statement.If statement)
+    public void VisitIf(Statement.If statement)
     {
         if (IsTruthy(Evaluate(statement.Condition)))
             Execute(statement.ThenBranch);
         else if (statement.ElseBranch != null)
             Execute(statement.ElseBranch);
-
-        return null;
     }
 
-    public Action? VisitWhile(Statement.While statement)
+    public void VisitWhile(Statement.While statement)
     {
         while (IsTruthy(Evaluate(statement.Condition)))
             Execute(statement.Body);
-
-        return null;
     }
 
-    public Action? VisitReturn(Statement.Return statement)
+    public void VisitReturn(Statement.Return statement)
     {
         object? value = null;
 
@@ -185,7 +177,7 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor<Action>
         throw new Return(value!);
     }
 
-    public Action? VisitVariableStatement(Statement.VariableStatement variable)
+    public void VisitVariableStatement(Statement.VariableStatement variable)
     {
         object? value = null;
 
@@ -197,7 +189,6 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor<Action>
 
         if (variable.initializer != null) value = Evaluate(variable.initializer);
         Environment.Define(variable.name.Lexeme, value!);
-        return null;
     }
 
     // smol hint: Evaluate(variable.initializer) goes to this

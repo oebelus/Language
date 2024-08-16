@@ -1,7 +1,7 @@
-class Compiler : Expr.IVisitor<object>, Statement.IVisitor<Action>
+class Compiler : Expr.IVisitor<object>, Statement.IVisitor
 {
     public string ByteCode = "";
-    public string functions = "";
+    public string labels = "";
     private int AddressCount = 0;
     private bool isFunction = false;
     private bool isCondition = false;
@@ -16,7 +16,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor<Action>
             statement.Accept(this);
         }
 
-        return $"{ByteCode.Trim()} HALT {functions.Trim()}";
+        return $"{ByteCode.Trim()} HALT {labels.Trim()}";
     }
 
     public object? VisitLiteral(Expr.Literal literal)
@@ -24,7 +24,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor<Action>
 
         ByteCode += !isFunction && !isCondition ? $" {Instruction.instruction[Instructions.PUSH]} {literal.Value}" : string.Empty;
 
-        functions += isCondition ? $" {Instruction.instruction[Instructions.PUSH]} {literal.Value}" : string.Empty;
+        labels += isCondition ? $" {Instruction.instruction[Instructions.PUSH]} {literal.Value}" : string.Empty;
 
         return null;
     }
@@ -35,7 +35,8 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor<Action>
         CompileExpr(binary.Right);
 
         if (!isFunction) ByteCode += $" {Instruction.operation[binary.Operation.Type]}";
-        else functions += $" {Instruction.operation[binary.Operation.Type]}";
+        else labels += $" {Instruction.operation[binary.Operation.Type]}";
+        
         return null;
     }
 
@@ -45,7 +46,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor<Action>
 
         ByteCode += $" {Instruction.operation[unary.Operation.Type]}";
 
-        return null;
+        return null;        
     }
 
     public object? VisitLogical(Expr.Logical logical)
@@ -54,8 +55,8 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor<Action>
         CompileExpr(logical.Right);
 
         ByteCode += $" {Instruction.operation[logical.Operation.Type]}";
-
-        return null;
+        
+        return null;        
     }
 
     public object VisitGrouping(Expr.Grouping expression)
@@ -68,10 +69,10 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor<Action>
         if (!isFunction)
             ByteCode += $" {Instruction.instruction[Instructions.PUSH]} {Environment.Get(expression.Name, isFunction)?.ToString()} {Instruction.instruction[Instructions.GLOAD]}";
 
-        return null;
+        return null;        
     }
 
-    public Action? VisitVariableStatement(Statement.VariableStatement variable)
+    public void VisitVariableStatement(Statement.VariableStatement variable)
     {
         Environment.Define(variable.name.Lexeme, AddressCount);
 
@@ -80,7 +81,6 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor<Action>
         ByteCode += $" {Instruction.instruction[Instructions.PUSH]} {AddressCount} {Instruction.instruction[Instructions.GSTORE]}";
 
         AddressCount++;
-        return null;
     }
 
     public object? VisitAssign(Expr.Assign expression)
@@ -93,15 +93,14 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor<Action>
             ByteCode += $" {Instruction.instruction[Instructions.PUSH]} {address} {Instruction.instruction[Instructions.GSTORE]}";
 
         else
-            functions += $" {Instruction.instruction[Instructions.PUSH]} {address} {Instruction.instruction[Instructions.GSTORE]}";
+            labels += $" {Instruction.instruction[Instructions.PUSH]} {address} {Instruction.instruction[Instructions.GSTORE]}";
 
         return null;
     }
 
-    public Action? VisitBlock(Statement.Block block)
+    public void VisitBlock(Statement.Block block)
     {
         CompileBlock(block.Statements, new CompilerEnv(Environment));
-        return null;
     }
 
     public void CompileBlock(List<Statement> statements, CompilerEnv environment)
@@ -120,17 +119,15 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor<Action>
         }
     }
 
-    public Action? VisitFunction(Statement.Function function)
+    public void VisitFunction(Statement.Function function)
     {
-        functions += $" </{function.Name.Lexeme}>";
+        labels += $" </{function.Name.Lexeme}>";
 
         isFunction = true;
         CompileBlock(function.Body, Environment);
         isFunction = false;
 
         Environment.Define(function.Name.Lexeme, function);
-
-        return null;
     }
 
     public object? VisitCall(Expr.Call call)
@@ -144,49 +141,52 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor<Action>
         return null;
     }
 
-    public Action? VisitIf(Statement.If Statement)
+    public void VisitIf(Statement.If Statement)
     {
-        string label = GenerateRandomString();
+        string label_1 = GenerateRandomString();
+        string label_2 = GenerateRandomString();
         CompileExpr(Statement.Condition);
+
+        ByteCode += $" {Instruction.instruction[Instructions.CJUMP]} <{label_1}>";
 
         Statement.ThenBranch.Accept(this);
 
-        ByteCode += $" {Instruction.instruction[Instructions.CJUMP]} <{label}>";
+        ByteCode += $" {Instruction.instruction[Instructions.CJUMP]} <{label_2}>";
 
-        functions += $" {label}:";
+        Statement.ElseBranch.Accept(this);
 
         isCondition = true;
+        labels += $" {label_1}:";
+
+        Statement.ThenBranch.Accept(this);
+
+        labels += $" {label_2}:";
+
         Statement.ElseBranch.Accept(this);
         isCondition = false;
-
-        return null;
     }
 
-    public Action? VisitLog(Statement.Log Statement)
+    public void VisitLog(Statement.Log Statement)
     {
         throw new NotImplementedException();
     }
 
-    public Action? VisitWhile(Statement.While Statement)
+    public void VisitWhile(Statement.While Statement)
     {
         throw new NotImplementedException();
     }
 
-    public Action? VisitReturn(Statement.Return statement)
+    public void VisitReturn(Statement.Return statement)
     {
         if (statement.Value != null)
             CompileExpr(statement.Value);
 
-        functions += $" {Instruction.instruction[Instructions.RET]}";
-
-        return null;
+        labels += $" {Instruction.instruction[Instructions.RET]}";
     }
 
-    public Action? VisitExpression(Statement.Expression statement)
+    public void VisitExpression(Statement.Expression statement)
     {
         CompileExpr(statement.expression);
-
-        return null;
     }
 
     private object CompileExpr(Expr expr)
