@@ -18,8 +18,8 @@ namespace Language
             let b = 5;
             let c = 7;
 
-            if (a == b) c = 1;
-            else c = 0;
+            if (a == b) c = 23;
+            else c = 69;
             ";
 
             /*

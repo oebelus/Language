@@ -4,7 +4,6 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
     public string labels = "";
     private int AddressCount = 0;
     private bool isFunction = false;
-    private bool isCondition = false;
 
     public static readonly CompilerEnv Globals = new();
     private static CompilerEnv Environment = Globals;
@@ -21,10 +20,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
 
     public object? VisitLiteral(Expr.Literal literal)
     {
-
-        ByteCode += !isFunction && !isCondition ? $" {Instruction.instruction[Instructions.PUSH]} {literal.Value}" : string.Empty;
-
-        labels += isCondition ? $" {Instruction.instruction[Instructions.PUSH]} {literal.Value}" : string.Empty;
+        Append($" {Instruction.instruction[Instructions.PUSH]} {literal.Value}");
 
         return null;
     }
@@ -34,8 +30,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
         CompileExpr(binary.Left);
         CompileExpr(binary.Right);
 
-        if (!isFunction) ByteCode += $" {Instruction.operation[binary.Operation.Type]}";
-        else labels += $" {Instruction.operation[binary.Operation.Type]}";
+        Append($" {Instruction.operation[binary.Operation.Type]}");
         
         return null;
     }
@@ -44,7 +39,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
     {
         CompileExpr(unary.Right);
 
-        ByteCode += $" {Instruction.operation[unary.Operation.Type]}";
+        Append($" {Instruction.operation[unary.Operation.Type]}");
 
         return null;        
     }
@@ -54,7 +49,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
         CompileExpr(logical.Left);
         CompileExpr(logical.Right);
 
-        ByteCode += $" {Instruction.operation[logical.Operation.Type]}";
+        Append($" {Instruction.operation[logical.Operation.Type]}");
         
         return null;        
     }
@@ -66,8 +61,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
 
     public object? VisitVariableExpression(Expr.VariableExpression expression)
     {
-        if (!isFunction)
-            ByteCode += $" {Instruction.instruction[Instructions.PUSH]} {Environment.Get(expression.Name, isFunction)?.ToString()} {Instruction.instruction[Instructions.GLOAD]}";
+        Append($" {Instruction.instruction[Instructions.PUSH]} {Environment.Get(expression.Name, isFunction)?.ToString()} {Instruction.instruction[Instructions.GLOAD]}");
 
         return null;        
     }
@@ -78,7 +72,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
 
         CompileExpr(variable.initializer);
 
-        ByteCode += $" {Instruction.instruction[Instructions.PUSH]} {AddressCount} {Instruction.instruction[Instructions.GSTORE]}";
+        Append($" {Instruction.instruction[Instructions.PUSH]} {AddressCount} {Instruction.instruction[Instructions.GSTORE]}");
 
         AddressCount++;
     }
@@ -89,11 +83,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
 
         object address = Environment.Get(expression.Name, isFunction)!;
 
-        if (!isFunction && !isCondition)
-            ByteCode += $" {Instruction.instruction[Instructions.PUSH]} {address} {Instruction.instruction[Instructions.GSTORE]}";
-
-        else
-            labels += $" {Instruction.instruction[Instructions.PUSH]} {address} {Instruction.instruction[Instructions.GSTORE]}";
+        Append($" {Instruction.instruction[Instructions.PUSH]} {address} {Instruction.instruction[Instructions.GSTORE]}");
 
         return null;
     }
@@ -137,7 +127,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
             CompileExpr(argument);
         }
 
-        ByteCode += $" CALL <{call.Callee.Name.Lexeme}>";
+        Append($" CALL <{call.Callee.Name.Lexeme}>");
         return null;
     }
 
@@ -145,25 +135,22 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
     {
         string label_1 = GenerateRandomString();
         string label_2 = GenerateRandomString();
+
         CompileExpr(Statement.Condition);
 
-        ByteCode += $" {Instruction.instruction[Instructions.CJUMP]} <{label_1}>";
-
-        Statement.ThenBranch.Accept(this);
-
-        ByteCode += $" {Instruction.instruction[Instructions.CJUMP]} <{label_2}>";
+        Append($" {Instruction.instruction[Instructions.CJUMP]} <{label_1}>");
 
         Statement.ElseBranch.Accept(this);
 
-        isCondition = true;
         labels += $" {label_1}:";
 
+        isFunction = true;
         Statement.ThenBranch.Accept(this);
+        isFunction = false; 
+        
+        Append($" {Instruction.instruction[Instructions.CJUMP]} <{label_2}>");
 
-        labels += $" {label_2}:";
-
-        Statement.ElseBranch.Accept(this);
-        isCondition = false;
+        Append($" {label_2}:");
     }
 
     public void VisitLog(Statement.Log Statement)
@@ -181,7 +168,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
         if (statement.Value != null)
             CompileExpr(statement.Value);
 
-        labels += $" {Instruction.instruction[Instructions.RET]}";
+        Append($" {Instruction.instruction[Instructions.RET]}");
     }
 
     public void VisitExpression(Statement.Expression statement)
@@ -201,5 +188,12 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
 
         return new string(Enumerable.Repeat(chars, 5)
             .Select(s => s[random.Next(s.Length)]).ToArray());
+    }
+
+    private void Append(string code) {
+        if (isFunction)
+            labels += code; 
+        else
+            ByteCode += code;
     }
 }
