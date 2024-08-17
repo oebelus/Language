@@ -25,5 +25,6 @@ class Instruction
         {Instructions.RET, "RET"},
         {Instructions.CJUMP, "CJUMP"},
         {Instructions.JUMP, "JUMP"},
+        {Instructions.EQ, "EQ"},
     };
 }

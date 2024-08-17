@@ -142,12 +142,12 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
 
         Statement.ElseBranch.Accept(this);
 
-        labels += $" {label_1}:";
+        Append($" {label_1}:");
 
         isFunction = true;
         Statement.ThenBranch.Accept(this);
         isFunction = false; 
-        
+
         Append($" {Instruction.instruction[Instructions.CJUMP]} <{label_2}>");
 
         Append($" {label_2}:");
@@ -160,7 +160,20 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
 
     public void VisitWhile(Statement.While Statement)
     {
-        throw new NotImplementedException();
+        string start_label = GenerateRandomString();
+        string end_label = GenerateRandomString();
+
+        Append($" {start_label}:");
+        CompileExpr(Statement.Condition);
+
+        Append($" {Instruction.instruction[Instructions.PUSH]} 0 {Instruction.instruction[Instructions.EQ]}");
+        Append($" {Instruction.instruction[Instructions.CJUMP]} <{end_label}>");
+
+        Statement.Body.Accept(this);
+
+        Append($" {Instruction.instruction[Instructions.CJUMP]} <{start_label}>");
+
+        Append($" {end_label}");
     }
 
     public void VisitReturn(Statement.Return statement)

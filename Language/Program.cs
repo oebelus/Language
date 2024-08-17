@@ -14,48 +14,12 @@ namespace Language
 
             string code_1 =
             @"
-            let a = 5;
-            let b = 5;
-            let c = 7;
+            let a = 0;
 
-            if (a == b) c = 23;
-            else c = 69;
+            while (a < 100) {
+                a = a + 1;
+            }
             ";
-
-            /*
-                PUSH 5
-                PUSH 0
-                GSTORE
-
-                PUSH 5
-                PUSH 1
-                GSTORE
-
-                PUSH 7
-                PUSH 2
-                GSTORE
-
-                PUSH 0
-                GLOAD
-
-                PUSH 1
-                GLOAD
-
-                EQ
-
-                PUSH 1
-                PUSH 2
-                GSTORE
-
-                CJUMP <LOC>
-
-                HALT
-
-                LOC:
-                PUSH 0
-                PUSH 2
-                GSTORE
-            */
 
             Scanner _ = new(code_1);
 
