@@ -14,9 +14,12 @@ namespace Language
 
             string code_1 =
             @"
-            let a = 0;
+            let a = 5;
+            let b = 5;
+            let c = 7;
 
-            while (a < 100) a = a + 1;
+            if (a == b) c = 1;
+            else c = 0;
             ";
 
             /*

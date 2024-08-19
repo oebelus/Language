@@ -1,27 +1,27 @@
 abstract class Statement
 {
-    public interface IVisitor<T>
+    public interface IVisitor
     {
-        T? VisitBlock(Block Statement);
-        T? VisitFunction(Function Statement);
-        T? VisitIf(If Statement);
-        T? VisitLog(Log Statement);
-        T? VisitWhile(While Statement);
-        T? VisitReturn(Return Statement);
-        T? VisitExpression(Expression Statement);
-        T? VisitVariableStatement(VariableStatement statement);
+        void VisitBlock(Block Statement);
+        void VisitFunction(Function Statement);
+        void VisitIf(If Statement);
+        void VisitLog(Log Statement);
+        void VisitWhile(While Statement);
+        void VisitReturn(Return Statement);
+        void VisitExpression(Expression Statement);
+        void VisitVariableStatement(VariableStatement statement);
     }
 
-    public abstract T Accept<T>(IVisitor<T> visitor);
+    public abstract void Accept(IVisitor visitor);
 
     public class Block(List<Statement> statements) : Statement
     {
 
         public readonly List<Statement> Statements = statements;
 
-        public override T Accept<T>(IVisitor<T> visitor)
+        public override void Accept(IVisitor visitor)
         {
-            return visitor.VisitBlock(this)!;
+            visitor.VisitBlock(this);
         }
     }
 
@@ -29,9 +29,9 @@ abstract class Statement
     {
         public readonly Expr expression = expression;
 
-        public override T Accept<T>(IVisitor<T> visitor)
+        public override void Accept(IVisitor visitor)
         {
-            return visitor.VisitExpression(this)!;
+            visitor.VisitExpression(this);
         }
     }
 
@@ -41,9 +41,9 @@ abstract class Statement
         public readonly List<Token> Args = args;
         public readonly List<Statement> Body = body;
 
-        public override T Accept<T>(IVisitor<T> visitor)
+        public override void Accept(IVisitor visitor)
         {
-            return visitor.VisitFunction(this)!;
+            visitor.VisitFunction(this);
         }
     }
 
@@ -53,9 +53,9 @@ abstract class Statement
         public readonly Statement ThenBranch = thenBranch;
         public readonly Statement ElseBranch = elseBranch;
 
-        public override T Accept<T>(IVisitor<T> visitor)
+        public override void Accept(IVisitor visitor)
         {
-            return visitor.VisitIf(this)!;
+            visitor.VisitIf(this);
         }
     }
 
@@ -64,9 +64,9 @@ abstract class Statement
 
         public readonly Expr expression = expression;
 
-        public override T Accept<T>(IVisitor<T> visitor)
+        public override void Accept(IVisitor visitor)
         {
-            return visitor.VisitLog(this)!;
+            visitor.VisitLog(this);
         }
     }
 
@@ -76,9 +76,9 @@ abstract class Statement
         public readonly Expr Condition = condition;
         public readonly Statement Body = body;
 
-        public override T Accept<T>(IVisitor<T> visitor)
+        public override void Accept(IVisitor visitor)
         {
-            return visitor.VisitWhile(this)!;
+            visitor.VisitWhile(this);
         }
     }
 
@@ -87,9 +87,9 @@ abstract class Statement
         public readonly Token Keyworkd = keyword;
         public readonly Expr? Value = value;
 
-        public override T Accept<T>(IVisitor<T> visitor)
+        public override void Accept(IVisitor visitor)
         {
-            return visitor.VisitReturn(this)!;
+            visitor.VisitReturn(this);
         }
     }
 
@@ -98,9 +98,9 @@ abstract class Statement
         public readonly Token name = name;
         public readonly Expr initializer = initializer;
 
-        public override T Accept<T>(IVisitor<T> visitor)
+        public override void Accept(IVisitor visitor)
         {
-            return visitor.VisitVariableStatement(this)!;
+            visitor.VisitVariableStatement(this);
         }
     }
 }
