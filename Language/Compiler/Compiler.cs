@@ -31,7 +31,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
         CompileExpr(binary.Right);
 
         Append($" {Instruction.operation[binary.Operation.Type]}");
-        
+
         return null;
     }
 
@@ -41,7 +41,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
 
         Append($" {Instruction.operation[unary.Operation.Type]}");
 
-        return null;        
+        return null;
     }
 
     public object? VisitLogical(Expr.Logical logical)
@@ -50,8 +50,8 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
         CompileExpr(logical.Right);
 
         Append($" {Instruction.operation[logical.Operation.Type]}");
-        
-        return null;        
+
+        return null;
     }
 
     public object VisitGrouping(Expr.Grouping expression)
@@ -61,9 +61,9 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
 
     public object? VisitVariableExpression(Expr.VariableExpression expression)
     {
-        Append($" {Instruction.instruction[Instructions.PUSH]} {Environment.Get(expression.Name, isFunction)?.ToString()} {Instruction.instruction[Instructions.GLOAD]}");
+        Append($" {Instruction.instruction[Instructions.PUSH]} {Environment.Get(expression.Name, isFunction)?.ToString()} {Instruction.instruction[Instructions.LOAD]}");
 
-        return null;        
+        return null;
     }
 
     public void VisitVariableStatement(Statement.VariableStatement variable)
@@ -72,7 +72,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
 
         CompileExpr(variable.initializer);
 
-        Append($" {Instruction.instruction[Instructions.PUSH]} {AddressCount} {Instruction.instruction[Instructions.GSTORE]}");
+        Append($" {Instruction.instruction[Instructions.PUSH]} {AddressCount} {Instruction.instruction[Instructions.STORE]}");
 
         AddressCount++;
     }
@@ -83,7 +83,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
 
         object address = Environment.Get(expression.Name, isFunction)!;
 
-        Append($" {Instruction.instruction[Instructions.PUSH]} {address} {Instruction.instruction[Instructions.GSTORE]}");
+        Append($" {Instruction.instruction[Instructions.PUSH]} {address} {Instruction.instruction[Instructions.STORE]}");
 
         return null;
     }
@@ -136,20 +136,24 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
         string label_1 = GenerateRandomString();
         string label_2 = GenerateRandomString();
 
+        // Compiling condition
         CompileExpr(Statement.Condition);
 
+        // CJUMP label_1
         Append($" {Instruction.instruction[Instructions.CJUMP]} <{label_1}>");
 
+        // if false: compiling ElseBranch
         Statement.ElseBranch.Accept(this);
 
+        Append($" {Instruction.instruction[Instructions.JUMP]} <{label_2}>");
+
+        // if true: CJUMP here
         Append($" {label_1}:");
-
-        isFunction = true;
         Statement.ThenBranch.Accept(this);
-        isFunction = false; 
 
-        Append($" {Instruction.instruction[Instructions.CJUMP]} <{label_2}>");
+        Append($" {Instruction.instruction[Instructions.JUMP]} <{label_2}>");
 
+        // Label_2
         Append($" {label_2}:");
     }
 
@@ -171,9 +175,9 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
 
         Statement.Body.Accept(this);
 
-        Append($" {Instruction.instruction[Instructions.CJUMP]} <{start_label}>");
+        Append($" {Instruction.instruction[Instructions.JUMP]} <{start_label}>");
 
-        Append($" {end_label}");
+        Append($" {end_label}:");
     }
 
     public void VisitReturn(Statement.Return statement)
@@ -203,9 +207,10 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
             .Select(s => s[random.Next(s.Length)]).ToArray());
     }
 
-    private void Append(string code) {
+    private void Append(string code)
+    {
         if (isFunction)
-            labels += code; 
+            labels += code;
         else
             ByteCode += code;
     }
