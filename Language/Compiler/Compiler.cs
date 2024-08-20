@@ -111,17 +111,32 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
 
     public void VisitFunction(Statement.Function function)
     {
-        labels += $" </{function.Name.Lexeme}>";
+        Environment.Define(function.Name.Lexeme, function);
+
+        foreach (var arg in function.Args)
+        {
+            Environment.Define(arg.Lexeme, AddressCount);
+            AddressCount++;
+        }
+
+        int argsLength = function.Args.Count;
 
         isFunction = true;
+        Append($" {function.Name.Lexeme}:");
+        for (int i = 0; i < argsLength; i++)
+        {
+            object address = Environment.Get(function.Args[i], isFunction)!;
+            Append($" {Instruction.instruction[Instructions.PUSH]} {address} {Instruction.instruction[Instructions.STORE]}");
+            AddressCount++;
+        }
         CompileBlock(function.Body, Environment);
         isFunction = false;
-
-        Environment.Define(function.Name.Lexeme, function);
     }
 
     public object? VisitCall(Expr.Call call)
     {
+        call.Arguments.Reverse();
+
         foreach (Expr argument in call.Arguments)
         {
             CompileExpr(argument);
