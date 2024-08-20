@@ -31,7 +31,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
         CompileExpr(binary.Right);
 
         Append($" {Instruction.operation[binary.Operation.Type]}");
-        
+
         return null;
     }
 
@@ -41,7 +41,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
 
         Append($" {Instruction.operation[unary.Operation.Type]}");
 
-        return null;        
+        return null;
     }
 
     public object? VisitLogical(Expr.Logical logical)
@@ -50,8 +50,8 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
         CompileExpr(logical.Right);
 
         Append($" {Instruction.operation[logical.Operation.Type]}");
-        
-        return null;        
+
+        return null;
     }
 
     public object VisitGrouping(Expr.Grouping expression)
@@ -61,9 +61,9 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
 
     public object? VisitVariableExpression(Expr.VariableExpression expression)
     {
-        Append($" {Instruction.instruction[Instructions.PUSH]} {Environment.Get(expression.Name, isFunction)?.ToString()} {Instruction.instruction[Instructions.GLOAD]}");
+        Append($" {Instruction.instruction[Instructions.PUSH]} {Environment.Get(expression.Name, isFunction)?.ToString()} {Instruction.instruction[Instructions.LOAD]}");
 
-        return null;        
+        return null;
     }
 
     public void VisitVariableStatement(Statement.VariableStatement variable)
@@ -72,7 +72,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
 
         CompileExpr(variable.initializer);
 
-        Append($" {Instruction.instruction[Instructions.PUSH]} {AddressCount} {Instruction.instruction[Instructions.GSTORE]}");
+        Append($" {Instruction.instruction[Instructions.PUSH]} {AddressCount} {Instruction.instruction[Instructions.STORE]}");
 
         AddressCount++;
     }
@@ -83,7 +83,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
 
         object address = Environment.Get(expression.Name, isFunction)!;
 
-        Append($" {Instruction.instruction[Instructions.PUSH]} {address} {Instruction.instruction[Instructions.GSTORE]}");
+        Append($" {Instruction.instruction[Instructions.PUSH]} {address} {Instruction.instruction[Instructions.STORE]}");
 
         return null;
     }
@@ -111,17 +111,32 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
 
     public void VisitFunction(Statement.Function function)
     {
-        labels += $" </{function.Name.Lexeme}>";
+        Environment.Define(function.Name.Lexeme, function);
+
+        foreach (var arg in function.Args)
+        {
+            Environment.Define(arg.Lexeme, AddressCount);
+            AddressCount++;
+        }
+
+        int argsLength = function.Args.Count;
 
         isFunction = true;
+        Append($" {function.Name.Lexeme}:");
+        for (int i = 0; i < argsLength; i++)
+        {
+            object address = Environment.Get(function.Args[i], isFunction)!;
+            Append($" {Instruction.instruction[Instructions.PUSH]} {address} {Instruction.instruction[Instructions.STORE]}");
+            AddressCount++;
+        }
         CompileBlock(function.Body, Environment);
         isFunction = false;
-
-        Environment.Define(function.Name.Lexeme, function);
     }
 
     public object? VisitCall(Expr.Call call)
     {
+        call.Arguments.Reverse();
+
         foreach (Expr argument in call.Arguments)
         {
             CompileExpr(argument);
@@ -136,20 +151,24 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
         string label_1 = GenerateRandomString();
         string label_2 = GenerateRandomString();
 
+        // Compiling condition
         CompileExpr(Statement.Condition);
 
+        // CJUMP label_1
         Append($" {Instruction.instruction[Instructions.CJUMP]} <{label_1}>");
 
+        // if false: compiling ElseBranch
         Statement.ElseBranch.Accept(this);
 
+        Append($" {Instruction.instruction[Instructions.JUMP]} <{label_2}>");
+
+        // if true: CJUMP here
         Append($" {label_1}:");
-
-        isFunction = true;
         Statement.ThenBranch.Accept(this);
-        isFunction = false; 
 
-        Append($" {Instruction.instruction[Instructions.CJUMP]} <{label_2}>");
+        Append($" {Instruction.instruction[Instructions.JUMP]} <{label_2}>");
 
+        // Label_2
         Append($" {label_2}:");
     }
 
@@ -203,9 +222,10 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
             .Select(s => s[random.Next(s.Length)]).ToArray());
     }
 
-    private void Append(string code) {
+    private void Append(string code)
+    {
         if (isFunction)
-            labels += code; 
+            labels += code;
         else
             ByteCode += code;
     }

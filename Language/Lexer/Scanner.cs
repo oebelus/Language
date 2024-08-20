@@ -63,6 +63,7 @@ class Scanner
             case '=': AddToken(Match('=') ? TokenType.EQUAL_EQUAL : TokenType.EQUAL, null); break;
             case '<': AddToken(Match('=') ? TokenType.LESS_EQUAL : TokenType.LESS, null); break;
             case '>': AddToken(Match('=') ? TokenType.GREATER_EQUAL : TokenType.GREATER, null); break;
+            case '%': AddToken(TokenType.MOD, null); break;
             case '/':
                 if (Match('/'))
                 {

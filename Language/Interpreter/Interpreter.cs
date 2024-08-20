@@ -66,7 +66,9 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
             case TokenType.BANG_EQUAL:
                 return left != right;
             case TokenType.EQUAL_EQUAL:
-                return left == right;
+                return left.Equals(right);
+            case TokenType.MOD:
+                return (float)left % (float)right;
             default:
                 break;
         }

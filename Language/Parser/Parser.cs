@@ -281,7 +281,7 @@ class Parser(List<Token> tokens)
     {
         Expr expr = Unary();
 
-        while (Match(TokenType.SLASH, TokenType.STAR))
+        while (Match(TokenType.SLASH, TokenType.STAR, TokenType.MOD))
         {
             Token operation = Previous();
             Expr right = Unary();

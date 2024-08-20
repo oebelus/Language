@@ -14,14 +14,16 @@ namespace Language
 
             string code_1 =
             @"
-            let a = 0;
+            function isPrime(a) {
+                if (a < 2) return false;
 
-            while (a < 100) {
-                a = a + 1;
+                let i = 2;
+                while (i < a) {
+                    if (a % i == 0) return false;
+                    i = i + 1;
+                }
+                return true;
             }
-
-            if (a > 99) a = 99
-            else a = -1
             ";
 
             Scanner _ = new(code_1);
@@ -37,16 +39,16 @@ namespace Language
 
             List<Statement> statements = parser.Parse();
 
-            Console.WriteLine();
-            foreach (var statement in statements)
-            {
-                Console.WriteLine(statement);
-            }
+            // Console.WriteLine();
+            // foreach (var statement in statements)
+            // {
+            //     Console.WriteLine(statement);
+            // }
 
-            Console.WriteLine();
+            // Console.WriteLine();
 
-            Interpreter interpreter = new();
-            interpreter.Interpret(statements);
+            // Interpreter interpreter = new();
+            // interpreter.Interpret(statements);
 
             Console.WriteLine();
 
