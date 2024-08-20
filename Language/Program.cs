@@ -19,6 +19,9 @@ namespace Language
             while (a < 100) {
                 a = a + 1;
             }
+
+            if (a > 99) a = 99
+            else a = -1
             ";
 
             Scanner _ = new(code_1);

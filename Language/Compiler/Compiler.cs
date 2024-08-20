@@ -167,13 +167,13 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
         CompileExpr(Statement.Condition);
 
         Append($" {Instruction.instruction[Instructions.PUSH]} 0 {Instruction.instruction[Instructions.EQ]}");
-        Append($" {Instruction.instruction[Instructions.CJUMP]} <{end_label}>");
+        Append($" {Instruction.instruction[Instructions.JUMP]} <{end_label}>");
 
         Statement.Body.Accept(this);
 
-        Append($" {Instruction.instruction[Instructions.CJUMP]} <{start_label}>");
+        Append($" {Instruction.instruction[Instructions.JUMP]} <{start_label}>");
 
-        Append($" {end_label}");
+        Append($" {end_label}:");
     }
 
     public void VisitReturn(Statement.Return statement)
