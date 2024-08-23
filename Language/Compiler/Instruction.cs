@@ -30,5 +30,6 @@ class Instruction
         {Instructions.GT, "GT"},
         {Instructions.LT, "LT"},
         {Instructions.NEG, "LT"},
+        {Instructions.NOT, "NOT"},
     };
 }

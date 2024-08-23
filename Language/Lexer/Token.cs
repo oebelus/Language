@@ -25,7 +25,7 @@ enum TokenType
     LESS, LESS_EQUAL,
 
     // Literals.
-    IDENTIFIER, STRING, NUMBER,
+    IDENTIFIER, STRING, NUMBER, TYPE,
 
     // Keywords.
     ELSE, FALSE, FUN, FOR, IF, NIL,

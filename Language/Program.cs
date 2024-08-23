@@ -15,14 +15,21 @@ namespace Language
             string code_1 =
             @"
             function isPrime(a) {
-                if (a < 2) {return false;}
+                if (a < 2) {
+                    log (a + "" is not a prime"");
+                    return false;
+                }
                 else {
                     let i = 2;
-                    while (i < a) {
-                        if (a % i == 0) {return false;}
+                    while (i * i <= a) {
+                        if (a % i == 0) {
+                            log (a + "" is not a prime"");
+                            return false;
+                        }
                         i = i + 1;
                     }
                 }
+                log (a + "" is a prime"");
                 return true;
             }
 
@@ -31,15 +38,15 @@ namespace Language
 
             string code_2 =
             @"
-            function isOdd(a) {
-                if (a % 2 == 0) return false;
-                else return true;
+            let a = 5;
+            for (let i = 0; i < 10; i = i + 1) {
+                if (i == 9) {
+                    a = 7;
+                }
             }
-
-            isOdd(23);
             ";
 
-            Scanner _ = new(code_1);
+            Scanner _ = new(code_2);
 
             List<Token> tokens = Scanner.ScanTokens();
 
@@ -52,16 +59,14 @@ namespace Language
 
             List<Statement> statements = parser.Parse();
 
-            // Console.WriteLine();
-            // foreach (var statement in statements)
-            // {
-            //     Console.WriteLine(statement);
-            // }
+            Console.WriteLine();
+            foreach (var statement in statements)
+            {
+                Console.WriteLine(statement);
+            }
 
-            // Console.WriteLine();
-
-            // Interpreter interpreter = new();
-            // interpreter.Interpret(statements);
+            Interpreter interpreter = new();
+            interpreter.Interpret(statements);
 
             Console.WriteLine();
 

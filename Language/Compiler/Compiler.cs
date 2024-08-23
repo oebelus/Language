@@ -17,7 +17,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
             statement.Accept(this);
         }
 
-        return $"{ByteCode.Trim()} HALT {functions.Trim()} {labels.Trim()}";
+        return $"{ByteCode.Trim()} HALT {functions.Trim()}{labels.Trim()}";
     }
 
     public object? VisitLiteral(Expr.Literal literal)
@@ -34,10 +34,10 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
         CompileExpr(binary.Right);
 
         if (binary.Operation.Type == TokenType.LESS_EQUAL)
-            Append($" {Instruction.instruction[Instructions.GT]} {Instruction.instruction[Instructions.NEG]}");
+            Append($" {Instruction.instruction[Instructions.GT]} {Instruction.instruction[Instructions.NOT]}");
 
         else if (binary.Operation.Type == TokenType.GREATER_EQUAL)
-            Append($" {Instruction.instruction[Instructions.LT]} {Instruction.instruction[Instructions.NEG]}");
+            Append($" {Instruction.instruction[Instructions.LT]} {Instruction.instruction[Instructions.NOT]}");
 
         else Append($" {Instruction.operation[binary.Operation.Type]}");
 
@@ -190,7 +190,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
 
     public void VisitLog(Statement.Log Statement)
     {
-        throw new NotImplementedException();
+
     }
 
     public void VisitWhile(Statement.While Statement)

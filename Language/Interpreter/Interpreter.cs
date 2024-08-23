@@ -47,10 +47,11 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
         {
             case TokenType.MINUS:
                 return (float)left - (float)right;
+
             case TokenType.PLUS:
                 if (left is float a && right is float b) return a + b;
                 if (left is string c && right is string d) return c + d;
-                break;
+                else return left.ToString() + right.ToString();
             case TokenType.STAR:
                 return (float)left * (float)right;
             case TokenType.SLASH:
@@ -166,6 +167,7 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
 
     public void VisitWhile(Statement.While statement)
     {
+        Console.WriteLine(statement.Condition);
         while (IsTruthy(Evaluate(statement.Condition)))
             Execute(statement.Body);
     }

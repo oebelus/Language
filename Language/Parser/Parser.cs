@@ -87,37 +87,52 @@ class Parser(List<Token> tokens)
     {
         Consume(TokenType.LEFT_PAREN);
 
+        // Checking for initializer
         Statement? initializer;
+
+        // The initializer is null
         if (Match(TokenType.SEMICOLON)) initializer = null;
+
+        // The initializer is a variable declaration
         else if (Match(TokenType.VAR)) initializer = VarDeclaration();
+
+        // The initializer is an expression
         else initializer = ExpressionStatement();
 
         Expr? condition = null;
 
+        // Checking for condition
         if (!Check(TokenType.SEMICOLON))
             condition = Expression();
 
         Consume(TokenType.SEMICOLON);
 
+        // Checking for increment
         Expr? increment = null;
         if (!Check(TokenType.RIGHT_PAREN))
             increment = Expression();
 
         Consume(TokenType.RIGHT_PAREN);
 
+        // Checking for body
         Statement body = Statement();
 
+        // If there is an increment, execute it after the body in each iteration
         if (increment != null)
         {
-            List<Statement> alist = [body, new Statement.Expression(increment)];
-            body = new Statement.Block(alist);
+            List<Statement> newBody = [body, new Statement.Expression(increment)];
+            // replacing the body with "newBody", a block that contains the original body followed by an expression statement that evaluates the increment
+            body = new Statement.Block(newBody);
         }
 
+        // If the condition is omitted, we put true to trigger an infinite loop
         condition ??= new Expr.Literal(true);
+
+        // Building the loop with the condition and the body using a primitive while loop
         body = new Statement.While(condition, body);
 
-        List<Statement> list = [initializer, body];
-        if (initializer != null) body = new Statement.Block(list);
+        // If there is an initializer, execute it before the loop
+        if (initializer != null) body = new Statement.Block([initializer, body]);
 
         return body;
     }
