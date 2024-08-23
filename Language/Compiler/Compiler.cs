@@ -1,9 +1,11 @@
 class Compiler : Expr.IVisitor<object>, Statement.IVisitor
 {
     public string ByteCode = "";
+    public string functions = "";
     public string labels = "";
     private int AddressCount = 0;
     private bool isFunction = false;
+    private bool isLabel = false;
 
     public static readonly CompilerEnv Globals = new();
     private static CompilerEnv Environment = Globals;
@@ -15,7 +17,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
             statement.Accept(this);
         }
 
-        return $"{ByteCode.Trim()} HALT {labels.Trim()}";
+        return $"{ByteCode.Trim()} HALT {functions.Trim()} {labels.Trim()}";
     }
 
     public object? VisitLiteral(Expr.Literal literal)
@@ -33,7 +35,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
 
         if (binary.Operation.Type == TokenType.LESS_EQUAL)
             Append($" {Instruction.instruction[Instructions.GT]} {Instruction.instruction[Instructions.NEG]}");
-        
+
         else if (binary.Operation.Type == TokenType.GREATER_EQUAL)
             Append($" {Instruction.instruction[Instructions.LT]} {Instruction.instruction[Instructions.NEG]}");
 
@@ -129,6 +131,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
         int argsLength = function.Args.Count;
 
         isFunction = true;
+
         Append($" {function.Name.Lexeme}:");
         for (int i = 0; i < argsLength; i++)
         {
@@ -136,6 +139,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
             Append($" {Instruction.instruction[Instructions.PUSH]} {address} {Instruction.instruction[Instructions.STORE]}");
         }
         CompileBlock(function.Body, Environment);
+
         isFunction = false;
     }
 
@@ -163,22 +167,22 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
         // CJUMP label_1
         Append($" {Instruction.instruction[Instructions.CJUMP]} <{label_1}>");
 
-        if (Statement.ElseBranch == null)
-        {
-            Append($" {Instruction.instruction[Instructions.NOP]}");
-        } 
-        else 
+        isLabel = true;
+
+        // if true: CJUMP here
+        Append($" {label_1}:");
+
+        Statement.ThenBranch.Accept(this);
+
+        isLabel = false;
+
+        if (Statement.ElseBranch != null)
         {
             // if false: compiling ElseBranch
             Statement.ElseBranch.Accept(this);
 
             Append($" {Instruction.instruction[Instructions.JUMP]} <{label_2}>");
         }
-
-        // if true: CJUMP here
-        Append($" {label_1}:");
-        Statement.ThenBranch.Accept(this);
-        Append($" {Instruction.instruction[Instructions.JUMP]} <{label_2}>");
 
         // Label_2
         Append($" {label_2}:");
@@ -195,19 +199,16 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
         string end_label = GenerateRandomString();
 
         Append($" {start_label}:");
+
         CompileExpr(Statement.Condition);
 
+        // Check if condition is False
         Append($" {Instruction.instruction[Instructions.PUSH]} 0 {Instruction.instruction[Instructions.EQ]}");
-        Append($" {Instruction.instruction[Instructions.JUMP]} <{end_label}>");
 
-        if (Statement.Body == null) 
-        {
-            Append($" {Instruction.instruction[Instructions.NOP]}");
-        } 
-        else 
-        {
-            Statement.Body.Accept(this);
-        }
+        // Jump to end if condition is False
+        Append($" {Instruction.instruction[Instructions.CJUMP]} <{end_label}>");
+
+        Statement.Body.Accept(this);
 
         // Jump back to the start of the loop
         Append($" {Instruction.instruction[Instructions.JUMP]} <{start_label}>");
@@ -245,8 +246,10 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
 
     private void Append(string code)
     {
-        if (isFunction)
+        if (isLabel)
             labels += code;
+        else if (isFunction)
+            functions += code;
         else
             ByteCode += code;
     }

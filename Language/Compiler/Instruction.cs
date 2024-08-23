@@ -27,7 +27,6 @@ class Instruction
         {Instructions.CJUMP, "CJUMP"},
         {Instructions.JUMP, "JUMP"},
         {Instructions.EQ, "EQ"},
-        {Instructions.NOP, "NOP"},
         {Instructions.GT, "GT"},
         {Instructions.LT, "LT"},
         {Instructions.NEG, "LT"},
