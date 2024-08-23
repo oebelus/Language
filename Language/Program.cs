@@ -15,15 +15,28 @@ namespace Language
             string code_1 =
             @"
             function isPrime(a) {
-                if (a < 2) return false;
-
-                let i = 2;
-                while (i < a) {
-                    if (a % i == 0) return false;
-                    i = i + 1;
+                if (a < 2) {return false;}
+                else {
+                    let i = 2;
+                    while (i < a) {
+                        if (a % i == 0) {return false;}
+                        i = i + 1;
+                    }
                 }
                 return true;
             }
+
+            isPrime(23);
+            ";
+
+            string code_2 =
+            @"
+            function isOdd(a) {
+                if (a % 2 == 0) return false;
+                else return true;
+            }
+
+            isOdd(23);
             ";
 
             Scanner _ = new(code_1);

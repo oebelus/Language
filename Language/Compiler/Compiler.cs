@@ -20,7 +20,8 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
 
     public object? VisitLiteral(Expr.Literal literal)
     {
-        Append($" {Instruction.instruction[Instructions.PUSH]} {literal.Value}");
+        if (literal.Value is bool b) Append($" {Instruction.instruction[Instructions.PUSH]} {(b ? 1 : 0)}");
+        else Append($" {Instruction.instruction[Instructions.PUSH]} {literal.Value}");
 
         return null;
     }
@@ -30,7 +31,13 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
         CompileExpr(binary.Left);
         CompileExpr(binary.Right);
 
-        Append($" {Instruction.operation[binary.Operation.Type]}");
+        if (binary.Operation.Type == TokenType.LESS_EQUAL)
+            Append($" {Instruction.instruction[Instructions.GT]} {Instruction.instruction[Instructions.NEG]}");
+        
+        else if (binary.Operation.Type == TokenType.GREATER_EQUAL)
+            Append($" {Instruction.instruction[Instructions.LT]} {Instruction.instruction[Instructions.NEG]}");
+
+        else Append($" {Instruction.operation[binary.Operation.Type]}");
 
         return null;
     }
@@ -127,7 +134,6 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
         {
             object address = Environment.Get(function.Args[i], isFunction)!;
             Append($" {Instruction.instruction[Instructions.PUSH]} {address} {Instruction.instruction[Instructions.STORE]}");
-            AddressCount++;
         }
         CompileBlock(function.Body, Environment);
         isFunction = false;
@@ -157,15 +163,21 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
         // CJUMP label_1
         Append($" {Instruction.instruction[Instructions.CJUMP]} <{label_1}>");
 
-        // if false: compiling ElseBranch
-        Statement.ElseBranch.Accept(this);
+        if (Statement.ElseBranch == null)
+        {
+            Append($" {Instruction.instruction[Instructions.NOP]}");
+        } 
+        else 
+        {
+            // if false: compiling ElseBranch
+            Statement.ElseBranch.Accept(this);
 
-        Append($" {Instruction.instruction[Instructions.JUMP]} <{label_2}>");
+            Append($" {Instruction.instruction[Instructions.JUMP]} <{label_2}>");
+        }
 
         // if true: CJUMP here
         Append($" {label_1}:");
         Statement.ThenBranch.Accept(this);
-
         Append($" {Instruction.instruction[Instructions.JUMP]} <{label_2}>");
 
         // Label_2
@@ -188,10 +200,19 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
         Append($" {Instruction.instruction[Instructions.PUSH]} 0 {Instruction.instruction[Instructions.EQ]}");
         Append($" {Instruction.instruction[Instructions.JUMP]} <{end_label}>");
 
-        Statement.Body.Accept(this);
+        if (Statement.Body == null) 
+        {
+            Append($" {Instruction.instruction[Instructions.NOP]}");
+        } 
+        else 
+        {
+            Statement.Body.Accept(this);
+        }
 
+        // Jump back to the start of the loop
         Append($" {Instruction.instruction[Instructions.JUMP]} <{start_label}>");
 
+        // End label for the loop
         Append($" {end_label}:");
     }
 

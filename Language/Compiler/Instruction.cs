@@ -4,6 +4,7 @@ class Instruction
     {
         {TokenType.PLUS, "ADD"},
         {TokenType.MINUS, "SUB"},
+        {TokenType.MOD, "MOD"},
         {TokenType.STAR, "MUL"},
         {TokenType.SLASH, "DIV"},
         {TokenType.LESS, "LT"},
@@ -26,5 +27,9 @@ class Instruction
         {Instructions.CJUMP, "CJUMP"},
         {Instructions.JUMP, "JUMP"},
         {Instructions.EQ, "EQ"},
+        {Instructions.NOP, "NOP"},
+        {Instructions.GT, "GT"},
+        {Instructions.LT, "LT"},
+        {Instructions.NEG, "LT"},
     };
 }
