@@ -117,7 +117,7 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
     public object VisitAssign(Expr.Assign expression)
     {
         object value = Evaluate(expression.Value);
-        Environment.Assign(expression.Name, value);
+        Environment.Assign(expression.Name.Lexeme, value);
         return value; // log a = 2; assign can be nested inside other expressions
     }
 
@@ -191,14 +191,14 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
          * for example, `if var x = 5-4;, 5-4 will get evaluated to 1; 
         */
 
-        if (variable.initializer != null) value = Evaluate(variable.initializer);
-        Environment.Define(variable.name.Lexeme, value!);
+        if (variable.Initializer != null) value = Evaluate(variable.Initializer);
+        Environment.Define(variable.Name.Lexeme, value!);
     }
 
-    // smol hint: Evaluate(variable.initializer) goes to this
+    // smol hint: Evaluate(variable.Initializer) goes to this
     public object VisitVariableExpression(Expr.VariableExpression expression)
     {
-        return Environment.Get(expression.Name);
+        return Environment.Get(expression.Name.Lexeme);
     }
 
     private object Evaluate(Expr expr)

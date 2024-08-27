@@ -93,10 +93,11 @@ abstract class Statement
         }
     }
 
-    public class VariableStatement(Token name, Expr initializer) : Statement
+    public class VariableStatement(Token type, Token name, Expr initializer) : Statement
     {
-        public readonly Token name = name;
-        public readonly Expr initializer = initializer;
+        public readonly Token Type = type;
+        public readonly Token Name = name;
+        public readonly Expr Initializer = initializer;
 
         public override void Accept(IVisitor visitor)
         {

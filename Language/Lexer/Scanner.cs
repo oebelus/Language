@@ -160,9 +160,20 @@ class Scanner
 
         string text = Code[start..current];
 
-        TokenType type = Keywords.TryGetValue(text, out TokenType value) ? value : TokenType.IDENTIFIER;
+        TokenType tokenType;
 
-        AddToken(type, null);
+        if (Keywords.TryGetValue(text, out TokenType value)) 
+            tokenType = value;
+        else
+            if (text == "number" || text == "boolean") {
+                tokenType = TokenType.TYPE;
+                AddToken(tokenType, text);
+                return;
+            }
+            else 
+                tokenType = TokenType.IDENTIFIER;
+
+        AddToken(tokenType, null);
     }
 
     private static bool IsAlpha(char c)

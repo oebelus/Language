@@ -12,7 +12,7 @@ class Parser(List<Token> tokens)
 
     private Statement Declaration()
     {
-        if (Match(TokenType.VAR)) return VarDeclaration();
+        if (Match(TokenType.VAR, TokenType.TYPE)) return VarDeclaration();
         if (Match(TokenType.FUN)) return Function("function");
 
         return Statement();
@@ -20,6 +20,7 @@ class Parser(List<Token> tokens)
 
     private Statement.VariableStatement VarDeclaration()
     {
+        Token type = Consume(TokenType.TYPE);
         Token name = Consume(TokenType.IDENTIFIER);
 
         Expr initializer = null!;
@@ -27,7 +28,7 @@ class Parser(List<Token> tokens)
 
         Consume(TokenType.SEMICOLON);
 
-        return new Statement.VariableStatement(name, initializer!);
+        return new Statement.VariableStatement(type, name, initializer!);
     }
 
     private Statement.Function Function(string kind)

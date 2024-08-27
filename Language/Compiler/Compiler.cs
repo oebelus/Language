@@ -70,16 +70,16 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
 
     public object? VisitVariableExpression(Expr.VariableExpression expression)
     {
-        Append($" {Instruction.instruction[Instructions.PUSH]} {Environment.Get(expression.Name, isFunction)?.ToString()} {Instruction.instruction[Instructions.LOAD]}");
+        Append($" {Instruction.instruction[Instructions.PUSH]} {Environment.Get(expression.Name.Lexeme)?.ToString()} {Instruction.instruction[Instructions.LOAD]}");
 
         return null;
     }
 
     public void VisitVariableStatement(Statement.VariableStatement variable)
     {
-        Environment.Define(variable.name.Lexeme, AddressCount);
+        Environment.Define(variable.Name.Lexeme, AddressCount);
 
-        CompileExpr(variable.initializer);
+        CompileExpr(variable.Initializer);
 
         Append($" {Instruction.instruction[Instructions.PUSH]} {AddressCount} {Instruction.instruction[Instructions.STORE]}");
 
@@ -90,7 +90,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
     {
         CompileExpr(expression.Value);
 
-        object address = Environment.Get(expression.Name, isFunction)!;
+        object address = Environment.Get(expression.Name.Lexeme)!;
 
         Append($" {Instruction.instruction[Instructions.PUSH]} {address} {Instruction.instruction[Instructions.STORE]}");
 
@@ -135,7 +135,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
         Append($" {function.Name.Lexeme}:");
         for (int i = 0; i < argsLength; i++)
         {
-            object address = Environment.Get(function.Args[i], isFunction)!;
+            object address = Environment.Get(function.Args[i].Lexeme)!;
             Append($" {Instruction.instruction[Instructions.PUSH]} {address} {Instruction.instruction[Instructions.STORE]}");
         }
         CompileBlock(function.Body, Environment);
