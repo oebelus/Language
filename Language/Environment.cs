@@ -1,7 +1,7 @@
 interface IEnvironment<T>
 {
     void Define(string name, T value);
-    object? Get(string name);
+    T? Get(string name);
     void Assign(string name, T value);
     bool IsDeclared(string name);
 }
@@ -139,13 +139,13 @@ class TypeEnvironment : IEnvironment<Language.TypeChecker.Type>
         values.Add(name, value);
     }
 
-    public object Get(string name)
+    public Language.TypeChecker.Type Get(string name)
     {
         if (IsDeclared(name)) return values[name];
 
         else if (Enclosing != null) return Enclosing.Get(name);
 
-        else return "Undefined Variable '" + name + "'.";
+        else throw new Exception("Undefined Variable '" + name + "'.");
     }
 
     public void Assign(string name, Language.TypeChecker.Type value)
