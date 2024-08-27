@@ -2,10 +2,8 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
 {
     public string ByteCode = "";
     public string functions = "";
-    public string labels = "";
     private int AddressCount = 0;
     private bool isFunction = false;
-    private bool isLabel = false;
 
     public static readonly CompilerEnv Globals = new();
     private static CompilerEnv Environment = Globals;
@@ -17,7 +15,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
             statement.Accept(this);
         }
 
-        return $"{ByteCode.Trim()} HALT {functions.Trim()}{labels.Trim()}";
+        return $"{ByteCode.Trim()} HALT {functions.Trim()}";
     }
 
     public object? VisitLiteral(Expr.Literal literal)
@@ -167,22 +165,15 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
         // CJUMP label_1
         Append($" {Instruction.instruction[Instructions.CJUMP]} <{label_1}>");
 
-        isLabel = true;
+        // if false: compiling ElseBranch
+        Statement.ElseBranch?.Accept(this);
+
+        Append($" {Instruction.instruction[Instructions.JUMP]} <{label_2}>");
 
         // if true: CJUMP here
         Append($" {label_1}:");
 
         Statement.ThenBranch.Accept(this);
-
-        isLabel = false;
-
-        if (Statement.ElseBranch != null)
-        {
-            // if false: compiling ElseBranch
-            Statement.ElseBranch.Accept(this);
-
-            Append($" {Instruction.instruction[Instructions.JUMP]} <{label_2}>");
-        }
 
         // Label_2
         Append($" {label_2}:");
@@ -246,9 +237,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
 
     private void Append(string code)
     {
-        if (isLabel)
-            labels += code;
-        else if (isFunction)
+        if (isFunction)
             functions += code;
         else
             ByteCode += code;

@@ -51,7 +51,7 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
             case TokenType.PLUS:
                 if (left is float a && right is float b) return a + b;
                 if (left is string c && right is string d) return c + d;
-                else return left.ToString() + right.ToString();
+                break;
             case TokenType.STAR:
                 return (float)left * (float)right;
             case TokenType.SLASH:
@@ -191,7 +191,11 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
          * for example, `if var x = 5-4;, 5-4 will get evaluated to 1; 
         */
 
-        if (variable.Initializer != null) value = Evaluate(variable.Initializer);
+        if (variable.Initializer != null)
+        {
+            value = Evaluate(variable.Initializer);
+        }
+
         Environment.Define(variable.Name.Lexeme, value!);
     }
 

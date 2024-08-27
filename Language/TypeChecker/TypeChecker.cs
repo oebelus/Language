@@ -1,6 +1,9 @@
 class TypeChecker : Expr.IVisitor<object>, Statement.IVisitor
 {
-    public void TypeCheck(List<Statement> statements) {
+    public static readonly TypeEnvironment Globals = new();
+    private TypeEnvironment Environment = Globals;
+    public void TypeCheck(List<Statement> statements)
+    {
         foreach (var statement in statements)
         {
             statement.Accept(this);
@@ -18,7 +21,10 @@ class TypeChecker : Expr.IVisitor<object>, Statement.IVisitor
 
     public void VisitBlock(Statement.Block Statement)
     {
-        throw new NotImplementedException();
+        foreach (var statement in Statement.Statements)
+        {
+            statement.Accept(this);
+        }
     }
 
     public object? VisitCall(Expr.Call expression)
@@ -48,12 +54,14 @@ class TypeChecker : Expr.IVisitor<object>, Statement.IVisitor
 
     public object? VisitLiteral(Expr.Literal expression)
     {
-        throw new NotImplementedException();
+        if (expression.Value is double) return new Language.TypeChecker.Number();
+        else if (expression.Value is bool) return new Language.TypeChecker.Boolean();
+        else throw new Exception("Unsupported literal type.");
     }
 
     public void VisitLog(Statement.Log Statement)
     {
-        throw new NotImplementedException();
+
     }
 
     public object? VisitLogical(Expr.Logical expression)
@@ -73,12 +81,19 @@ class TypeChecker : Expr.IVisitor<object>, Statement.IVisitor
 
     public object? VisitVariableExpression(Expr.VariableExpression expression)
     {
-        throw new NotImplementedException();
+        return Environment.Get(expression.Name.Lexeme);
     }
 
     public void VisitVariableStatement(Statement.VariableStatement statement)
     {
-        throw new NotImplementedException();
+        Language.TypeChecker.Type? type = null;
+
+        if (statement.Initializer != null)
+        {
+            type = (Language.TypeChecker.Type?)statement.Initializer.Accept(this);
+        }
+
+        Environment.Define(statement.Name.Lexeme, type!);
     }
 
     public void VisitWhile(Statement.While Statement)

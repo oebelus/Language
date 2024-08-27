@@ -46,7 +46,22 @@ namespace Language
             }
             ";
 
-            Scanner _ = new(code_2);
+            string code_3 =
+            @"
+            let x = 5;
+            if (x < 10) {
+                log (x + "" is less than 10"");
+                x = 10
+            }
+
+            while (x > 1) {
+                x = x - 1
+            }
+
+            log x
+            ";
+
+            Scanner _ = new(code_3);
 
             List<Token> tokens = Scanner.ScanTokens();
 
