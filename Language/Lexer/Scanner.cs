@@ -162,16 +162,17 @@ class Scanner
 
         TokenType tokenType;
 
-        if (Keywords.TryGetValue(text, out TokenType value)) 
+        if (Keywords.TryGetValue(text, out TokenType value))
             tokenType = value;
         else
-            if (text == "number" || text == "boolean") {
-                tokenType = TokenType.TYPE;
-                AddToken(tokenType, text);
-                return;
-            }
-            else 
-                tokenType = TokenType.IDENTIFIER;
+            if (text == "num" || text == "bool")
+        {
+            tokenType = TokenType.TYPE;
+            AddToken(tokenType, text);
+            return;
+        }
+        else
+            tokenType = TokenType.IDENTIFIER;
 
         AddToken(tokenType, null);
     }

@@ -1,3 +1,5 @@
+using Type = Language.TypeChecker.Type;
+
 abstract class Statement
 {
     public interface IVisitor
@@ -93,11 +95,28 @@ abstract class Statement
         }
     }
 
-    public class VariableStatement(Token type, Token name, Expr initializer) : Statement
+    public class VariableStatement : Statement
     {
-        public readonly Token Type = type;
-        public readonly Token Name = name;
-        public readonly Expr Initializer = initializer;
+        public readonly Type? Type;
+        public readonly Token? Keyword;
+        public readonly Token Name;
+        public readonly Expr? Initializer;
+
+        // Constructor with Type
+        public VariableStatement(Type type, Token name, Expr? initializer)
+        {
+            Type = type;
+            Name = name;
+            Initializer = initializer;
+        }
+
+        // Constructor with Keyword
+        public VariableStatement(Token keyword, Token name, Expr? initializer)
+        {
+            Keyword = keyword;
+            Name = name;
+            Initializer = initializer;
+        }
 
         public override void Accept(IVisitor visitor)
         {

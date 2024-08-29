@@ -48,17 +48,9 @@ namespace Language
 
             string code_3 =
             @"
-            let x = 5;
-            if (x < 10) {
-                log (x + "" is less than 10"");
-                x = 10
-            }
-
-            while (x > 1) {
-                x = x - 1
-            }
-
-            log x
+            num x = 5;
+            bool y = true;
+            let z = 10;
             ";
 
             Scanner _ = new(code_3);
@@ -80,14 +72,14 @@ namespace Language
                 Console.WriteLine(statement);
             }
 
-            Interpreter interpreter = new();
-            interpreter.Interpret(statements);
+            // Interpreter interpreter = new();
+            // interpreter.Interpret(statements);
 
-            Console.WriteLine();
+            // Console.WriteLine();
 
-            Compiler compiler = new();
-            string mnemo = compiler.Compile(statements);
-            Console.WriteLine(mnemo);
+            // Compiler compiler = new();
+            // string mnemo = compiler.Compile(statements);
+            // Console.WriteLine(mnemo);
 
         }
     }

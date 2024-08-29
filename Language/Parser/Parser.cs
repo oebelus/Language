@@ -1,3 +1,6 @@
+using Type = Language.TypeChecker.Type;
+using Language.TypeChecker;
+
 class Parser(List<Token> tokens)
 {
     private readonly List<Token> Tokens = tokens;
@@ -12,28 +15,38 @@ class Parser(List<Token> tokens)
 
     private Statement Declaration()
     {
-        if (Match(TokenType.VAR, TokenType.TYPE)) return VarDeclaration();
-        if (Match(TokenType.FUN)) return Function("function");
+        if (Match(TokenType.TYPE, TokenType.VAR)) return VarDeclaration();
+
+        if (Match(TokenType.FUN)) return Function();
 
         return Statement();
     }
 
     private Statement.VariableStatement VarDeclaration()
     {
-        Token type = Consume(TokenType.TYPE);
-        Token name = Consume(TokenType.IDENTIFIER);
+        Token typeToken = Previous();
+        Type? type = null;
 
-        Expr initializer = null!;
-        if (Match(TokenType.EQUAL)) initializer = Expression();
+        // Checking if the variable is typed
+        if (typeToken.Type == TokenType.TYPE)
+        {
+            type = TokenToType(typeToken);
+        }
+
+        Token name = Consume(TokenType.IDENTIFIER)!;
+
+        Expr? initializer = Match(TokenType.EQUAL) ? Expression() : null;
 
         Consume(TokenType.SEMICOLON);
 
-        return new Statement.VariableStatement(type, name, initializer!);
+        return type != null
+            ? new Statement.VariableStatement(type, name, initializer)
+            : new Statement.VariableStatement(typeToken, name, initializer);
     }
 
-    private Statement.Function Function(string kind)
+    private Statement.Function Function()
     {
-        Token name = Consume(TokenType.IDENTIFIER);
+        Token name = Consume(TokenType.IDENTIFIER)!;
 
         Consume(TokenType.LEFT_PAREN);
         List<Token> arguments = [];
@@ -48,7 +61,7 @@ class Parser(List<Token> tokens)
                     Console.WriteLine("Function can't have more than 255 arguments.");
                 }
 
-                arguments.Add(Consume(TokenType.IDENTIFIER));
+                arguments.Add(Consume(TokenType.IDENTIFIER)!);
 
             } while (Match(TokenType.COMMA));
         }
@@ -204,20 +217,24 @@ class Parser(List<Token> tokens)
 
     private Expr Assignment()
     {
+        // Parse left-hand side of assignment
         Expr expression = Or();
 
         if (Match(TokenType.EQUAL))
         {
+            // Parse right-hand side of assignment
             Expr value = Assignment();
 
+            // If the left-hand side is a variable, return an assignment
             if (expression is Expr.VariableExpression varExpr)
             {
-                // Token equals = Previous();
                 Token name = varExpr.Name;
                 return new Expr.Assign(name, value);
             }
             Console.WriteLine("Invalid assignment target: " + Previous().Lexeme);
         }
+
+        // If there is no equal sign, return the left-hand side expression
         return expression;
     }
 
@@ -348,7 +365,7 @@ class Parser(List<Token> tokens)
             while (Match(TokenType.COMMA));
         }
 
-        Token paren = Consume(TokenType.RIGHT_PAREN);
+        Token paren = Consume(TokenType.RIGHT_PAREN)!;
 
         return new Expr.Call((Expr.VariableExpression)expr, paren, arguments);
     }
@@ -373,10 +390,10 @@ class Parser(List<Token> tokens)
         return new Expr.Literal(null);
     }
 
-    private Token Consume(TokenType type)
+    private Token? Consume(TokenType type)
     {
         if (Check(type)) return Advance();
-        return null!;
+        throw new InvalidOperationException($"Expected token of type {type}, but got {Peek().Type}.");
     }
 
 
@@ -395,8 +412,7 @@ class Parser(List<Token> tokens)
 
     private bool Check(TokenType type)
     {
-        if (IsAtEnd()) return false;
-        return Peek().Type == type;
+        return !IsAtEnd() && Peek().Type == type;
     }
 
     private Token Advance()
@@ -418,5 +434,15 @@ class Parser(List<Token> tokens)
     private Token Previous()
     {
         return Tokens[current - 1];
+    }
+
+    private static Type TokenToType(Token token)
+    {
+        return token.Lexeme switch
+        {
+            "num" => new Number(),
+            "bool" => new Language.TypeChecker.Boolean(),
+            _ => new Language.TypeChecker.Void(),
+        };
     }
 }

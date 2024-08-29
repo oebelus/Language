@@ -18,9 +18,9 @@
 
 <assignment>      := <IDENTIFIER> "=" <assignment> | <logicOr>
 
-logicOr           := <logicAnd> ( "or" <logicAnd> )
+<logicOr>         := <logicAnd> ( "or" <logicAnd> )
 
-logicAnd          := <equality> ( "or" <equality> )
+<logicAnd>        := <equality> ( "or" <equality> )
 
 <equality>        := <comparison> ( ( "!=" | "==" ) <comparison> )*
 

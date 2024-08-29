@@ -1,6 +1,7 @@
+using Type = Language.TypeChecker.Type;
 using Language.TypeChecker;
 
-class TypeChecker : Expr.IVisitor<Language.TypeChecker.Type>, Statement.IVisitor
+class TypeChecker : Expr.IVisitor<Type>, Statement.IVisitor
 {
     public static readonly TypeEnvironment Globals = new();
     private TypeEnvironment Environment = Globals;
@@ -11,17 +12,28 @@ class TypeChecker : Expr.IVisitor<Language.TypeChecker.Type>, Statement.IVisitor
             statement.Accept(this);
         }
     }
-    public Language.TypeChecker.Type? VisitAssign(Expr.Assign expression)
+    public Type? VisitAssign(Expr.Assign expression)
     {
-        Language.TypeChecker.Type value = expression.Value.Accept(this);
-        Environment.Assign(expression.Name.Lexeme, value);
-        return value;
+        Type? type = Environment.Get(expression.Name.Lexeme);
+        Type? valueType = expression.Value.Accept(this);
+
+        // Compare the type of the assigned value to the type of the variable
+        if (valueType != type)
+        {
+            throw new Exception($"Wrong type for variable: {expression.Name.Lexeme} ({type}) and ({valueType})");
+        }
+        else
+        {
+            Environment.Assign(expression.Name.Lexeme, valueType);
+        }
+
+        return valueType;
     }
 
-    public Language.TypeChecker.Type? VisitBinary(Expr.Binary expression)
+    public Type? VisitBinary(Expr.Binary expression)
     {
-        Language.TypeChecker.Type right = expression.Right.Accept(this);
-        Language.TypeChecker.Type left = expression.Right.Accept(this);
+        Type right = expression.Right.Accept(this);
+        Type left = expression.Right.Accept(this);
 
         if (right != left || left is not Number || right is not Number)
         {
@@ -41,7 +53,7 @@ class TypeChecker : Expr.IVisitor<Language.TypeChecker.Type>, Statement.IVisitor
         }
     }
 
-    public Language.TypeChecker.Type? VisitCall(Expr.Call expression)
+    public Type? VisitCall(Expr.Call expression)
     {
         throw new NotImplementedException();
     }
@@ -55,14 +67,14 @@ class TypeChecker : Expr.IVisitor<Language.TypeChecker.Type>, Statement.IVisitor
     {
     }
 
-    public Language.TypeChecker.Type? VisitGrouping(Expr.Grouping expression)
+    public Type? VisitGrouping(Expr.Grouping expression)
     {
         return expression.Accept(this);
     }
 
     public void VisitIf(Statement.If Statement)
     {
-        Language.TypeChecker.Type condition = Statement.Condition.Accept(this);
+        Type condition = Statement.Condition.Accept(this);
         if (condition is not Language.TypeChecker.Boolean)
         {
             throw new Exception($"Condition (${condition}) should be Boolean");
@@ -73,9 +85,9 @@ class TypeChecker : Expr.IVisitor<Language.TypeChecker.Type>, Statement.IVisitor
         }
     }
 
-    public Language.TypeChecker.Type? VisitLiteral(Expr.Literal expression)
+    public Type? VisitLiteral(Expr.Literal expression)
     {
-        if (expression.Value is double) return new Language.TypeChecker.Number();
+        if (expression.Value is double) return new Number();
         else if (expression.Value is bool) return new Language.TypeChecker.Boolean();
         else throw new Exception("Unsupported literal type.");
     }
@@ -85,10 +97,10 @@ class TypeChecker : Expr.IVisitor<Language.TypeChecker.Type>, Statement.IVisitor
 
     }
 
-    public Language.TypeChecker.Type? VisitLogical(Expr.Logical expression)
+    public Type? VisitLogical(Expr.Logical expression)
     {
-        Language.TypeChecker.Type right = expression.Right.Accept(this);
-        Language.TypeChecker.Type left = expression.Right.Accept(this);
+        Type right = expression.Right.Accept(this);
+        Type left = expression.Right.Accept(this);
 
         if (left is not Language.TypeChecker.Boolean)
         {
@@ -112,36 +124,42 @@ class TypeChecker : Expr.IVisitor<Language.TypeChecker.Type>, Statement.IVisitor
         throw new NotImplementedException();
     }
 
-    public Language.TypeChecker.Type? VisitUnary(Expr.Unary expression)
+    public Type? VisitUnary(Expr.Unary expression)
     {
-        Language.TypeChecker.Type type = expression.Right.Accept(this);
+        Type type = expression.Right.Accept(this);
 
         switch (expression.Operation.Type)
         {
             case TokenType.MINUS:
-                if (type is Language.TypeChecker.Number) return new Language.TypeChecker.Number();
+                if (type is Number) return new Number();
                 else throw new Exception("Unsupported unary operation.");
             case TokenType.BANG:
                 if (type is Language.TypeChecker.Boolean) return new Language.TypeChecker.Boolean();
-                else if (type is Language.TypeChecker.Number) return new Language.TypeChecker.Boolean();
+                else if (type is Number) return new Language.TypeChecker.Boolean();
                 else throw new Exception("Unsupported unary operation.");
             default:
                 throw new Exception("Unsupported unary operation.");
         }
     }
 
-    public Language.TypeChecker.Type? VisitVariableExpression(Expr.VariableExpression expression)
+    public Type? VisitVariableExpression(Expr.VariableExpression expression)
     {
         return Environment.Get(expression.Name.Lexeme);
     }
 
     public void VisitVariableStatement(Statement.VariableStatement statement)
     {
-        Language.TypeChecker.Type? type = null;
+        Type? type;
 
-        if (statement.Initializer != null)
+        if (statement.Type != null)
         {
-            type = statement.Initializer.Accept(this);
+            // If type has an initial value, use it
+            type = statement.Type;
+        }
+        else
+        {
+            // If no type, infer it from the initializer
+            type = statement.Initializer!.Accept(this);
         }
 
         Environment.Define(statement.Name.Lexeme, type!);
