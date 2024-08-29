@@ -1,4 +1,5 @@
 using Type = Language.TypeChecker.Type;
+using Boolean = Language.TypeChecker.Boolean;
 using Language.TypeChecker;
 
 class TypeChecker : Expr.IVisitor<Type>, Statement.IVisitor
@@ -167,6 +168,14 @@ class TypeChecker : Expr.IVisitor<Type>, Statement.IVisitor
 
     public void VisitWhile(Statement.While Statement)
     {
-        throw new NotImplementedException();
+        Type condition = Statement.Condition.Accept(this);
+        if (condition is not Boolean)
+        {
+            throw new Exception($"Condition (${condition}) should be Boolean");
+        }
+        else
+        {
+            Statement.Body.Accept(this);
+        }
     }
 }
