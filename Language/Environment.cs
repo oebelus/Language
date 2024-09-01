@@ -118,7 +118,7 @@ class InterpreterEnv : IEnvironment<object>
     }
 }
 
-class TypeEnvironment : IEnvironment<Type>
+class TypeEnvironment : IEnvironment<List<Type>>
 {
     readonly TypeEnvironment Enclosing;
 
@@ -134,14 +134,14 @@ class TypeEnvironment : IEnvironment<Type>
         Enclosing = null!;
     }
 
-    private readonly Dictionary<string, Type> values = [];
+    private readonly Dictionary<string, List<Type>> values = [];
 
-    public void Define(string name, Type value)
+    public void Define(string name, List<Type> types)
     {
-        values.Add(name, value);
+        values.Add(name, types);
     }
 
-    public Type Get(string name)
+    public List<Type> Get(string name)
     {
         if (IsDeclared(name)) return values[name];
 
@@ -150,7 +150,7 @@ class TypeEnvironment : IEnvironment<Type>
         else throw new Exception("Undefined Variable '" + name + "'.");
     }
 
-    public void Assign(string name, Type value)
+    public void Assign(string name, List<Type> value)
     {
         if (IsDeclared(name))
         {
@@ -167,7 +167,7 @@ class TypeEnvironment : IEnvironment<Type>
 
     public bool IsDeclared(string name)
     {
-        if (values.TryGetValue(name, out Type? _)) return true;
+        if (values.TryGetValue(name, out List<Type>? _)) return true;
         return false;
     }
 }

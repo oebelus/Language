@@ -22,7 +22,7 @@ class TypeChecker : Expr.IVisitor<Type>, Statement.IVisitor
     }
     public Type? VisitAssign(Expr.Assign expression)
     {
-        Type? type = Environment.Get(expression.Name.Lexeme);
+        Type? type = Environment.Get(expression.Name.Lexeme)[0];
         Type? valueType = expression.Value.Accept(this);
 
         // Compare the type of the assigned value to the type of the variable
@@ -32,7 +32,7 @@ class TypeChecker : Expr.IVisitor<Type>, Statement.IVisitor
         }
         else
         {
-            Environment.Assign(expression.Name.Lexeme, valueType);
+            Environment.Assign(expression.Name.Lexeme, [valueType]);
         }
 
         return valueType;
@@ -97,49 +97,46 @@ class TypeChecker : Expr.IVisitor<Type>, Statement.IVisitor
 
     public Type? VisitCall(Expr.Call call)
     {
+        // Retrieve the callee type
         Type calleeType = call.Callee.Accept(this);
 
-        List<Type> calleeArguments = [];
+        // Retrieve the function types from the environment with the callee name
+        List<Type> types = Environment.Get(call.Callee.Name.Lexeme);
 
-        foreach (Expr argument in call.Arguments)
+        Type returnType = types[0];
+
+        List<Type> argumentsType = types[1..];
+
+        // Check the return type
+        if (calleeType != returnType)
         {
-            calleeArguments.Add(argument.Accept(this));
-        }
-
-        Function function = new([.. calleeArguments], calleeType);
-
-        // Check if the callee is a function
-        if (function is not Function functionType)
-        {
-            throw new Exception($"Can only call functions, instead got \"{function}\"");
+            throw new Exception($"Expected \"{returnType}\" but got {calleeType}");
         }
 
         // Check for number of arguments
-        if (call.Arguments.Count != functionType.Arguments.Length)
+        if (call.Arguments.Count != argumentsType.Count)
         {
-            throw new Exception($"Expected {functionType.Arguments.Length} arguments but got {call.Arguments.Count}");
+            throw new Exception($"Expected \"{argumentsType.Count}\" arguments but got \"{call.Arguments.Count}\"");
         }
 
-        List<Type> arguments = [];
+        // Evaluate the arguments of the call 
+        List<Type> calleeArguments = [];
 
         for (int i = 0; i < call.Arguments.Count; i++)
         {
             Type currentType = call.Arguments[i].Accept(this);
-            Type toMatchType = functionType.Arguments[i];
 
-            Console.WriteLine(currentType + " " + toMatchType);
-
-            if (currentType != toMatchType)
+            if (currentType != argumentsType[i])
             {
-                throw new Exception($"Expected {toMatchType} but got {currentType}");
+                throw new Exception($"Expected \"{argumentsType[i]}\" but got \"{currentType}\"");
             }
             else
             {
-                arguments.Add(currentType);
+                calleeArguments.Add(currentType);
             }
         }
 
-        return function;
+        return returnType;
     }
 
     public void VisitExpression(Statement.Expression Statement)
@@ -149,23 +146,18 @@ class TypeChecker : Expr.IVisitor<Type>, Statement.IVisitor
 
     public void VisitFunction(Statement.Function function)
     {
-        // Define the function in the global environment
-        Environment.Define(function.Name.Lexeme, function.Type);
-
-        TypeEnvironment prev = Environment;
-
-        // Creating a local environment
-        TypeEnvironment localEnvironment = new();
-
-        Environment = localEnvironment;
-
         Type functionType = function.Type;
 
-        // Defining my arguments in the local environment
+        // Getting the arguments' types
+        List<Type> types = [function.Type];
+
         foreach (var arg in function.Args)
         {
-            localEnvironment.Define(arg.Name.Lexeme, arg.Type);
+            types.Add(arg.Type);
         }
+
+        // Define the function
+        Environment.Define(function.Name.Lexeme, types);
 
         foreach (var statement in function.Body)
         {
@@ -181,9 +173,6 @@ class TypeChecker : Expr.IVisitor<Type>, Statement.IVisitor
         {
             throw new Exception($"Function {function.Name.Lexeme} must return a value of type {functionType}");
         }
-
-        // Switching back to the previous environment
-        Environment = prev;
     }
 
     public Type? VisitGrouping(Expr.Grouping expression)
@@ -263,7 +252,7 @@ class TypeChecker : Expr.IVisitor<Type>, Statement.IVisitor
 
     public Type? VisitVariableExpression(Expr.VariableExpression expression)
     {
-        return Environment.Get(expression.Name.Lexeme);
+        return Environment.Get(expression.Name.Lexeme)[0];
     }
 
     public void VisitVariableStatement(Statement.VariableStatement statement)
@@ -293,7 +282,7 @@ class TypeChecker : Expr.IVisitor<Type>, Statement.IVisitor
             type = statement.Initializer!.Accept(this);
         }
 
-        Environment.Define(statement.Name.Lexeme, type!);
+        Environment.Define(statement.Name.Lexeme, [type]!);
     }
 
     public void VisitWhile(Statement.While Statement)

@@ -59,8 +59,8 @@ namespace Language
                 }
             }
 
-            isEven(true);
-            isEven(5);
+            log isEven(10);
+            log isEven(5);
             ";
 
             Scanner _ = new(code_3);
