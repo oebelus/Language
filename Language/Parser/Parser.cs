@@ -1,5 +1,8 @@
-using Type = Language.TypeChecker.Type;
-using Language.TypeChecker;
+using Type = Language.Typer.Type;
+using Boolean = Language.Typer.Boolean;
+using Void = Language.Typer.Void;
+using Number = Language.Typer.Number;
+using String = Language.Typer.String;
 
 class Parser(List<Token> tokens)
 {
@@ -46,10 +49,11 @@ class Parser(List<Token> tokens)
 
     private Statement.Function Function()
     {
+        Type type = TokenToType(Consume(TokenType.TYPE)!);
         Token name = Consume(TokenType.IDENTIFIER)!;
 
         Consume(TokenType.LEFT_PAREN);
-        List<Token> arguments = [];
+        List<Statement.Argument> arguments = [];
 
         if (!Check(TokenType.RIGHT_PAREN))
         {
@@ -61,7 +65,7 @@ class Parser(List<Token> tokens)
                     Console.WriteLine("Function can't have more than 255 arguments.");
                 }
 
-                arguments.Add(Consume(TokenType.IDENTIFIER)!);
+                arguments.Add(new Statement.Argument(TokenToType(Consume(TokenType.TYPE)!), Consume(TokenType.IDENTIFIER)!));
 
             } while (Match(TokenType.COMMA));
         }
@@ -71,7 +75,7 @@ class Parser(List<Token> tokens)
         Consume(TokenType.LEFT_BRACE);
         List<Statement> body = Block();
 
-        return new Statement.Function(name, arguments, body);
+        return new Statement.Function(name, type, arguments, body);
     }
 
     private Statement Statement()
@@ -140,7 +144,7 @@ class Parser(List<Token> tokens)
         }
 
         // If the condition is omitted, we put true to trigger an infinite loop
-        condition ??= new Expr.Literal(true);
+        condition ??= new Expr.Literal(new Boolean(), true);
 
         // Building the loop with the condition and the body using a primitive while loop
         body = new Statement.While(condition, body);
@@ -372,11 +376,12 @@ class Parser(List<Token> tokens)
 
     private Expr Primary()
     {
-        if (Match(TokenType.TRUE)) return new Expr.Literal(true);
-        if (Match(TokenType.FALSE)) return new Expr.Literal(false);
-        if (Match(TokenType.NIL)) return new Expr.Literal(null);
+        if (Match(TokenType.TRUE)) return new Expr.Literal(new Boolean(), true);
+        if (Match(TokenType.FALSE)) return new Expr.Literal(new Boolean(), false);
+        if (Match(TokenType.NIL)) return new Expr.Literal(new Void(), null);
 
-        if (Match(TokenType.NUMBER, TokenType.STRING)) return new Expr.Literal(Previous().Literal);
+        if (Match(TokenType.NUMBER)) return new Expr.Literal(new Number(), Previous().Literal);
+        if (Match(TokenType.STRING)) return new Expr.Literal(new String(), Previous().Literal);
 
         if (Match(TokenType.IDENTIFIER)) return new Expr.VariableExpression(Previous());
 
@@ -387,7 +392,7 @@ class Parser(List<Token> tokens)
             return new Expr.Grouping(expr);
         }
 
-        return new Expr.Literal(null);
+        return new Expr.Literal(new Void(), null);
     }
 
     private Token? Consume(TokenType type)
@@ -441,8 +446,8 @@ class Parser(List<Token> tokens)
         return token.Lexeme switch
         {
             "num" => new Number(),
-            "bool" => new Language.TypeChecker.Boolean(),
-            _ => new Language.TypeChecker.Void(),
+            "bool" => new Boolean(),
+            _ => new Void(),
         };
     }
 }

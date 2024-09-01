@@ -1,4 +1,4 @@
-using Type = Language.TypeChecker.Type;
+using Type = Language.Typer.Type;
 
 abstract class Statement
 {
@@ -37,16 +37,23 @@ abstract class Statement
         }
     }
 
-    public class Function(Token name, List<Token> args, List<Statement> body) : Statement
+    public class Function(Token name, Type type, List<Argument> args, List<Statement> body) : Statement
     {
         public readonly Token Name = name;
-        public readonly List<Token> Args = args;
+        public readonly Type Type = type;
+        public readonly List<Argument> Args = args;
         public readonly List<Statement> Body = body;
 
         public override void Accept(IVisitor visitor)
         {
             visitor.VisitFunction(this);
         }
+    }
+
+    public class Argument(Type type, Token name)
+    {
+        public readonly Type Type = type;
+        public readonly Token Name = name;
     }
 
     public class If(Expr condition, Statement thenBranch, Statement elseBranch) : Statement

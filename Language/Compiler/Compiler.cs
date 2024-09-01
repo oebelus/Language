@@ -77,7 +77,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
     {
         Environment.Define(variable.Name.Lexeme, AddressCount);
 
-        CompileExpr(variable.Initializer);
+        CompileExpr(variable.Initializer!);
 
         Append($" {Instruction.instruction[Instructions.PUSH]} {AddressCount} {Instruction.instruction[Instructions.STORE]}");
 
@@ -122,7 +122,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
 
         foreach (var arg in function.Args)
         {
-            Environment.Define(arg.Lexeme, AddressCount);
+            Environment.Define(arg.Name.Lexeme, AddressCount);
             AddressCount++;
         }
 
@@ -133,7 +133,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
         Append($" {function.Name.Lexeme}:");
         for (int i = 0; i < argsLength; i++)
         {
-            object address = Environment.Get(function.Args[i].Lexeme)!;
+            object address = Environment.Get(function.Args[i].Name.Lexeme)!;
             Append($" {Instruction.instruction[Instructions.PUSH]} {address} {Instruction.instruction[Instructions.STORE]}");
         }
         CompileBlock(function.Body, Environment);

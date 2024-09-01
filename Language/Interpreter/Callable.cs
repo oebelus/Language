@@ -26,7 +26,7 @@ class LangFunction(Statement.Function declaration) : ICallable
 
         for (int i = 0; i < Declaration.Args.Count; i++)
         {
-            environment.Define(Declaration.Args[i].Lexeme
+            environment.Define(Declaration.Args[i].Name.Lexeme
                 , arguments[i]);
         }
 
@@ -48,7 +48,7 @@ class LangFunction(Statement.Function declaration) : ICallable
 
         for (int i = 0; i < Declaration.Args.Count; i++)
         {
-            environment.Define(Declaration.Args[i].Lexeme
+            environment.Define(Declaration.Args[i].Name.Lexeme
                 , arguments[i]);
         }
 

@@ -1,3 +1,5 @@
+using Type = Language.Typer.Type;
+
 abstract class Expr
 {
     public interface IVisitor<T>
@@ -49,8 +51,9 @@ abstract class Expr
         }
     }
 
-    public class Literal(object? value) : Expr
+    public class Literal(Type type, object? value) : Expr
     {
+        public readonly Type Type = type;
         public readonly object? Value = value;
 
         public override T Accept<T>(IVisitor<T> visitor)

@@ -1,3 +1,5 @@
+using Type = Language.Typer.Type;
+
 interface IEnvironment<T>
 {
     void Define(string name, T value);
@@ -116,7 +118,7 @@ class InterpreterEnv : IEnvironment<object>
     }
 }
 
-class TypeEnvironment : IEnvironment<Language.TypeChecker.Type>
+class TypeEnvironment : IEnvironment<Type>
 {
     readonly TypeEnvironment Enclosing;
 
@@ -132,14 +134,14 @@ class TypeEnvironment : IEnvironment<Language.TypeChecker.Type>
         Enclosing = null!;
     }
 
-    private readonly Dictionary<string, Language.TypeChecker.Type> values = [];
+    private readonly Dictionary<string, Type> values = [];
 
-    public void Define(string name, Language.TypeChecker.Type value)
+    public void Define(string name, Type value)
     {
         values.Add(name, value);
     }
 
-    public Language.TypeChecker.Type Get(string name)
+    public Type Get(string name)
     {
         if (IsDeclared(name)) return values[name];
 
@@ -148,7 +150,7 @@ class TypeEnvironment : IEnvironment<Language.TypeChecker.Type>
         else throw new Exception("Undefined Variable '" + name + "'.");
     }
 
-    public void Assign(string name, Language.TypeChecker.Type value)
+    public void Assign(string name, Type value)
     {
         if (IsDeclared(name))
         {
@@ -165,7 +167,7 @@ class TypeEnvironment : IEnvironment<Language.TypeChecker.Type>
 
     public bool IsDeclared(string name)
     {
-        if (values.TryGetValue(name, out Language.TypeChecker.Type? _)) return true;
+        if (values.TryGetValue(name, out Type? _)) return true;
         return false;
     }
 }

@@ -104,9 +104,9 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
         };
     }
 
-    public object VisitLiteral(Expr.Literal literal)
+    public object? VisitLiteral(Expr.Literal literal)
     {
-        return literal.Value!;
+        return literal.Value;
     }
 
     public object VisitGrouping(Expr.Grouping grouping)
@@ -167,7 +167,6 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
 
     public void VisitWhile(Statement.While statement)
     {
-        Console.WriteLine(statement.Condition);
         while (IsTruthy(Evaluate(statement.Condition)))
             Execute(statement.Body);
     }

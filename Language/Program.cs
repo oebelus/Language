@@ -48,9 +48,19 @@ namespace Language
 
             string code_3 =
             @"
-            num x = 5;
-            bool y = true;
-            let z = 10;
+            num x = 11;
+            
+            function bool isEven(num x) {
+                if (x % 2 == 0) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+
+            isEven(true);
+            isEven(5);
             ";
 
             Scanner _ = new(code_3);
@@ -72,10 +82,14 @@ namespace Language
                 Console.WriteLine(statement);
             }
 
-            // Interpreter interpreter = new();
-            // interpreter.Interpret(statements);
+            Console.WriteLine();
+            TypeChecker typeChecker = new();
+            typeChecker.TypeCheck(statements);
 
-            // Console.WriteLine();
+            Interpreter interpreter = new();
+            interpreter.Interpret(statements);
+
+            Console.WriteLine();
 
             // Compiler compiler = new();
             // string mnemo = compiler.Compile(statements);
