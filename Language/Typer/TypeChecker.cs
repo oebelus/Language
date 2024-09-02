@@ -156,8 +156,18 @@ class TypeChecker : Expr.IVisitor<Type>, Statement.IVisitor
             types.Add(arg.Type);
         }
 
-        // Define the function
+        // Define the function in the gloabal environment
         Environment.Define(function.Name.Lexeme, types);
+
+        // Create a local environment
+        TypeEnvironment previous = Environment;
+        Environment = new(Environment);
+
+        // Add function arguments to the local environment
+        foreach (var arg in function.Args)
+        {
+            Environment.Define(arg.Name.Lexeme, [arg.Type]);
+        }
 
         foreach (var statement in function.Body)
         {
@@ -173,6 +183,9 @@ class TypeChecker : Expr.IVisitor<Type>, Statement.IVisitor
         {
             throw new Exception($"Function {function.Name.Lexeme} must return a value of type {functionType}");
         }
+
+        // Restore previous environment
+        Environment = previous;
     }
 
     public Type? VisitGrouping(Expr.Grouping expression)
