@@ -1,7 +1,7 @@
 using Type = Language.Typer.Type;
 using Boolean = Language.Typer.Boolean;
 using Void = Language.Typer.Void;
-using Function = Language.Typer.Function;
+using String = Language.Typer.String;
 using Language.Typer;
 
 class TypeChecker : Expr.IVisitor<Type>, Statement.IVisitor
@@ -30,10 +30,6 @@ class TypeChecker : Expr.IVisitor<Type>, Statement.IVisitor
         {
             throw new Exception($"Wrong type for variable: {expression.Name.Lexeme} ({type}) and ({valueType})");
         }
-        else
-        {
-            Environment.Assign(expression.Name.Lexeme, [valueType]);
-        }
 
         return valueType;
     }
@@ -50,15 +46,20 @@ class TypeChecker : Expr.IVisitor<Type>, Statement.IVisitor
                 throw new Exception($"Right ({rightType}) and Left ({leftType}) should be of the same type");
             }
 
-            if (rightType is Boolean && leftType is Boolean)
+            if ((rightType is not Number && rightType is not String) || (leftType is not Number && leftType is not String))
             {
-                throw new Exception($"Boolean cannot be concatenated");
+                throw new Exception($"Right ({rightType}) and Left ({leftType}) should be of type Number or String");
             }
         }
 
         else if (booleanOps.Contains(binaryExpression.Operation.Type))
         {
-            return new Boolean();
+            if ((rightType is not Number && rightType is not Boolean) || (leftType is not Number && leftType is not Boolean))
+            {
+                throw new Exception($"Right ({rightType}) and Left ({leftType}) should be of type Number or Boolean");
+            }
+
+            else return new Boolean();
         }
 
         else

@@ -30,11 +30,18 @@ namespace Language
                 return true;
             }
 
-            isPrime(23);
             log isPrime(23);
             ";
 
-            Scanner _ = new(code_1);
+            string code_2 =
+            @"
+            num x = 5;
+            x = ""Hi"";
+
+            log x;
+            ";
+
+            Scanner _ = new(code_2);
 
             List<Token> tokens = Scanner.ScanTokens();
 

@@ -181,7 +181,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
 
     public void VisitLog(Statement.Log Statement)
     {
-
+        CompileExpr(Statement.expression);
     }
 
     public void VisitWhile(Statement.While Statement)
