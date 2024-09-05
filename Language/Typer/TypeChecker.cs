@@ -202,6 +202,10 @@ class TypeChecker : Expr.IVisitor<Type>, Statement.IVisitor
         {
             throw new Exception($"Condition ({condition}) should be Boolean");
         }
+
+        Statement.ThenBranch.Accept(this);
+
+        Statement.ElseBranch?.Accept(this);
     }
 
     public Type VisitLiteral(Expr.Literal expression)
