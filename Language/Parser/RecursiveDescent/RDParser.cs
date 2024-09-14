@@ -4,7 +4,7 @@ using Void = Language.Typer.Void;
 using Number = Language.Typer.Number;
 using String = Language.Typer.String;
 
-class Parser(List<Token> tokens)
+class RDParser(List<Token> tokens)
 {
     private readonly List<Token> Tokens = tokens;
     private int current = 0;

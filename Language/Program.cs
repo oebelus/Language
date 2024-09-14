@@ -12,26 +12,26 @@ namespace Language
             let result = stdout(func(23))/20)
             */
 
-            string code_1 =
-            @"
-            function bool isPrime(num a) {
-                if (a < 2) {
-                    return false;
-                }
-                else {
-                    let i = 2;
-                    while (i * i <= a) {
-                        if (a % i == 0) {
-                            return false;
-                        }
-                        i = i + 1;
-                    }
-                }
-                return true;
-            }
+            // string code_1 =
+            // @"
+            // function bool isPrime(num a) {
+            //     if (a < 2) {
+            //         return false;
+            //     }
+            //     else {
+            //         let i = 2;
+            //         while (i * i <= a) {
+            //             if (a % i == 0) {
+            //                 return false;
+            //             }
+            //             i = i + 1;
+            //         }
+            //     }
+            //     return true;
+            // }
 
-            log isPrime(23);
-            ";
+            // log isPrime(23);
+            // ";
 
             string code_2 =
             @"
@@ -50,7 +50,7 @@ namespace Language
                 Token.TokenLogger(item);
             }
 
-            Parser parser = new(tokens);
+            RDParser parser = new(tokens);
 
             List<Statement> statements = parser.Parse();
 
