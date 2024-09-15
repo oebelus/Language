@@ -28,8 +28,8 @@ enum TokenType
     IDENTIFIER, STRING, NUMBER, TYPE,
 
     // Keywords.
-    ELSE, FALSE, FUN, FOR, IF, NIL,
-    LOG, RETURN, TRUE, VAR, WHILE,
+    ELSE, FALSE, FUN, FOR, IF, NIL, THIS,
+    LOG, RETURN, TRUE, VAR, WHILE, CLASS, SUPER,
 
     EOF
 }

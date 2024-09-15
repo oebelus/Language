@@ -33,15 +33,15 @@ namespace Language
             // log isPrime(23);
             // ";
 
-            string code_2 =
-            @"
-            num x = 5;
-            x = ""Hi"";
+            // string code_2 =
+            // @"
+            // num x = 5;
+            // x = ""Hi"";
 
-            log x;
-            ";
+            // log x;
+            // ";
 
-            Scanner _ = new(code_2);
+            Scanner _ = new("1+5*10");
 
             List<Token> tokens = Scanner.ScanTokens();
 
@@ -50,28 +50,36 @@ namespace Language
                 Token.TokenLogger(item);
             }
 
-            RDParser parser = new(tokens);
-
-            List<Statement> statements = parser.Parse();
-
             Console.WriteLine();
-            foreach (var statement in statements)
-            {
-                Console.WriteLine(statement);
-            }
 
-            Console.WriteLine();
-            TypeChecker typeChecker = new();
-            typeChecker.TypeCheck(statements);
+            PParser parser = new(tokens);
 
-            Interpreter interpreter = new();
-            interpreter.Interpret(statements);
+            parser.Parse();
 
             Console.WriteLine();
 
-            Compiler compiler = new();
-            string mnemo = compiler.Compile(statements);
-            Console.WriteLine(mnemo);
+            AstPrinter astPrinter = new();
+
+            Console.WriteLine(astPrinter.Print(parser.Parse()));
+
+            // Console.WriteLine();
+            // foreach (var statement in statements)
+            // {
+            //     Console.WriteLine(statement);
+            // }
+
+            // Console.WriteLine();
+            // TypeChecker typeChecker = new();
+            // typeChecker.TypeCheck(statements);
+
+            // Interpreter interpreter = new();
+            // interpreter.Interpret(statements);
+
+            // Console.WriteLine();
+
+            // Compiler compiler = new();
+            // string mnemo = compiler.Compile(statements);
+            // Console.WriteLine(mnemo);
 
         }
     }

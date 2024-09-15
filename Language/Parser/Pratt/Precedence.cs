@@ -3,6 +3,7 @@ class Precedence
     public enum Binding
     {
         //COMMA,
+        NONE,
         ASSIGNMENT,
         CONDITIONAL,
         OR,
