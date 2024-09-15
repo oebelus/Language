@@ -1,7 +1,7 @@
 using Language.Typer;
 using Binding = Precedence.Binding;
 
-class PParser
+class Pratt
 {
     private List<Token>? Tokens;
     private int current = 0;
@@ -9,7 +9,7 @@ class PParser
     public TokenType[] binary = [TokenType.PLUS, TokenType.MINUS, TokenType.STAR, TokenType.SLASH, TokenType.MOD];
     public TokenType[] unary = [TokenType.BANG, TokenType.MINUS];
 
-    public PParser(List<Token> tokens)
+    public Pratt(List<Token> tokens)
     {
         Tokens = tokens;
         rules = new()
@@ -56,58 +56,47 @@ class PParser
         };
     }
 
-    public Expr Parse()
+    public List<Expr> Parse()
     {
-        return Expression();
+        List<Expr> statements = [];
+        while (!IsAtEnd()) statements.Add(Expression());
+        return statements;
     }
 
     private Expr Expression()
     {
-        Token lhs = Peek();
-        Binding precedence = GetRule(lhs.Type).Precedence;
-        return ParsePrecedence(lhs, precedence);
+        Token lhs = Look();
+
+        // Start with the lowest precedence
+        return ParsePrecedence(lhs, Binding.NONE);
     }
 
-    // 1 + 5 * 10
+    // 1 + 5 * 10 / 11 - 5
     private Expr ParsePrecedence(Token token, Binding p)
     {
-        if (p >= Binding.PRIMARY)
-        {
-            ParsePrimary(token);
-        }
-
         Expr lhs = ParsePrimary(token);
 
-        Advance();
-
-        Token lookahead = Look();
-        Binding precedence = GetRule(lookahead.Type).Precedence;
-
-        while (binary.Contains(lookahead.Type) && precedence >= p)
+        while (true)
         {
+            Token lookahead = Peek();
+
+            if (!binary.Contains(lookahead.Type))
+                break;
+
+            Binding precedence = GetRule(lookahead.Type).Precedence;
+
+            if (precedence < p)
+                break;
+
+            Advance();
             Token operation = Look();
-            Binding opPrecedence = GetRule(operation.Type).Precedence;
 
-            Console.WriteLine($"Operation: {operation.Lexeme} at {current} with precedence {opPrecedence}\n");
+            Advance();
+            Token nextToken = Look();
 
-            Consume(TokenType.NUMBER);
-
-            Expr rhs;
-
-            lookahead = Peek();
-            Console.WriteLine($"Operation: {lookahead.Lexeme} at {current}\n");
-
-            while (binary.Contains(lookahead.Type) && precedence >= opPrecedence /*OR RIGHT ASSOCIATIVE OPERATOR*/)
-            {
-                Binding prec = GetRule(Peek().Type).Precedence > opPrecedence ? opPrecedence + 1 : opPrecedence;
-                rhs = ParsePrecedence(Look(), prec);
-                lookahead = Peek();
-
-                lhs = new Expr.Binary(lhs, operation, rhs);
-            }
+            Expr rhs = ParsePrecedence(nextToken, precedence + 1);
+            lhs = new Expr.Binary(lhs, operation, rhs);
         }
-        Console.WriteLine(lhs);
-
         return lhs;
     }
 
@@ -118,8 +107,9 @@ class PParser
 
     private Expr.Literal Number()
     {
-        Expr number = ParsePrecedence(Peek(), Binding.PRIMARY);
-        return new Expr.Literal(new Number(), number);
+        Token token = Look();
+        Advance();
+        return new Expr.Literal(new Number(), token.Literal);
     }
 
     private Expr.Grouping Grouping()
@@ -148,12 +138,6 @@ class PParser
     private ParseRule GetRule(TokenType type)
     {
         return rules[type];
-    }
-
-    private void Consume(TokenType type)
-    {
-        if (Check(type)) Advance();
-        else Console.WriteLine($"Expected {type} but got {Peek().Type}");
     }
 
     private Token Look()

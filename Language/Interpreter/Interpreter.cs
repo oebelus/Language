@@ -11,6 +11,19 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
         }
     }
 
+    public List<object> InterpretExpressions(List<Expr> expressions)
+    {
+        List<object> results = [];
+
+        foreach (var expression in expressions)
+        {
+            object result = Evaluate(expression);
+            results.Add(result);
+            Console.WriteLine(Stringify(result));
+        }
+        return results;
+    }
+
     private void Execute(Statement statement)
     {
         statement.Accept(this);

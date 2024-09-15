@@ -41,7 +41,7 @@ namespace Language
             // log x;
             // ";
 
-            Scanner _ = new("1+5*10");
+            Scanner _ = new("1 + 5 * 10 / 11 - 5");
 
             List<Token> tokens = Scanner.ScanTokens();
 
@@ -52,15 +52,13 @@ namespace Language
 
             Console.WriteLine();
 
-            PParser parser = new(tokens);
+            Pratt parser = new(tokens);
 
-            parser.Parse();
+            List<Expr> expressions = parser.Parse();
 
-            Console.WriteLine();
+            AstPrinter ast = new();
 
-            AstPrinter astPrinter = new();
-
-            Console.WriteLine(astPrinter.Print(parser.Parse()));
+            Console.WriteLine(ast.Print(expressions[0]));
 
             // Console.WriteLine();
             // foreach (var statement in statements)
@@ -72,8 +70,11 @@ namespace Language
             // TypeChecker typeChecker = new();
             // typeChecker.TypeCheck(statements);
 
-            // Interpreter interpreter = new();
-            // interpreter.Interpret(statements);
+            Console.WriteLine();
+            Interpreter interpreter = new();
+            interpreter.InterpretExpressions(expressions);
+
+            Console.WriteLine();
 
             // Console.WriteLine();
 
