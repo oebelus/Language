@@ -1,9 +1,9 @@
-using Binding = Precedence.Binding;
+using Precedence = Binding.Precedence;
 
-class ParseRule(Func<Pratt, Expr>? prefix, Func<Pratt, Expr, Expr>? infix, Binding precedence)
+class ParseRule(Func<Pratt, Expr>? prefix, Func<Pratt, Expr, Expr>? infix, Precedence precedence)
 {
     public readonly Func<Pratt, Expr>? Prefix = prefix;
     public readonly Func<Pratt, Expr, Expr>? Infix = infix;
-    public Binding Precedence = precedence;
+    public Precedence Precedence = precedence;
 }
 

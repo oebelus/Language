@@ -1,6 +1,6 @@
-class Precedence
+class Binding
 {
-    public enum Binding
+    public enum Precedence
     {
         //COMMA,
         NONE,

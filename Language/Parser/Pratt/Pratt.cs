@@ -1,120 +1,136 @@
-using Language.Typer;
-using Binding = Precedence.Binding;
+using Precedence = Binding.Precedence;
 using Number = Language.Typer.Number;
+using Void = Language.Typer.Void;
+using Boolean = Language.Typer.Boolean;
+using String = Language.Typer.String;
+using System.Linq.Expressions;
+using System.Security.AccessControl;
+using System.Data;
 
 class Pratt
 {
     private List<Token>? Tokens;
     private int current = 0;
-    private readonly Dictionary<TokenType, ParseRule> rules;
+    private readonly Dictionary<TokenType, Precedence> precedences;
     public TokenType[] binary = [TokenType.PLUS, TokenType.MINUS, TokenType.STAR, TokenType.SLASH, TokenType.MOD];
     public TokenType[] unary = [TokenType.BANG, TokenType.MINUS];
 
     public Pratt(List<Token> tokens)
     {
         Tokens = tokens;
-        rules = new()
+        precedences = new()
         {
-            [TokenType.LEFT_PAREN] = new ParseRule(Grouping, null, Binding.NONE),
-            [TokenType.RIGHT_PAREN] = new ParseRule(null, null, Binding.NONE),
-            [TokenType.LEFT_BRACE] = new ParseRule(null, null, Binding.NONE),
-            [TokenType.RIGHT_BRACE] = new ParseRule(null, null, Binding.NONE),
-            [TokenType.COMMA] = new ParseRule(null, null, Binding.NONE),
-            [TokenType.DOT] = new ParseRule(null, null, Binding.NONE),
-            [TokenType.MINUS] = new ParseRule(Unary, Binary, Binding.TERM),
-            [TokenType.PLUS] = new ParseRule(null, Binary, Binding.TERM),
-            [TokenType.SEMICOLON] = new ParseRule(null, null, Binding.NONE),
-            [TokenType.SLASH] = new ParseRule(null, Binary, Binding.FACTOR),
-            [TokenType.STAR] = new ParseRule(null, Binary, Binding.FACTOR),
-            [TokenType.BANG] = new ParseRule(null, null, Binding.NONE),
-            [TokenType.BANG_EQUAL] = new ParseRule(null, null, Binding.NONE),
-            [TokenType.EQUAL] = new ParseRule(null, null, Binding.NONE),
-            [TokenType.EQUAL_EQUAL] = new ParseRule(null, null, Binding.NONE),
-            [TokenType.GREATER] = new ParseRule(null, null, Binding.NONE),
-            [TokenType.GREATER_EQUAL] = new ParseRule(null, null, Binding.NONE),
-            [TokenType.LESS] = new ParseRule(null, null, Binding.NONE),
-            [TokenType.LESS_EQUAL] = new ParseRule(null, null, Binding.NONE),
-            [TokenType.IDENTIFIER] = new ParseRule(null, null, Binding.NONE),
-            [TokenType.STRING] = new ParseRule(null, null, Binding.NONE),
-            [TokenType.NUMBER] = new ParseRule(Number, null, Binding.NONE),
-            [TokenType.AND] = new ParseRule(null, null, Binding.NONE),
-            [TokenType.CLASS] = new ParseRule(null, null, Binding.NONE),
-            [TokenType.ELSE] = new ParseRule(null, null, Binding.NONE),
-            [TokenType.FALSE] = new ParseRule(null, null, Binding.NONE),
-            [TokenType.FOR] = new ParseRule(null, null, Binding.NONE),
-            [TokenType.FUN] = new ParseRule(null, null, Binding.NONE),
-            [TokenType.IF] = new ParseRule(null, null, Binding.NONE),
-            [TokenType.NIL] = new ParseRule(null, null, Binding.NONE),
-            [TokenType.OR] = new ParseRule(null, null, Binding.NONE),
-            [TokenType.LOG] = new ParseRule(null, null, Binding.NONE),
-            [TokenType.RETURN] = new ParseRule(null, null, Binding.NONE),
-            [TokenType.SUPER] = new ParseRule(null, null, Binding.NONE),
-            [TokenType.THIS] = new ParseRule(null, null, Binding.NONE),
-            [TokenType.TRUE] = new ParseRule(null, null, Binding.NONE),
-            [TokenType.VAR] = new ParseRule(null, null, Binding.NONE),
-            [TokenType.WHILE] = new ParseRule(null, null, Binding.NONE),
-            [TokenType.EOF] = new ParseRule(null, null, Binding.NONE)
+            [TokenType.LEFT_PAREN] = Precedence.NONE,
+            [TokenType.RIGHT_PAREN] = Precedence.NONE,
+            [TokenType.LEFT_BRACE] = Precedence.NONE,
+            [TokenType.RIGHT_BRACE] = Precedence.NONE,
+            [TokenType.COMMA] = Precedence.NONE,
+            [TokenType.DOT] = Precedence.NONE,
+            [TokenType.MINUS] = Precedence.TERM,
+            [TokenType.PLUS] = Precedence.TERM,
+            [TokenType.SEMICOLON] = Precedence.NONE,
+            [TokenType.SLASH] = Precedence.FACTOR,
+            [TokenType.STAR] = Precedence.FACTOR,
+            [TokenType.BANG] = Precedence.NONE,
+            [TokenType.BANG_EQUAL] = Precedence.NONE,
+            [TokenType.EQUAL] = Precedence.NONE,
+            [TokenType.EQUAL_EQUAL] = Precedence.NONE,
+            [TokenType.GREATER] = Precedence.NONE,
+            [TokenType.GREATER_EQUAL] = Precedence.NONE,
+            [TokenType.LESS] = Precedence.NONE,
+            [TokenType.LESS_EQUAL] = Precedence.NONE,
+            [TokenType.IDENTIFIER] = Precedence.NONE,
+            [TokenType.STRING] = Precedence.NONE,
+            [TokenType.NUMBER] = Precedence.NONE,
+            [TokenType.AND] = Precedence.NONE,
+            [TokenType.CLASS] = Precedence.NONE,
+            [TokenType.ELSE] = Precedence.NONE,
+            [TokenType.FALSE] = Precedence.NONE,
+            [TokenType.FOR] = Precedence.NONE,
+            [TokenType.FUN] = Precedence.NONE,
+            [TokenType.IF] = Precedence.NONE,
+            [TokenType.NIL] = Precedence.NONE,
+            [TokenType.OR] = Precedence.NONE,
+            [TokenType.LOG] = Precedence.NONE,
+            [TokenType.RETURN] = Precedence.NONE,
+            [TokenType.SUPER] = Precedence.NONE,
+            [TokenType.THIS] = Precedence.NONE,
+            [TokenType.TRUE] = Precedence.NONE,
+            [TokenType.VAR] = Precedence.NONE,
+            [TokenType.WHILE] = Precedence.NONE,
+            [TokenType.EOF] = Precedence.NONE,
         };
     }
 
     public List<Expr> Parse()
     {
         List<Expr> statements = [];
-        while (!IsAtEnd()) statements.Add(Expression());
+        while (!IsAtEnd()) statements.Add(ParseExpression(0));
         return statements;
     }
 
-    private Expr Expression()
+
+    public Expr ParseExpression(Precedence precedence)
     {
-        // Start with the lowest precedence
-        return ParsePrecedence(Binding.NONE);
+        Expr left = ParseAtom(); // NUD
+        
+        while (precedences[Look().Type] > precedence) {
+            left = ParseInfix(left); // LED
+        }
+        return left; 
     }
 
-    public Expr ParseExpression(Binding precedence)
+    private Expr ParseAtom() 
     {
-        // Token token = Advance();
-        // PrefixParselet prefix =
-        throw new NotImplementedException();
+        if (Match(TokenType.TRUE)) return new Expr.Literal(new Boolean(), true);
+        if (Match(TokenType.FALSE)) return new Expr.Literal(new Boolean(), false);
+        if (Match(TokenType.NIL)) return new Expr.Literal(new Void(), null);
+
+        if (Match(TokenType.NUMBER)) return new Expr.Literal(new Number(), Previous().Lexeme);
+        if (Match(TokenType.STRING)) return new Expr.Literal(new String(), Previous().Lexeme);
+
+        if (Match(TokenType.IDENTIFIER)) return new Expr.VariableExpression(Previous());
+
+        if (Match(TokenType.LEFT_PAREN))
+        {
+            Expr expr = ParseExpression(precedences[TokenType.LEFT_PAREN]);
+            Consume(TokenType.RIGHT_PAREN);
+            return new Expr.Grouping(expr);
+        }
+
+        if (Match(TokenType.BANG, TokenType.MINUS)) {
+            Expr right = ParseExpression(precedences[Advance().Type]);
+            return new Expr.Unary(right, Look());
+        }
+
+        throw new Exception();
     }
 
-    // 1 + 5 * 10 / 11 - 5
-    private Expr ParsePrecedence(Binding precedence)
-    {
-        // peek next token
-        Token token = Advance();
+    private Expr ParseInfix(Expr expression) {
+        Token token = Look();
 
-        var prefixRule = GetRule(token.Type).Prefix ?? throw new InvalidOperationException($"Expected expression at {Previous()}");
-
-        bool canAssign = precedence <= Binding.ASSIGNMENT;
-        Expr expr = prefixRule(this);
-
-        while (precedence < GetRule(Look().Type).Precedence)
-        {
-            token = Advance();
-            var infixRule = GetRule(token.Type).Infix;
-
-            if (infixRule == null) break;
-
-            expr = infixRule(this, expr);
+        if (binary.Contains(token.Type)) {
+            Precedence precedence = precedences[token.Type];
+            Advance();
+            Expr right = ParseExpression(precedence);
+            return new Expr.Binary(expression, token, right);
+        } else if (unary.Contains(token.Type)) {
+            Advance();
+            return new Expr.Unary(expression, token);
+        } else {
+            throw new SyntaxErrorException();
         }
-
-        if (canAssign && Match(TokenType.EQUAL))
-        {
-            throw new InvalidOperationException("Invalid assignment target.");
-        }
-
-        return expr;
     }
 
     private Expr.Literal Number(Pratt _)
     {
-        return new Expr.Literal(new Number(), Previous().Literal);
+        return new Expr.Literal(new Number(), Previous().Lexeme);
     }
 
     private Expr.Grouping Grouping(Pratt _)
     {
         // Consume(TokenType.LEFT_PAREN);
-        Expr expression = Expression();
+        Expr expression = ParseExpression(precedences[Advance().Type]);
         Consume(TokenType.RIGHT_PAREN);
         return new Expr.Grouping(expression);
     }
@@ -122,7 +138,7 @@ class Pratt
     private Expr.Unary Unary(Pratt _)
     {
         Token operation = Previous();
-        Expr right = ParsePrecedence(Binding.UNARY);
+        Expr right = ParseExpression(Precedence.UNARY);
 
         return new Expr.Unary(right, operation);
     }
@@ -130,15 +146,15 @@ class Pratt
     private Expr.Binary Binary(Pratt _, Expr left)
     {
         Token operation = Previous();
-        ParseRule rule = GetRule(operation.Type);
-        Expr right = ParsePrecedence(rule.Precedence + 1);
+        Precedence precedence = GetRule(operation.Type);
+        Expr right = ParseExpression(precedence + 1);
 
         return new Expr.Binary(left, operation, right);
     }
 
-    private ParseRule GetRule(TokenType type)
+    private Precedence GetRule(TokenType type)
     {
-        return rules[type];
+        return precedences[type];
     }
 
     private Token Look()
@@ -160,7 +176,7 @@ class Pratt
 
     private bool Check(TokenType type)
     {
-        return Peek().Type == type;
+        return Look().Type == type;
     }
 
     private bool Match(params TokenType[] types)
