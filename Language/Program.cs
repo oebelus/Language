@@ -41,7 +41,7 @@ namespace Language
             // log x;
             // ";
 
-            Scanner _ = new("1 + 5 * 10 / 11 - 5");
+            Scanner _ = new("-5");
 
             List<Token> tokens = Scanner.ScanTokens();
 
@@ -76,11 +76,9 @@ namespace Language
 
             Console.WriteLine();
 
-            // Console.WriteLine();
-
-            // Compiler compiler = new();
-            // string mnemo = compiler.Compile(statements);
-            // Console.WriteLine(mnemo);
+            Compiler compiler = new();
+            string mnemo = compiler.CompileExpressions(expressions);
+            Console.WriteLine(mnemo);
 
         }
     }

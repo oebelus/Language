@@ -1,9 +1,9 @@
 using Binding = Precedence.Binding;
 
-class ParseRule(Delegate? prefix, Delegate? infix, Binding precedence)
+class ParseRule(Func<Pratt, Expr>? prefix, Func<Pratt, Expr, Expr>? infix, Binding precedence)
 {
-    public readonly Delegate? Prefix = prefix;
-    public readonly Delegate? Infix = infix;
+    public readonly Func<Pratt, Expr>? Prefix = prefix;
+    public readonly Func<Pratt, Expr, Expr>? Infix = infix;
     public Binding Precedence = precedence;
 }
 

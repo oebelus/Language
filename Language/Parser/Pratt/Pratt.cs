@@ -1,5 +1,6 @@
 using Language.Typer;
 using Binding = Precedence.Binding;
+using Number = Language.Typer.Number;
 
 class Pratt
 {
@@ -65,72 +66,72 @@ class Pratt
 
     private Expr Expression()
     {
-        Token lhs = Look();
-
         // Start with the lowest precedence
-        return ParsePrecedence(lhs, Binding.NONE);
+        return ParsePrecedence(Binding.NONE);
     }
 
-    // 1 + 5 * 10 / 11 - 5
-    private Expr ParsePrecedence(Token token, Binding p)
+    public Expr ParseExpression(Binding precedence)
     {
-        Expr lhs = ParsePrimary(token);
-
-        while (true)
-        {
-            Token lookahead = Peek();
-
-            if (!binary.Contains(lookahead.Type))
-                break;
-
-            Binding precedence = GetRule(lookahead.Type).Precedence;
-
-            if (precedence < p)
-                break;
-
-            Advance();
-            Token operation = Look();
-
-            Advance();
-            Token nextToken = Look();
-
-            Expr rhs = ParsePrecedence(nextToken, precedence + 1);
-            lhs = new Expr.Binary(lhs, operation, rhs);
-        }
-        return lhs;
-    }
-
-    private static Expr.Literal ParsePrimary(Token token)
-    {
-        return new Expr.Literal(new Number(), token.Literal);
-    }
-
-    private Expr.Literal Number()
-    {
-        Token token = Look();
-        Advance();
-        return new Expr.Literal(new Number(), token.Literal);
-    }
-
-    private Expr.Grouping Grouping()
-    {
+        // Token token = Advance();
+        // PrefixParselet prefix =
         throw new NotImplementedException();
     }
 
-    private Expr.Unary Unary()
+    // 1 + 5 * 10 / 11 - 5
+    private Expr ParsePrecedence(Binding precedence)
+    {
+        // peek next token
+        Token token = Advance();
+
+        var prefixRule = GetRule(token.Type).Prefix ?? throw new InvalidOperationException($"Expected expression at {Previous()}");
+
+        bool canAssign = precedence <= Binding.ASSIGNMENT;
+        Expr expr = prefixRule(this);
+
+        while (precedence < GetRule(Look().Type).Precedence)
+        {
+            token = Advance();
+            var infixRule = GetRule(token.Type).Infix;
+
+            if (infixRule == null) break;
+
+            expr = infixRule(this, expr);
+        }
+
+        if (canAssign && Match(TokenType.EQUAL))
+        {
+            throw new InvalidOperationException("Invalid assignment target.");
+        }
+
+        return expr;
+    }
+
+    private Expr.Literal Number(Pratt _)
+    {
+        return new Expr.Literal(new Number(), Previous().Literal);
+    }
+
+    private Expr.Grouping Grouping(Pratt _)
+    {
+        // Consume(TokenType.LEFT_PAREN);
+        Expr expression = Expression();
+        Consume(TokenType.RIGHT_PAREN);
+        return new Expr.Grouping(expression);
+    }
+
+    private Expr.Unary Unary(Pratt _)
     {
         Token operation = Previous();
-        Expr right = ParsePrecedence(Peek(), Binding.UNARY);
+        Expr right = ParsePrecedence(Binding.UNARY);
 
         return new Expr.Unary(right, operation);
     }
 
-    private Expr.Binary Binary(Expr left)
+    private Expr.Binary Binary(Pratt _, Expr left)
     {
         Token operation = Previous();
-        TokenType operatorType = operation.Type;
-        ParseRule rule = GetRule(operatorType);
-        Expr right = ParsePrecedence(Peek(), rule.Precedence + 1);
+        ParseRule rule = GetRule(operation.Type);
+        Expr right = ParsePrecedence(rule.Precedence + 1);
 
         return new Expr.Binary(left, operation, right);
     }
@@ -151,14 +152,28 @@ class Pratt
         return Tokens![next];
     }
 
-    private void Advance()
+    private Token Advance()
     {
         if (!IsAtEnd()) current++;
+        return Previous();
     }
 
     private bool Check(TokenType type)
     {
         return Peek().Type == type;
+    }
+
+    private bool Match(params TokenType[] types)
+    {
+        foreach (TokenType type in types)
+        {
+            if (Check(type))
+            {
+                Advance();
+                return true;
+            }
+        }
+        return false;
     }
 
     private Token Previous()
@@ -170,4 +185,14 @@ class Pratt
     {
         return Peek().Type == TokenType.EOF;
     }
+
+    private void Consume(TokenType type)
+    {
+        if (Check(type))
+        {
+            Advance();
+        }
+        throw new InvalidOperationException($"Expected token of type {type}, but got {Peek().Type}.");
+    }
+
 }

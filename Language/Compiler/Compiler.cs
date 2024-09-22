@@ -18,6 +18,15 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
         return $"{ByteCode.Trim()} HALT {functions.Trim()}";
     }
 
+    public string CompileExpressions(List<Expr> expressions)
+    {
+        foreach (var expression in expressions)
+        {
+            expression.Accept(this);
+        }
+        return $"{ByteCode.Trim()} HALT {functions.Trim()}";
+    }
+
     public object? VisitLiteral(Expr.Literal literal)
     {
         if (literal.Value is bool b) Append($" {Instruction.instruction[Instructions.PUSH]} {(b ? 1 : 0)}");
