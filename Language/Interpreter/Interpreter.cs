@@ -56,6 +56,15 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
         object left = Evaluate(binary.Left);
         object right = Evaluate(binary.Right);
 
+        if (left is string leftString && float.TryParse(leftString, out float leftFloat))
+        {
+            left = leftFloat;
+        }
+        if (right is string rightString && float.TryParse(rightString, out float rightFloat))
+        {
+            right = rightFloat;
+        }
+
         switch (binary.Operation.Type)
         {
             case TokenType.MINUS:

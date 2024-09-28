@@ -70,9 +70,11 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
         return null;
     }
 
-    public object VisitGrouping(Expr.Grouping expression)
+    public object? VisitGrouping(Expr.Grouping expression)
     {
-        throw new NotImplementedException();
+        CompileExpr(expression.Expression);
+
+        return null;
     }
 
     public object? VisitVariableExpression(Expr.VariableExpression expression)

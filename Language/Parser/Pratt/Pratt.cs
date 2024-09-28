@@ -3,8 +3,6 @@ using Number = Language.Typer.Number;
 using Void = Language.Typer.Void;
 using Boolean = Language.Typer.Boolean;
 using String = Language.Typer.String;
-using System.Linq.Expressions;
-using System.Security.AccessControl;
 using System.Data;
 
 class Pratt
@@ -73,20 +71,21 @@ class Pratt
     public Expr ParseExpression(Precedence precedence)
     {
         Expr left = ParseAtom(); // NUD
-        
-        while (precedences[Look().Type] > precedence) {
+
+        while (precedences[Look().Type] > precedence)
+        {
             left = ParseInfix(left); // LED
         }
-        return left; 
+        return left;
     }
 
-    private Expr ParseAtom() 
+    private Expr ParseAtom()
     {
         if (Match(TokenType.TRUE)) return new Expr.Literal(new Boolean(), true);
         if (Match(TokenType.FALSE)) return new Expr.Literal(new Boolean(), false);
         if (Match(TokenType.NIL)) return new Expr.Literal(new Void(), null);
 
-        if (Match(TokenType.NUMBER)) return new Expr.Literal(new Number(), Previous().Lexeme);
+        if (Match(TokenType.NUMBER)) return new Expr.Literal(new Number(), !IsAtEnd() ? Previous().Lexeme : Look().Lexeme);
         if (Match(TokenType.STRING)) return new Expr.Literal(new String(), Previous().Lexeme);
 
         if (Match(TokenType.IDENTIFIER)) return new Expr.VariableExpression(Previous());
@@ -98,63 +97,36 @@ class Pratt
             return new Expr.Grouping(expr);
         }
 
-        if (Match(TokenType.BANG, TokenType.MINUS)) {
-            Expr right = ParseExpression(precedences[Advance().Type]);
-            return new Expr.Unary(right, Look());
+        if (Match(TokenType.BANG, TokenType.MINUS))
+        {
+            Token operation = Previous();
+            Expr right = ParseExpression(precedences[Look().Type]);
+            return new Expr.Unary(right, operation);
         }
 
         throw new Exception();
     }
 
-    private Expr ParseInfix(Expr expression) {
-        Token token = Look();
+    private Expr ParseInfix(Expr left)
+    {
+        Token operation = Look();
 
-        if (binary.Contains(token.Type)) {
-            Precedence precedence = precedences[token.Type];
+        if (binary.Contains(operation.Type))
+        {
+            Precedence precedence = precedences[operation.Type];
             Advance();
             Expr right = ParseExpression(precedence);
-            return new Expr.Binary(expression, token, right);
-        } else if (unary.Contains(token.Type)) {
+            return new Expr.Binary(left, operation, right);
+        }
+        else if (unary.Contains(operation.Type))
+        {
             Advance();
-            return new Expr.Unary(expression, token);
-        } else {
+            return new Expr.Unary(left, operation);
+        }
+        else
+        {
             throw new SyntaxErrorException();
         }
-    }
-
-    private Expr.Literal Number(Pratt _)
-    {
-        return new Expr.Literal(new Number(), Previous().Lexeme);
-    }
-
-    private Expr.Grouping Grouping(Pratt _)
-    {
-        // Consume(TokenType.LEFT_PAREN);
-        Expr expression = ParseExpression(precedences[Advance().Type]);
-        Consume(TokenType.RIGHT_PAREN);
-        return new Expr.Grouping(expression);
-    }
-
-    private Expr.Unary Unary(Pratt _)
-    {
-        Token operation = Previous();
-        Expr right = ParseExpression(Precedence.UNARY);
-
-        return new Expr.Unary(right, operation);
-    }
-
-    private Expr.Binary Binary(Pratt _, Expr left)
-    {
-        Token operation = Previous();
-        Precedence precedence = GetRule(operation.Type);
-        Expr right = ParseExpression(precedence + 1);
-
-        return new Expr.Binary(left, operation, right);
-    }
-
-    private Precedence GetRule(TokenType type)
-    {
-        return precedences[type];
     }
 
     private Token Look()
@@ -207,6 +179,7 @@ class Pratt
         if (Check(type))
         {
             Advance();
+            return;
         }
         throw new InvalidOperationException($"Expected token of type {type}, but got {Peek().Type}.");
     }
