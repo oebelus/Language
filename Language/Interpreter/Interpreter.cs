@@ -118,6 +118,11 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
     {
         object right = Evaluate(unary.Right);
 
+        if (right is string rightString && float.TryParse(rightString, out float rightFloat))
+        {
+            right = rightFloat;
+        }
+
         return unary.Operation.Type switch
         {
             TokenType.MINUS => -(float)right,

@@ -85,23 +85,19 @@ class Pratt
         if (Match(TokenType.FALSE)) return new Expr.Literal(new Boolean(), false);
         if (Match(TokenType.NIL)) return new Expr.Literal(new Void(), null);
 
-        if (Match(TokenType.NUMBER)) return new Expr.Literal(new Number(), !IsAtEnd() ? Previous().Lexeme : Look().Lexeme);
+        if (Match(TokenType.NUMBER)) return new Expr.Literal(new Number(), Previous().Type == TokenType.NUMBER ? Previous().Lexeme : Look().Lexeme);
         if (Match(TokenType.STRING)) return new Expr.Literal(new String(), Previous().Lexeme);
 
         if (Match(TokenType.IDENTIFIER)) return new Expr.VariableExpression(Previous());
 
         if (Match(TokenType.LEFT_PAREN))
         {
-            Expr expr = ParseExpression(precedences[TokenType.LEFT_PAREN]);
-            Consume(TokenType.RIGHT_PAREN);
-            return new Expr.Grouping(expr);
+            return Grouping();
         }
 
         if (Match(TokenType.BANG, TokenType.MINUS))
         {
-            Token operation = Previous();
-            Expr right = ParseExpression(precedences[Look().Type]);
-            return new Expr.Unary(right, operation);
+            return Unary();
         }
 
         throw new Exception();
@@ -113,20 +109,35 @@ class Pratt
 
         if (binary.Contains(operation.Type))
         {
-            Precedence precedence = precedences[operation.Type];
-            Advance();
-            Expr right = ParseExpression(precedence);
-            return new Expr.Binary(left, operation, right);
-        }
-        else if (unary.Contains(operation.Type))
-        {
-            Advance();
-            return new Expr.Unary(left, operation);
+            return Binary(left, operation);
         }
         else
         {
             throw new SyntaxErrorException();
         }
+    }
+
+    private Expr.Grouping Grouping()
+    {
+        Expr expr = ParseExpression(precedences[TokenType.LEFT_PAREN]);
+        Consume(TokenType.RIGHT_PAREN);
+        return new Expr.Grouping(expr);
+    }
+
+    private Expr.Unary Unary()
+    {
+        Token operation = Previous();
+        Expr right = ParseExpression(Precedence.UNARY);
+
+        return new Expr.Unary(right, operation);
+    }
+
+    private Expr.Binary Binary(Expr left, Token operation)
+    {
+        Precedence precedence = precedences[operation.Type];
+        Advance();
+        Expr right = ParseExpression(precedence);
+        return new Expr.Binary(left, operation, right);
     }
 
     private Token Look()
@@ -140,10 +151,9 @@ class Pratt
         return Tokens![next];
     }
 
-    private Token Advance()
+    private void Advance()
     {
         if (!IsAtEnd()) current++;
-        return Previous();
     }
 
     private bool Check(TokenType type)
@@ -153,6 +163,7 @@ class Pratt
 
     private bool Match(params TokenType[] types)
     {
+        Console.WriteLine(types[0]);
         foreach (TokenType type in types)
         {
             if (Check(type))
