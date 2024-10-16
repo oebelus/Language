@@ -41,7 +41,7 @@ namespace Language
             // log x;
             // ";
 
-            Scanner _ = new("false or (true and true)");
+            Scanner _ = new("5 != 10");
 
             List<Token> tokens = Scanner.ScanTokens();
 

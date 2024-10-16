@@ -11,10 +11,7 @@ class Pratt
     private List<Token>? Tokens;
     private int current = 0;
     private readonly Dictionary<TokenType, Precedence> precedences;
-    public TokenType[] binary = [TokenType.PLUS, TokenType.MINUS, TokenType.STAR, TokenType.SLASH, TokenType.MOD];
-    public TokenType[] unary = [TokenType.BANG, TokenType.MINUS];
-    public TokenType[] logic = [TokenType.OR, TokenType.AND];
-    public TokenType[] comparison = [TokenType.GREATER, TokenType.GREATER_EQUAL, TokenType.LESS, TokenType.LESS_EQUAL, TokenType.EQUAL_EQUAL, TokenType.BANG_EQUAL];
+    public TokenType[] comparison = [TokenType.GREATER, TokenType.GREATER_EQUAL, TokenType.LESS, TokenType.LESS_EQUAL];
 
     public Pratt(List<Token> tokens)
     {
@@ -32,14 +29,14 @@ class Pratt
             [TokenType.SEMICOLON] = Precedence.NONE,
             [TokenType.SLASH] = Precedence.FACTOR,
             [TokenType.STAR] = Precedence.FACTOR,
-            [TokenType.BANG] = Precedence.NONE,
-            [TokenType.BANG_EQUAL] = Precedence.NONE,
+            [TokenType.BANG] = Precedence.UNARY,
+            [TokenType.BANG_EQUAL] = Precedence.EQUALITY,
             [TokenType.EQUAL] = Precedence.NONE,
-            [TokenType.EQUAL_EQUAL] = Precedence.NONE,
-            [TokenType.GREATER] = Precedence.NONE,
-            [TokenType.GREATER_EQUAL] = Precedence.NONE,
-            [TokenType.LESS] = Precedence.NONE,
-            [TokenType.LESS_EQUAL] = Precedence.NONE,
+            [TokenType.EQUAL_EQUAL] = Precedence.EQUALITY,
+            [TokenType.GREATER] = Precedence.COMPARISON,
+            [TokenType.GREATER_EQUAL] = Precedence.COMPARISON,
+            [TokenType.LESS] = Precedence.COMPARISON,
+            [TokenType.LESS_EQUAL] = Precedence.COMPARISON,
             [TokenType.IDENTIFIER] = Precedence.NONE,
             [TokenType.STRING] = Precedence.NONE,
             [TokenType.NUMBER] = Precedence.NONE,
@@ -110,13 +107,21 @@ class Pratt
     {
         Token operation = Look();
 
-        if (binary.Contains(operation.Type))
+        if (Match(TokenType.PLUS, TokenType.MINUS, TokenType.STAR, TokenType.SLASH, TokenType.MOD))
         {
             return Binary(left, operation);
         }
         if (Match(TokenType.AND, TokenType.OR))
         {
             return Logical(left, operation);
+        }
+        if (Match(TokenType.EQUAL_EQUAL, TokenType.BANG_EQUAL))
+        {
+            return Equality(left, operation);
+        }
+        if (Match(TokenType.GREATER, TokenType.GREATER_EQUAL, TokenType.LESS, TokenType.LESS_EQUAL))
+        {
+            return Comparison(left, operation);
         }
         else
         {
@@ -149,7 +154,20 @@ class Pratt
     private Expr.Binary Binary(Expr left, Token operation)
     {
         Precedence precedence = precedences[operation.Type];
-        Advance();
+        Expr right = ParseExpression(precedence);
+        return new Expr.Binary(left, operation, right);
+    }
+
+    private Expr Equality(Expr left, Token operation)
+    {
+        Precedence precedence = precedences[operation.Type];
+        Expr right = ParseExpression(precedence);
+        return new Expr.Binary(left, operation, right);
+    }
+
+    private Expr Comparison(Expr left, Token operation)
+    {
+        Precedence precedence = precedences[operation.Type];
         Expr right = ParseExpression(precedence);
         return new Expr.Binary(left, operation, right);
     }

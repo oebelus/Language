@@ -8,7 +8,7 @@ class Binding
         CONDITIONAL,
         OR,
         AND,
-        EQUALITY,
+        EQUALITY, // TokenType.EQUAL_EQUAL, TokenType.BANG_EQUAL
         COMPARISON,
         SHIFT,
         TERM,

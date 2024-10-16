@@ -46,6 +46,11 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
         else if (binary.Operation.Type == TokenType.GREATER_EQUAL)
             Append($" {Instruction.instruction[Instructions.LT]} {Instruction.instruction[Instructions.NOT]}");
 
+        else if (binary.Operation.Type == TokenType.BANG_EQUAL)
+        {
+            Append($" {Instruction.instruction[Instructions.EQ]} {Instruction.instruction[Instructions.NOT]}");
+        }
+
         else Append($" {Instruction.operation[binary.Operation.Type]}");
 
         return null;
