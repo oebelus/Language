@@ -41,7 +41,7 @@ namespace Language
             // log x;
             // ";
 
-            Scanner _ = new("(-5 + - - 24 + 1)*10");
+            Scanner _ = new("false or (true and true)");
 
             List<Token> tokens = Scanner.ScanTokens();
 
@@ -55,10 +55,6 @@ namespace Language
             Pratt parser = new(tokens);
 
             List<Expr> expressions = parser.Parse();
-
-            AstPrinter ast = new();
-
-            Console.WriteLine(ast.Print(expressions[0]));
 
             // Console.WriteLine();
             // foreach (var statement in statements)

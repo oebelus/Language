@@ -3,6 +3,7 @@ using Number = Language.Typer.Number;
 using Void = Language.Typer.Void;
 using Boolean = Language.Typer.Boolean;
 using String = Language.Typer.String;
+using Type = Language.Typer.Type;
 using System.Data;
 
 class Pratt
@@ -12,6 +13,8 @@ class Pratt
     private readonly Dictionary<TokenType, Precedence> precedences;
     public TokenType[] binary = [TokenType.PLUS, TokenType.MINUS, TokenType.STAR, TokenType.SLASH, TokenType.MOD];
     public TokenType[] unary = [TokenType.BANG, TokenType.MINUS];
+    public TokenType[] logic = [TokenType.OR, TokenType.AND];
+    public TokenType[] comparison = [TokenType.GREATER, TokenType.GREATER_EQUAL, TokenType.LESS, TokenType.LESS_EQUAL, TokenType.EQUAL_EQUAL, TokenType.BANG_EQUAL];
 
     public Pratt(List<Token> tokens)
     {
@@ -40,7 +43,7 @@ class Pratt
             [TokenType.IDENTIFIER] = Precedence.NONE,
             [TokenType.STRING] = Precedence.NONE,
             [TokenType.NUMBER] = Precedence.NONE,
-            [TokenType.AND] = Precedence.NONE,
+            [TokenType.AND] = Precedence.AND,
             [TokenType.CLASS] = Precedence.NONE,
             [TokenType.ELSE] = Precedence.NONE,
             [TokenType.FALSE] = Precedence.NONE,
@@ -48,7 +51,7 @@ class Pratt
             [TokenType.FUN] = Precedence.NONE,
             [TokenType.IF] = Precedence.NONE,
             [TokenType.NIL] = Precedence.NONE,
-            [TokenType.OR] = Precedence.NONE,
+            [TokenType.OR] = Precedence.OR,
             [TokenType.LOG] = Precedence.NONE,
             [TokenType.RETURN] = Precedence.NONE,
             [TokenType.SUPER] = Precedence.NONE,
@@ -111,10 +114,21 @@ class Pratt
         {
             return Binary(left, operation);
         }
+        if (Match(TokenType.AND, TokenType.OR))
+        {
+            return Logical(left, operation);
+        }
         else
         {
             throw new SyntaxErrorException();
         }
+    }
+
+    private Expr.Logical Logical(Expr left, Token operation)
+    {
+        Precedence precedence = precedences[operation.Type];
+        Expr right = ParseExpression(precedence);
+        return new Expr.Logical(left, operation, right);
     }
 
     private Expr.Grouping Grouping()
@@ -163,7 +177,6 @@ class Pratt
 
     private bool Match(params TokenType[] types)
     {
-        Console.WriteLine(types[0]);
         foreach (TokenType type in types)
         {
             if (Check(type))
