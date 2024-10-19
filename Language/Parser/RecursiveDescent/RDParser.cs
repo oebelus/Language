@@ -162,12 +162,12 @@ class RDParser(List<Token> tokens)
         Consume(TokenType.RIGHT_PAREN);
 
         Statement thenBranch = Statement();
-        Statement elseBranch = null!;
+        Statement? elseBranch = null;
 
         if (Match(TokenType.ELSE))
             elseBranch = Statement();
 
-        return new Statement.If(condition, thenBranch, elseBranch);
+        return new Statement.If(condition, thenBranch, elseBranch!); // to fix null warning later
     }
 
     private Statement.While WhileStatement()

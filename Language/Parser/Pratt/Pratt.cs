@@ -5,6 +5,7 @@ using Boolean = Language.Typer.Boolean;
 using String = Language.Typer.String;
 using Type = Language.Typer.Type;
 using System.Data;
+using System.Text.RegularExpressions;
 
 class Pratt
 {
@@ -42,31 +43,217 @@ class Pratt
             [TokenType.NUMBER] = Precedence.NONE,
             [TokenType.AND] = Precedence.AND,
             [TokenType.CLASS] = Precedence.NONE,
-            [TokenType.ELSE] = Precedence.NONE,
+            [TokenType.ELSE] = Precedence.CONDITIONAL,
             [TokenType.FALSE] = Precedence.NONE,
-            [TokenType.FOR] = Precedence.NONE,
-            [TokenType.FUN] = Precedence.NONE,
-            [TokenType.IF] = Precedence.NONE,
+            [TokenType.FOR] = Precedence.CONDITIONAL,
+            [TokenType.FUN] = Precedence.DECLARATION,
+            [TokenType.IF] = Precedence.CONDITIONAL,
             [TokenType.NIL] = Precedence.NONE,
             [TokenType.OR] = Precedence.OR,
-            [TokenType.LOG] = Precedence.NONE,
-            [TokenType.RETURN] = Precedence.NONE,
+            [TokenType.LOG] = Precedence.STATEMENT,
+            [TokenType.RETURN] = Precedence.STATEMENT,
             [TokenType.SUPER] = Precedence.NONE,
             [TokenType.THIS] = Precedence.NONE,
             [TokenType.TRUE] = Precedence.NONE,
-            [TokenType.VAR] = Precedence.NONE,
-            [TokenType.WHILE] = Precedence.NONE,
+            [TokenType.VAR] = Precedence.DECLARATION,
+            [TokenType.WHILE] = Precedence.CONDITIONAL,
             [TokenType.EOF] = Precedence.NONE,
         };
     }
 
-    public List<Expr> Parse()
+    public List<Statement> Parse()
     {
-        List<Expr> statements = [];
-        while (!IsAtEnd()) statements.Add(ParseExpression(0));
+        List<Statement> statements = [];
+        while (!IsAtEnd()) statements.Add(ParseStatement());
         return statements;
     }
 
+
+    public Statement ParseStatement()
+    {
+        //if (Match(TokenType.CLASS)) return Class();
+        if (Match(TokenType.FUN)) return Function();
+        if (Match(TokenType.VAR, TokenType.TYPE)) return Var();
+        if (Match(TokenType.RETURN)) return ReturnStatement();
+        if (Match(TokenType.WHILE)) return While();
+        if (Match(TokenType.FOR)) return For();
+        if (Match(TokenType.IF)) return If();
+        if (Match(TokenType.LOG)) return Log();
+
+        return new Statement.Expression(ParseExpression(0));
+    }
+
+    private Statement.Log Log()
+    {
+        Expr expr = ParseExpression(0);
+        Consume(TokenType.SEMICOLON);
+        return new Statement.Log(expr);
+    }
+
+    private Statement.If If()
+    {
+        Expr condition = ParseExpression(Precedence.CONDITIONAL);
+
+        Statement thenBranch = ParseStatement();
+
+        Statement? elseBranch = Match(TokenType.ELSE) ? ParseStatement() : null;
+
+        return new Statement.If(condition, thenBranch, elseBranch!); // to fix null warning later
+    }
+
+    private Statement For()
+    {
+        Consume(TokenType.LEFT_PAREN);
+
+        Statement? initializer;
+        if (Match(TokenType.SEMICOLON))
+        {
+            initializer = null;
+        }
+        else if (Match(TokenType.VAR))
+        {
+            initializer = Var();
+        }
+        else
+        {
+            initializer = ExpressionStatement();
+        }
+
+        Expr? condition = null;
+
+        if (!Check(TokenType.RIGHT_PAREN))
+        {
+            condition = ParseExpression(0);
+        }
+
+        Consume(TokenType.SEMICOLON);
+
+        Expr? increment = null;
+
+        if (!Check(TokenType.RIGHT_PAREN))
+        {
+            increment = ParseExpression(0);
+        }
+
+        Consume(TokenType.RIGHT_PAREN);
+
+        Statement body = ParseStatement();
+
+        if (increment != null)
+        {
+            body = new Statement.Block([body, new Statement.Expression(increment)]);
+        }
+
+        condition ??= new Expr.Literal(new Boolean(), true);
+
+        body = new Statement.While(condition, body);
+
+        if (initializer != null) body = new Statement.Block([initializer, body]);
+
+        return body;
+    }
+
+    private Statement.Expression ExpressionStatement()
+    {
+        Expr value = ParseExpression(0);
+        Consume(TokenType.SEMICOLON);
+        return new Statement.Expression(value);
+    }
+
+    private Statement.While While()
+    {
+        Consume(TokenType.LEFT_PAREN);
+        Expr condition = ParseExpression(0);
+        Consume(TokenType.RIGHT_PAREN);
+
+        Statement body = ParseStatement();
+
+        return new Statement.While(condition, body);
+    }
+
+    private Statement.Return ReturnStatement()
+    {
+        Token keyword = Previous();
+        Expr? value = null;
+
+        if (!Check(TokenType.SEMICOLON))
+            value = ParseExpression(0);
+
+        Consume(TokenType.SEMICOLON);
+        return new Statement.Return(keyword, value!);
+    }
+
+    private Statement.VariableStatement Var()
+    {
+        Token typeToken = Previous();
+        Type? type = null;
+
+        if (typeToken.Type == TokenType.TYPE)
+        {
+            type = TokenToType(typeToken);
+        }
+
+        Token name = Consume(TokenType.IDENTIFIER);
+
+        Expr? initializer = null;
+
+        if (Look().Type == TokenType.EQUAL)
+        {
+            Consume(TokenType.EQUAL);
+            initializer = ParseExpression(Precedence.ASSIGNMENT);
+        }
+
+        Consume(TokenType.SEMICOLON);
+
+        return type != null
+            ? new Statement.VariableStatement(type, name, initializer)
+            : new Statement.VariableStatement(typeToken, name, initializer);
+    }
+
+    private Statement.Function Function()
+    {
+        Token typeToken = Previous();
+        Token name = Consume(TokenType.IDENTIFIER);
+
+        Consume(TokenType.LEFT_PAREN);
+        List<Statement.Argument> arguments = [];
+
+        if (!Check(TokenType.RIGHT_PAREN))
+        {
+            do
+            {
+                if (arguments.Count >= 255)
+                {
+                    Console.WriteLine("Function can't have more than 255 arguments.");
+                }
+
+                arguments.Add(new Statement.Argument(TokenToType(Consume(TokenType.TYPE)), Consume(TokenType.IDENTIFIER)));
+            }
+            while (Match(TokenType.COMMA));
+        }
+
+        Consume(TokenType.RIGHT_PAREN);
+
+        Consume(TokenType.LEFT_BRACE);
+
+        List<Statement> body = Block();
+
+        return new Statement.Function(name, TokenToType(typeToken), arguments, body);
+    }
+
+    private List<Statement> Block()
+    {
+        List<Statement> statements = [];
+
+        while (!Check(TokenType.RIGHT_BRACE) && !IsAtEnd())
+        {
+            statements.Add(ParseStatement());
+        }
+
+        Consume(TokenType.RIGHT_BRACE);
+
+        return statements;
+    }
 
     public Expr ParseExpression(Precedence precedence)
     {
@@ -123,10 +310,23 @@ class Pratt
         {
             return Comparison(left, operation);
         }
+        if (Match(TokenType.EQUAL))
+        {
+            return Assignment();
+        }
         else
         {
             throw new SyntaxErrorException();
         }
+    }
+
+    private Expr.Assign Assignment()
+    {
+        Token name = Previous();
+        Advance();
+        Expr value = ParseExpression(Precedence.ASSIGNMENT);
+        Consume(TokenType.SEMICOLON);
+        return new Expr.Assign(name, value);
     }
 
     private Expr.Logical Logical(Expr left, Token operation)
@@ -158,14 +358,14 @@ class Pratt
         return new Expr.Binary(left, operation, right);
     }
 
-    private Expr Equality(Expr left, Token operation)
+    private Expr.Binary Equality(Expr left, Token operation)
     {
         Precedence precedence = precedences[operation.Type];
         Expr right = ParseExpression(precedence);
         return new Expr.Binary(left, operation, right);
     }
 
-    private Expr Comparison(Expr left, Token operation)
+    private Expr.Binary Comparison(Expr left, Token operation)
     {
         Precedence precedence = precedences[operation.Type];
         Expr right = ParseExpression(precedence);
@@ -216,14 +416,23 @@ class Pratt
         return Peek().Type == TokenType.EOF;
     }
 
-    private void Consume(TokenType type)
+    private Token Consume(TokenType type)
     {
         if (Check(type))
         {
             Advance();
-            return;
+            return Previous();
         }
-        throw new InvalidOperationException($"Expected token of type {type}, but got {Peek().Type}.");
+        throw new InvalidOperationException($"Expected token of type {type}, but got {Look().Type}.");
     }
 
+    private static Type TokenToType(Token token)
+    {
+        return token.Lexeme switch
+        {
+            "num" => new Number(),
+            "bool" => new Boolean(),
+            _ => new Void(),
+        };
+    }
 }

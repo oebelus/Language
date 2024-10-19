@@ -12,36 +12,36 @@ namespace Language
             let result = stdout(func(23))/20)
             */
 
-            // string code_1 =
-            // @"
-            // function bool isPrime(num a) {
-            //     if (a < 2) {
-            //         return false;
-            //     }
-            //     else {
-            //         let i = 2;
-            //         while (i * i <= a) {
-            //             if (a % i == 0) {
-            //                 return false;
-            //             }
-            //             i = i + 1;
-            //         }
-            //     }
-            //     return true;
-            // }
+            string code_1 =
+            @"
+            function bool isPrime(num a) {
+                if (a < 2) {
+                    return false;
+                }
+                else {
+                    let i = 2;
+                    while (i * i <= a) {
+                        if (a % i == 0) {
+                            return false;
+                        }
+                        i = i + 1;
+                    }
+                }
+                return true;
+            }
 
-            // log isPrime(23);
-            // ";
+            log isPrime(23);
+            ";
 
-            // string code_2 =
-            // @"
-            // num x = 5;
-            // x = ""Hi"";
+            string code_2 =
+            @"
+            num x = 5;
+            x = ""Hi"";
 
-            // log x;
-            // ";
+            log x;
+            ";
 
-            Scanner _ = new("5 != 10");
+            Scanner _ = new(code_2);
 
             List<Token> tokens = Scanner.ScanTokens();
 
@@ -54,7 +54,7 @@ namespace Language
 
             Pratt parser = new(tokens);
 
-            List<Expr> expressions = parser.Parse();
+            List<Statement> statements = parser.Parse();
 
             // Console.WriteLine();
             // foreach (var statement in statements)
@@ -68,12 +68,12 @@ namespace Language
 
             Console.WriteLine();
             Interpreter interpreter = new();
-            interpreter.InterpretExpressions(expressions);
+            interpreter.Interpret(statements);
 
             Console.WriteLine();
 
             Compiler compiler = new();
-            string mnemo = compiler.CompileExpressions(expressions);
+            string mnemo = compiler.Compile(statements);
             Console.WriteLine(mnemo);
 
         }

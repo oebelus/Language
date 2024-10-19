@@ -4,6 +4,8 @@ class Binding
     {
         //COMMA,
         NONE,
+        DECLARATION,
+        STATEMENT,
         ASSIGNMENT,
         CONDITIONAL,
         OR,
@@ -14,7 +16,7 @@ class Binding
         TERM,
         FACTOR,
         UNARY,
-        CALL,
+        CALL, // . () []
         PRIMARY
     }
 }
