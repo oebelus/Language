@@ -19,7 +19,7 @@ namespace Language
                     return false;
                 }
                 else {
-                    let i = 2;
+                    num i = 2;
                     while (i * i <= a) {
                         if (a % i == 0) {
                             return false;
@@ -30,7 +30,7 @@ namespace Language
                 return true;
             }
 
-            log isPrime(23);
+            out isPrime(23);
             ";
 
             string code_2 =

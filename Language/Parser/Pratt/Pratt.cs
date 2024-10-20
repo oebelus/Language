@@ -26,6 +26,7 @@ class Pratt
             [TokenType.COMMA] = Precedence.NONE,
             [TokenType.DOT] = Precedence.NONE,
             [TokenType.MINUS] = Precedence.TERM,
+            [TokenType.MOD] = Precedence.TERM,
             [TokenType.PLUS] = Precedence.TERM,
             [TokenType.SEMICOLON] = Precedence.NONE,
             [TokenType.SLASH] = Precedence.FACTOR,
@@ -79,6 +80,7 @@ class Pratt
         if (Match(TokenType.FOR)) return For();
         if (Match(TokenType.IF)) return If();
         if (Match(TokenType.LOG)) return Log();
+        if (Match(TokenType.LEFT_BRACE)) return new Statement.Block(Block());
 
         return new Statement.Expression(ParseExpression(0));
     }
@@ -96,7 +98,12 @@ class Pratt
 
         Statement thenBranch = ParseStatement();
 
-        Statement? elseBranch = Match(TokenType.ELSE) ? ParseStatement() : null;
+        Statement? elseBranch = null;
+
+        if (Match(TokenType.ELSE))
+        {
+            elseBranch = ParseStatement();
+        }
 
         return new Statement.If(condition, thenBranch, elseBranch!); // to fix null warning later
     }
@@ -294,6 +301,21 @@ class Pratt
                 Expr value = ParseExpression(Precedence.NONE);
                 Consume(TokenType.SEMICOLON);
                 return new Expr.Assign(name, value);
+            }
+            if (Match(TokenType.LEFT_PAREN))
+            {
+                List<Expr> args = [];
+                if (!Check(TokenType.RIGHT_PAREN))
+                {
+                    do
+                    {
+                        args.Add(ParseExpression(Precedence.NONE));
+                    }
+                    while (Match(TokenType.COMMA));
+                }
+
+                Token paren = Consume(TokenType.RIGHT_PAREN);
+                return new Expr.Call(new Expr.VariableExpression(name), paren, args);
             }
             return new Expr.VariableExpression(Previous());
         }

@@ -15,7 +15,7 @@ class AstPrinter : Expr.IVisitor<string>, Statement.IVisitor
 
     public string VisitAssign(Expr.Assign expression)
     {
-        return Parenthesize(expression.Name.Lexeme, expression.Value);
+        return Parenthesize($"Assign {expression.Name.Lexeme}", expression.Value);
     }
 
 
@@ -26,12 +26,15 @@ class AstPrinter : Expr.IVisitor<string>, Statement.IVisitor
 
     public void VisitBlock(Statement.Block Statement)
     {
-        throw new NotImplementedException();
+        foreach (Statement statement in Statement.Statements)
+        {
+            statement.Accept(this);
+        }
     }
 
     public string VisitCall(Expr.Call expression)
     {
-        throw new NotImplementedException();
+        return ParenthesizeCall($"Call {expression.Callee.Name.Lexeme}", expression.Arguments);
     }
 
     public void VisitExpression(Statement.Expression Statement)
@@ -41,12 +44,15 @@ class AstPrinter : Expr.IVisitor<string>, Statement.IVisitor
 
     public void VisitFunction(Statement.Function Statement)
     {
-        Console.WriteLine(ParenthesizeFunction($"function {Statement.Name}", Statement.Args));
+        Console.WriteLine(ParenthesizeFunction($"function {Statement.Name.Lexeme}", Statement.Args));
+
+        Console.WriteLine("(");
 
         foreach (Statement statement in Statement.Body)
         {
             statement.Accept(this);
         }
+        Console.WriteLine(" )\n");
     }
 
     public string VisitGrouping(Expr.Grouping expr)
@@ -56,7 +62,11 @@ class AstPrinter : Expr.IVisitor<string>, Statement.IVisitor
 
     public void VisitIf(Statement.If Statement)
     {
-        throw new NotImplementedException();
+        Console.WriteLine(Parenthesize("if", Statement.Condition));
+
+        Statement.ThenBranch.Accept(this);
+
+        Statement.ElseBranch?.Accept(this);
     }
 
     public string VisitLiteral(Expr.Literal expr)
@@ -77,7 +87,10 @@ class AstPrinter : Expr.IVisitor<string>, Statement.IVisitor
 
     public void VisitReturn(Statement.Return Statement)
     {
-        throw new NotImplementedException();
+        if (Statement.Value != null)
+            Console.WriteLine(Parenthesize("return", Statement.Value));
+        else
+            Console.WriteLine(Parenthesize("return"));
     }
 
     public string VisitUnary(Expr.Unary expr)
@@ -105,7 +118,8 @@ class AstPrinter : Expr.IVisitor<string>, Statement.IVisitor
 
     public void VisitWhile(Statement.While Statement)
     {
-        throw new NotImplementedException();
+        Console.WriteLine(Parenthesize("while", Statement.Condition));
+        Statement.Body.Accept(this);
     }
 
     private string Parenthesize(string name, params Expr[] exprs)
@@ -125,7 +139,7 @@ class AstPrinter : Expr.IVisitor<string>, Statement.IVisitor
         return builder.ToString();
     }
 
-    private string ParenthesizeFunction(string name, List<Statement.Argument> args)
+    private static string ParenthesizeFunction(string name, List<Statement.Argument> args)
     {
         StringBuilder builder = new();
 
@@ -137,6 +151,23 @@ class AstPrinter : Expr.IVisitor<string>, Statement.IVisitor
             builder.Append(argument.Type.ToString());
             builder.Append(' ');
             builder.Append(argument.Name.Lexeme);
+        }
+
+        builder.Append(')');
+
+        return builder.ToString();
+    }
+
+    private string ParenthesizeCall(string name, List<Expr> arguments)
+    {
+        StringBuilder builder = new();
+
+        builder.Append('(').Append(name);
+
+        foreach (Expr argument in arguments)
+        {
+            builder.Append(' ');
+            builder.Append(argument.Accept(this));
         }
 
         builder.Append(')');
