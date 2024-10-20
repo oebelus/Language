@@ -10,7 +10,7 @@
 
 <expressionStmt>  := <expression> ";"
 
-<print>           := "log" <expression> ";"
+<print>           := "out" <expression> ";"
 
 <block>           := "{" + <declaration> + "}"
 
@@ -42,7 +42,7 @@
 
 <call>            := <IDENTIFIER> ( "(" <arguments>? ")" )*
 
-<function>        := <IDENTIFIER> "(" <parameters>? ")" <block>;
+<function>        := "function" <IDENTIFIER> <TYPE> "(" <parameters>? ")" <block>;
 
 <arguments>       := <IDENTIFIER> ( "," <IDENTIFIER> )*
 

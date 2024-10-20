@@ -38,10 +38,10 @@ namespace Language
             num x = 5;
             x = ""Hi"";
 
-            log x;
+            out x;
             ";
 
-            Scanner _ = new(code_2);
+            Scanner _ = new(code_1);
 
             List<Token> tokens = Scanner.ScanTokens();
 
@@ -55,6 +55,12 @@ namespace Language
             Pratt parser = new(tokens);
 
             List<Statement> statements = parser.Parse();
+
+            AstPrinter astPrinter = new();
+            foreach (var statement in statements)
+            {
+                astPrinter.PrintStatement(statement);
+            }
 
             // Console.WriteLine();
             // foreach (var statement in statements)

@@ -197,9 +197,8 @@ class Pratt
 
         Expr? initializer = null;
 
-        if (Look().Type == TokenType.EQUAL)
+        if (Match(TokenType.EQUAL))
         {
-            Consume(TokenType.EQUAL);
             initializer = ParseExpression(Precedence.ASSIGNMENT);
         }
 
@@ -212,7 +211,7 @@ class Pratt
 
     private Statement.Function Function()
     {
-        Token typeToken = Previous();
+        Token typeToken = Consume(TokenType.TYPE);
         Token name = Consume(TokenType.IDENTIFIER);
 
         Consume(TokenType.LEFT_PAREN);
@@ -259,10 +258,11 @@ class Pratt
     {
         Expr left = ParseAtom(); // NUD
 
-        while (precedences[Look().Type] > precedence)
+        while (precedences[Look().Type] != Precedence.STATEMENT && precedences[Look().Type] > precedence && !Check(TokenType.SEMICOLON))
         {
             left = ParseInfix(left); // LED
         }
+
         return left;
     }
 
@@ -275,8 +275,6 @@ class Pratt
         if (Match(TokenType.NUMBER)) return new Expr.Literal(new Number(), Previous().Type == TokenType.NUMBER ? Previous().Lexeme : Look().Lexeme);
         if (Match(TokenType.STRING)) return new Expr.Literal(new String(), Previous().Lexeme);
 
-        if (Match(TokenType.IDENTIFIER)) return new Expr.VariableExpression(Previous());
-
         if (Match(TokenType.LEFT_PAREN))
         {
             return Grouping();
@@ -285,6 +283,19 @@ class Pratt
         if (Match(TokenType.BANG, TokenType.MINUS))
         {
             return Unary();
+        }
+
+        if (Look().Type == TokenType.IDENTIFIER)
+        {
+            Token name = Look();
+            Advance();
+            if (Match(TokenType.EQUAL))
+            {
+                Expr value = ParseExpression(Precedence.NONE);
+                Consume(TokenType.SEMICOLON);
+                return new Expr.Assign(name, value);
+            }
+            return new Expr.VariableExpression(Previous());
         }
 
         throw new Exception();
@@ -310,23 +321,8 @@ class Pratt
         {
             return Comparison(left, operation);
         }
-        if (Match(TokenType.EQUAL))
-        {
-            return Assignment();
-        }
-        else
-        {
-            throw new SyntaxErrorException();
-        }
-    }
 
-    private Expr.Assign Assignment()
-    {
-        Token name = Previous();
-        Advance();
-        Expr value = ParseExpression(Precedence.ASSIGNMENT);
-        Consume(TokenType.SEMICOLON);
-        return new Expr.Assign(name, value);
+        throw new SyntaxErrorException();
     }
 
     private Expr.Logical Logical(Expr left, Token operation)

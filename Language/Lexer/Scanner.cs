@@ -12,7 +12,7 @@ class Scanner
         { "for", TokenType.FOR },
         { "if", TokenType.IF },
         { "nil", TokenType.NIL },
-        { "log", TokenType.LOG },
+        { "out", TokenType.LOG },
         { "return", TokenType.RETURN },
         { "true", TokenType.TRUE },
         { "let", TokenType.VAR },
