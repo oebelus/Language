@@ -47,7 +47,7 @@ The grammar:
 
 <call>            := <IDENTIFIER> ( "(" <arguments>? ")" )*
 
-<function>        := "function" <IDENTIFIER> <TYPE> "(" <parameters>? ")" <block>;
+<function>        := "function" <TYPE> <IDENTIFIER> "(" <parameters>? ")" <block>;
 
 <arguments>       := <IDENTIFIER> ( "," <IDENTIFIER> )*
 
