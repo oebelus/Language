@@ -98,9 +98,12 @@ class AstPrinter : Expr.IVisitor<string>, Statement.IVisitor
         return Parenthesize(expr.Operation.Lexeme, expr.Right);
     }
 
-    public string VisitVariable(Expr.VariableExpression variable)
+    public string VisitVariable(Statement.VariableStatement variable)
     {
-        throw new NotImplementedException();
+        if (variable.Initializer == null)
+            return Parenthesize($"{variable.Type?.ToString()} {variable.Name.Lexeme}");
+        else
+            return Parenthesize($"{variable.Type?.ToString()} {variable.Name.Lexeme}", variable.Initializer);
     }
 
     public string VisitVariableExpression(Expr.VariableExpression expression)

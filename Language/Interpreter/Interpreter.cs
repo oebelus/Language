@@ -1,12 +1,17 @@
 class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
 {
     public static readonly InterpreterEnv Globals = new();
-    private InterpreterEnv Environment = Globals;
+    public InterpreterEnv Environment = Globals;
+    public object LastResult { get; private set; } = "";
 
     public void Interpret(List<Statement> statements)
     {
         foreach (var statement in statements)
         {
+            if (statement is Statement.Expression expressionStatement)
+            {
+                LastResult = Evaluate(expressionStatement.expression);
+            }
             Execute(statement);
         }
     }
@@ -155,8 +160,25 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
 
     public void VisitLog(Statement.Log statement)
     {
-        object value = Evaluate(statement.expression);
-        Console.WriteLine(Stringify(value));
+        object? value;
+
+        if (statement.expression != null)
+        {
+            value = Evaluate(statement.expression);
+
+            if (statement.Keyword == "outline")
+                Console.WriteLine(Stringify(value));
+            else
+                Console.Write(Stringify(value));
+        }
+
+        else
+        {
+            if (statement.Keyword == "outline")
+                Console.WriteLine();
+            else
+                throw new Exception("Expected an expression.");
+        }
     }
 
     public object VisitCall(Expr.Call expression)
@@ -252,6 +274,11 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
             string text = obj.ToString()!;
             if (text.EndsWith(".0")) text = text.Substring(0, text.Length - 2);
             return text;
+        }
+
+        if (obj is string str)
+        {
+            return str.Replace("\"", "");
         }
 
         return obj.ToString()!;

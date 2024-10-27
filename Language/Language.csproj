@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\stackVM\vm.csproj" />
+    <ProjectReference Include="LanguageTest\LanguageTest.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

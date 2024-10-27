@@ -4,9 +4,10 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
     public string functions = "";
     private int AddressCount = 0;
     private bool isFunction = false;
+    private bool isLog = false;
 
     public static readonly CompilerEnv Globals = new();
-    private static CompilerEnv Environment = Globals;
+    public CompilerEnv Environment = Globals;
 
     public string Compile(List<Statement> statements)
     {
@@ -29,6 +30,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
 
     public object? VisitLiteral(Expr.Literal literal)
     {
+        if (isLog) return null;
         if (literal.Value is bool b) Append($" {Instruction.instruction[Instructions.PUSH]} {(b ? 1 : 0)}");
         else Append($" {Instruction.instruction[Instructions.PUSH]} {literal.Value}");
 
@@ -136,23 +138,36 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
     {
         Environment.Define(function.Name.Lexeme, function);
 
-        foreach (var arg in function.Args)
+        // Create a local environment
+        CompilerEnv previous = Environment;
+
+        try
         {
-            Environment.Define(arg.Name.Lexeme, AddressCount);
-            AddressCount++;
+            Environment = new CompilerEnv(Environment);
+
+            foreach (var arg in function.Args)
+            {
+                Environment.Define(arg.Name.Lexeme, AddressCount);
+                AddressCount++;
+            }
+
+            int argsLength = function.Args.Count;
+
+            isFunction = true;
+
+            Append($" {function.Name.Lexeme}:");
+            for (int i = 0; i < argsLength; i++)
+            {
+                object address = Environment.Get(function.Args[i].Name.Lexeme)!;
+                Append($" {Instruction.instruction[Instructions.PUSH]} {address} {Instruction.instruction[Instructions.STORE]}");
+            }
+            CompileBlock(function.Body, Environment);
+        }
+        finally
+        {
+            Environment = previous;
         }
 
-        int argsLength = function.Args.Count;
-
-        isFunction = true;
-
-        Append($" {function.Name.Lexeme}:");
-        for (int i = 0; i < argsLength; i++)
-        {
-            object address = Environment.Get(function.Args[i].Name.Lexeme)!;
-            Append($" {Instruction.instruction[Instructions.PUSH]} {address} {Instruction.instruction[Instructions.STORE]}");
-        }
-        CompileBlock(function.Body, Environment);
 
         isFunction = false;
     }
@@ -197,7 +212,12 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
 
     public void VisitLog(Statement.Log Statement)
     {
-        CompileExpr(Statement.expression);
+        if (Statement.expression != null)
+        {
+            isLog = true;
+            CompileExpr(Statement.expression);
+            isLog = false;
+        }
     }
 
     public void VisitWhile(Statement.While Statement)

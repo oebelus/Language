@@ -1,72 +1,54 @@
-﻿using vm;
-
-namespace Language
+﻿namespace Language
 {
     class Program
     {
-        public static void Main()
+        public static void Main(string[] args)
         {
-
-            /*
-            let x = stdout(9);
-            let result = stdout(func(23))/20)
-            */
-
-            string code_1 =
-            @"
-            function bool isPrime(num a) {
-                if (a < 2) {
-                    return false;
-                }
-                else {
-                    num i = 2;
-                    while (i * i <= a) {
-                        if (a % i == 0) {
-                            return false;
-                        }
-                        i = i + 1;
-                    }
-                }
-                return true;
-            }
-
-            out isPrime(23);
-            ";
-
-            string code_2 =
-            @"
-            num x = 5;
-            x = ""Hi"";
-
-            out x;
-            ";
-
-            Scanner _ = new(code_1);
-
-            List<Token> tokens = Scanner.ScanTokens();
-
-            foreach (var item in tokens)
+            if (args.Length == 1)
             {
-                Token.TokenLogger(item);
+                RunCode(File.ReadAllText(args[0]));
             }
+            else
+            {
+                RunCode(@"int x = 0;
+for (int i = 1; i < 5; i = i + 1) {
+    x = x + i;
+    out x;
+}");
+            }
+        }
+
+        public static void RunCode(string code)
+        {
+            Scanner scanner = new(code);
+
+            List<Token> tokens = scanner.ScanTokens();
+
+            // foreach (var item in tokens)
+            // {
+            //     Token.TokenLogger(item);
+            // }
 
             Console.WriteLine();
+
+            RDParser rDParser = new(tokens);
+            rDParser.Parse();
 
             Pratt parser = new(tokens);
 
             List<Statement> statements = parser.Parse();
 
-            AstPrinter astPrinter = new();
-            foreach (var statement in statements)
-            {
-                astPrinter.PrintStatement(statement);
-            }
-
-            // Console.WriteLine();
+            // AstPrinter astPrinter = new();
             // foreach (var statement in statements)
             // {
-            //     Console.WriteLine(statement);
+            //     astPrinter.PrintStatement(statement);
             // }
+
+            Console.WriteLine();
+            foreach (var statement in statements)
+            {
+                Console.WriteLine(statement);
+            }
 
             // Console.WriteLine();
             // TypeChecker typeChecker = new();
@@ -81,7 +63,9 @@ namespace Language
             Compiler compiler = new();
             string mnemo = compiler.Compile(statements);
             Console.WriteLine(mnemo);
-
         }
+        // LanguageTest test = new();
+        // test.RunTests();
+
     }
 }

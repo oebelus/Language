@@ -4,7 +4,7 @@ class Scanner
     private static readonly List<Token> Tokens = [];
     private static int start = 0; // the first character in the lexeme being scanned
     private static int current = 0; // the character currently being considered
-    private static int line = 1;
+    public static int line = 1;
     private static readonly Dictionary<string, TokenType> Keywords = new() {
         { "else", TokenType.ELSE },
         { "false", TokenType.FALSE },
@@ -13,6 +13,7 @@ class Scanner
         { "if", TokenType.IF },
         { "nil", TokenType.NIL },
         { "out", TokenType.LOG },
+        { "outline", TokenType.LOG },
         { "return", TokenType.RETURN },
         { "true", TokenType.TRUE },
         { "let", TokenType.VAR },
@@ -26,7 +27,7 @@ class Scanner
         Code = code;
     }
 
-    public static List<Token> ScanTokens()
+    public List<Token> ScanTokens()
     {
         while (!IsAtEnd())
         {
@@ -36,6 +37,14 @@ class Scanner
 
         Tokens.Add(new Token(TokenType.EOF, "", new object(), line));
         return Tokens;
+    }
+
+    public void ResetScanner()
+    {
+        current = 0;
+        start = 0;
+        line = 1;
+        Tokens.Clear();
     }
 
     private static bool IsAtEnd()
@@ -165,7 +174,7 @@ class Scanner
         if (Keywords.TryGetValue(text, out TokenType value))
             tokenType = value;
         else
-            if (text == "num" || text == "bool" || text == "void" || text == "string")
+            if (text == "int" || text == "bool" || text == "void" || text == "string")
         {
             tokenType = TokenType.TYPE;
             AddToken(tokenType, text);

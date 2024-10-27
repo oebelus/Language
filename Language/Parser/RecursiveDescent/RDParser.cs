@@ -112,7 +112,7 @@ class RDParser(List<Token> tokens)
         if (Match(TokenType.SEMICOLON)) initializer = null;
 
         // The initializer is a variable declaration
-        else if (Match(TokenType.VAR)) initializer = VarDeclaration();
+        else if (Match(TokenType.VAR, TokenType.TYPE)) initializer = VarDeclaration();
 
         // The initializer is an expression
         else initializer = ExpressionStatement();
@@ -183,9 +183,11 @@ class RDParser(List<Token> tokens)
 
     private Statement.Log LogStatement()
     {
-        Expr expr = Expression();
+        string keyword = Previous().Lexeme;
+        Expr? expr = Expression();
         Consume(TokenType.SEMICOLON);
-        return new Statement.Log(expr);
+
+        return new Statement.Log(keyword, expr);
     }
 
     private Statement.Expression ExpressionStatement()
@@ -445,7 +447,7 @@ class RDParser(List<Token> tokens)
     {
         return token.Lexeme switch
         {
-            "num" => new Number(),
+            "int" => new Number(),
             "bool" => new Boolean(),
             _ => new Void(),
         };

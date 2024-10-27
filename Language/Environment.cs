@@ -25,7 +25,7 @@ class CompilerEnv : IEnvironment<object>
         Enclosing = null!;
     }
 
-    private readonly Dictionary<string, object> addresses = [];
+    public readonly Dictionary<string, object> addresses = [];
 
     public void Define(string name, object value)
     {
@@ -60,6 +60,11 @@ class CompilerEnv : IEnvironment<object>
     {
         if (addresses.TryGetValue(name, out object? _)) return true;
         return false;
+    }
+
+    public void Clear()
+    {
+        addresses.Clear();
     }
 }
 
@@ -115,6 +120,11 @@ class InterpreterEnv : IEnvironment<object>
     {
         if (values.TryGetValue(name, out object? _)) return true;
         return false;
+    }
+
+    internal void Clear()
+    {
+        values.Clear();
     }
 }
 

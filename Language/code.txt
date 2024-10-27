@@ -1,0 +1,83 @@
+function bool isPrime(int a) {
+    if (a < 2) {
+        return false;
+    }
+    else {
+        int i = 2;
+            if (a % i == 0) {
+                return false;
+            }
+        i = i + 1;
+    }
+    return true;
+}
+
+outline isPrime(23);
+
+function int add(int a, int b) {
+    return a + b;
+}
+
+outline add(5, 5);
+
+function int sub(int a, int b) { 
+    return a - b; 
+}
+
+outline sub(10, 5);
+
+// Variable Declaration
+int x = 42;
+string name = "John";
+bool isValid = true;
+int pi = 3.14159;
+
+outline x;
+outline name;
+outline isValid;
+outline pi;
+
+// Comparison Operators
+int value = 42;
+if (value >= 0 and value <= 100) {
+    outline "Value is in range";
+}
+
+// Complex Expression
+int result = (5 + 3) * 2 - (10 / 2);
+
+// Unary Operators
+int negativeNum = -42;
+bool notTrue = !true;
+
+outline negativeNum;
+outline notTrue;
+
+// Function Call with Arguments
+function string formatName(string a, string b) {
+    return a + " " + b;
+}
+
+string fullName = formatName("Jane", "Smith");
+outline fullName;
+
+// Nested If Statements
+int one = 10;
+int two = 10;
+if (one > 0) {
+    if (two > 0) {
+        outline "Both positive";
+    } else {
+        outline "Only the first is positive";
+    }
+}
+
+// Complex While with Break
+int number = 0;
+while (true) {
+    if (number >= 10) {
+        break;
+    }
+    out number;
+    number = number + 1;
+}

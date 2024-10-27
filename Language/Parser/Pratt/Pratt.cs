@@ -5,14 +5,14 @@ using Boolean = Language.Typer.Boolean;
 using String = Language.Typer.String;
 using Type = Language.Typer.Type;
 using System.Data;
-using System.Text.RegularExpressions;
 
 class Pratt
 {
-    private List<Token>? Tokens;
+    private readonly List<Token>? Tokens;
     private int current = 0;
     private readonly Dictionary<TokenType, Precedence> precedences;
     public TokenType[] comparison = [TokenType.GREATER, TokenType.GREATER_EQUAL, TokenType.LESS, TokenType.LESS_EQUAL];
+    private bool isForLoop = false;
 
     public Pratt(List<Token> tokens)
     {
@@ -43,22 +43,9 @@ class Pratt
             [TokenType.STRING] = Precedence.NONE,
             [TokenType.NUMBER] = Precedence.NONE,
             [TokenType.AND] = Precedence.AND,
-            [TokenType.CLASS] = Precedence.NONE,
-            [TokenType.ELSE] = Precedence.CONDITIONAL,
             [TokenType.FALSE] = Precedence.NONE,
-            [TokenType.FOR] = Precedence.CONDITIONAL,
-            [TokenType.FUN] = Precedence.DECLARATION,
-            [TokenType.IF] = Precedence.CONDITIONAL,
-            [TokenType.NIL] = Precedence.NONE,
             [TokenType.OR] = Precedence.OR,
-            [TokenType.LOG] = Precedence.STATEMENT,
-            [TokenType.RETURN] = Precedence.STATEMENT,
-            [TokenType.SUPER] = Precedence.NONE,
-            [TokenType.THIS] = Precedence.NONE,
-            [TokenType.TRUE] = Precedence.NONE,
-            [TokenType.VAR] = Precedence.DECLARATION,
-            [TokenType.WHILE] = Precedence.CONDITIONAL,
-            [TokenType.EOF] = Precedence.NONE,
+            [TokenType.LOG] = Precedence.NONE,
         };
     }
 
@@ -87,9 +74,10 @@ class Pratt
 
     private Statement.Log Log()
     {
-        Expr expr = ParseExpression(0);
+        string keyword = Previous().Lexeme;
+        Expr? expr = ParseExpression(0);
         Consume(TokenType.SEMICOLON);
-        return new Statement.Log(expr);
+        return new Statement.Log(keyword, expr);
     }
 
     private Statement.If If()
@@ -113,14 +101,17 @@ class Pratt
         Consume(TokenType.LEFT_PAREN);
 
         Statement? initializer;
+
         if (Match(TokenType.SEMICOLON))
         {
             initializer = null;
         }
-        else if (Match(TokenType.VAR))
+
+        else if (Match(TokenType.VAR, TokenType.TYPE))
         {
             initializer = Var();
         }
+
         else
         {
             initializer = ExpressionStatement();
@@ -139,7 +130,9 @@ class Pratt
 
         if (!Check(TokenType.RIGHT_PAREN))
         {
-            increment = ParseExpression(0);
+            isForLoop = true;
+            increment = ParseExpression(precedences[TokenType.RIGHT_PAREN]);
+            isForLoop = false;
         }
 
         Consume(TokenType.RIGHT_PAREN);
@@ -148,7 +141,8 @@ class Pratt
 
         if (increment != null)
         {
-            body = new Statement.Block([body, new Statement.Expression(increment)]);
+            List<Statement> bodyList = [body, new Statement.Expression(increment)];
+            body = new Statement.Block(bodyList);
         }
 
         condition ??= new Expr.Literal(new Boolean(), true);
@@ -263,7 +257,7 @@ class Pratt
 
     public Expr ParseExpression(Precedence precedence)
     {
-        Expr left = ParseAtom(); // NUD
+        Expr? left = ParseAtom(); // NUD
 
         while (precedences[Look().Type] != Precedence.STATEMENT && precedences[Look().Type] > precedence && !Check(TokenType.SEMICOLON))
         {
@@ -273,7 +267,7 @@ class Pratt
         return left;
     }
 
-    private Expr ParseAtom()
+    private Expr? ParseAtom()
     {
         if (Match(TokenType.TRUE)) return new Expr.Literal(new Boolean(), true);
         if (Match(TokenType.FALSE)) return new Expr.Literal(new Boolean(), false);
@@ -299,7 +293,7 @@ class Pratt
             if (Match(TokenType.EQUAL))
             {
                 Expr value = ParseExpression(Precedence.NONE);
-                Consume(TokenType.SEMICOLON);
+                if (!isForLoop) Consume(TokenType.SEMICOLON);
                 return new Expr.Assign(name, value);
             }
             if (Match(TokenType.LEFT_PAREN))
@@ -318,6 +312,11 @@ class Pratt
                 return new Expr.Call(new Expr.VariableExpression(name), paren, args);
             }
             return new Expr.VariableExpression(Previous());
+        }
+
+        if (Previous().Type == TokenType.LOG && Look().Type == TokenType.SEMICOLON)
+        {
+            return null;
         }
 
         throw new Exception();
@@ -448,8 +447,9 @@ class Pratt
     {
         return token.Lexeme switch
         {
-            "num" => new Number(),
+            "int" => new Number(),
             "bool" => new Boolean(),
+            "string" => new String(),
             _ => new Void(),
         };
     }

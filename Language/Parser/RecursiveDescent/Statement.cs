@@ -68,10 +68,10 @@ abstract class Statement
         }
     }
 
-    public class Log(Expr expression) : Statement
+    public class Log(string keyword, Expr? expression) : Statement
     {
-
-        public readonly Expr expression = expression;
+        public readonly string Keyword = keyword;
+        public readonly Expr? expression = expression;
 
         public override void Accept(IVisitor visitor)
         {
