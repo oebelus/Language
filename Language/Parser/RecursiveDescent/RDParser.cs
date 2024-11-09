@@ -86,7 +86,21 @@ class RDParser(List<Token> tokens)
         if (Match(TokenType.FOR)) return ForStatement();
         if (Match(TokenType.LEFT_BRACE)) return new Statement.Block(Block());
         if (Match(TokenType.RETURN)) return ReturnStatement();
+        if (Match(TokenType.BREAK)) return BreakStatement();
+        if (Match(TokenType.CONTINUE)) return ContinueStatement();
         return ExpressionStatement();
+    }
+
+    private Statement.Continue ContinueStatement()
+    {
+        Consume(TokenType.SEMICOLON);
+        return new Statement.Continue();
+    }
+
+    private Statement.Break BreakStatement()
+    {
+        Consume(TokenType.SEMICOLON);
+        return new Statement.Break();
     }
 
     private Statement.Return ReturnStatement()
@@ -422,6 +436,11 @@ class RDParser(List<Token> tokens)
         return !IsAtEnd() && Peek().Type == type;
     }
 
+    private Token Look()
+    {
+        return Tokens![current];
+    }
+
     private Token Advance()
     {
         if (!IsAtEnd()) current++;
@@ -449,6 +468,7 @@ class RDParser(List<Token> tokens)
         {
             "int" => new Number(),
             "bool" => new Boolean(),
+            "string" => new String(),
             _ => new Void(),
         };
     }

@@ -311,4 +311,14 @@ class TypeChecker : Expr.IVisitor<Type>, Statement.IVisitor
             Statement.Body.Accept(this);
         }
     }
+
+    public void VisitBreak(Statement.Break statement)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void VisitContinue(Statement.Continue statement)
+    {
+        throw new NotImplementedException();
+    }
 }

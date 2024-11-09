@@ -78,6 +78,6 @@ while (true) {
     if (number >= 10) {
         break;
     }
-    out number;
+    outline number;
     number = number + 1;
 }

@@ -10,10 +10,13 @@
             }
             else
             {
-                RunCode(@"int x = 0;
-for (int i = 1; i < 5; i = i + 1) {
-    x = x + i;
-    out x;
+                RunCode(@"int number = 0;
+while (true) {
+    if (number >= 10) {
+        break;
+    }
+    outline number;
+    number = number + 1;
 }");
             }
         }

@@ -30,6 +30,7 @@ enum TokenType
     // Keywords.
     ELSE, FALSE, FUN, FOR, IF, NIL, THIS,
     LOG, RETURN, TRUE, VAR, WHILE, CLASS, SUPER,
+    BREAK, CONTINUE,
 
     EOF
 }

@@ -63,6 +63,8 @@ class Pratt
         if (Match(TokenType.FUN)) return Function();
         if (Match(TokenType.VAR, TokenType.TYPE)) return Var();
         if (Match(TokenType.RETURN)) return ReturnStatement();
+        if (Match(TokenType.BREAK)) return Break();
+        if (Match(TokenType.CONTINUE)) return Continue();
         if (Match(TokenType.WHILE)) return While();
         if (Match(TokenType.FOR)) return For();
         if (Match(TokenType.IF)) return If();
@@ -70,6 +72,18 @@ class Pratt
         if (Match(TokenType.LEFT_BRACE)) return new Statement.Block(Block());
 
         return new Statement.Expression(ParseExpression(0));
+    }
+
+    private Statement.Continue Continue()
+    {
+        Consume(TokenType.SEMICOLON);
+        return new Statement.Continue();
+    }
+
+    private Statement.Break Break()
+    {
+        Consume(TokenType.SEMICOLON);
+        return new Statement.Break();
     }
 
     private Statement.Log Log()
@@ -259,16 +273,18 @@ class Pratt
     {
         Expr? left = ParseAtom(); // NUD
 
-        while (precedences[Look().Type] != Precedence.STATEMENT && precedences[Look().Type] > precedence && !Check(TokenType.SEMICOLON))
+        while (left != null && precedences[Look().Type] != Precedence.STATEMENT && precedences[Look().Type] > precedence && !Check(TokenType.SEMICOLON))
         {
             left = ParseInfix(left); // LED
         }
 
-        return left;
+        if (left != null) return left;
+        else throw new Exception("Failed to parse expression.");
     }
 
     private Expr? ParseAtom()
     {
+        Console.WriteLine($"ParseAtom: {Look().Lexeme}");
         if (Match(TokenType.TRUE)) return new Expr.Literal(new Boolean(), true);
         if (Match(TokenType.FALSE)) return new Expr.Literal(new Boolean(), false);
         if (Match(TokenType.NIL)) return new Expr.Literal(new Void(), null);

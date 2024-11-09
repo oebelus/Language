@@ -91,6 +91,17 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
         return null;
     }
 
+    /*************  ✨ Codeium Command ⭐  *************/
+    /// <summary>
+    /// Compile a variable declaration statement.
+    /// </summary>
+    /// <param name="variable">The variable declaration statement.</param>
+    /// <remarks>
+    /// The variable is added to the environment with the current address count value.
+    /// The initializer expression is compiled and its value is stored at the address.
+    /// Then the address count is incremented.
+    /// </remarks>
+    /******  2a373763-d9f3-4f1d-9505-14a65dcdda5c  *******/
     public void VisitVariableStatement(Statement.VariableStatement variable)
     {
         Environment.Define(variable.Name.Lexeme, AddressCount);
@@ -250,6 +261,16 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
             CompileExpr(statement.Value);
 
         Append($" {Instruction.instruction[Instructions.RET]}");
+    }
+
+    public void VisitBreak(Statement.Break statement)
+    {
+        return;
+    }
+
+    public void VisitContinue(Statement.Continue statement)
+    {
+        throw new NotImplementedException();
     }
 
     public void VisitExpression(Statement.Expression statement)

@@ -216,8 +216,15 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
 
     public void VisitWhile(Statement.While statement)
     {
-        while (IsTruthy(Evaluate(statement.Condition)))
-            Execute(statement.Body);
+        try
+        {
+            while (IsTruthy(Evaluate(statement.Condition)))
+                Execute(statement.Body);
+        }
+        catch (Break)
+        {
+            return;
+        }
     }
 
     public void VisitReturn(Statement.Return statement)
@@ -227,6 +234,16 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
         if (statement.Value != null) value = Evaluate(statement.Value);
 
         throw new Return(value!);
+    }
+
+    public void VisitBreak(Statement.Break statement)
+    {
+        throw new Break();
+    }
+
+    public void VisitContinue(Statement.Continue statement)
+    {
+        throw new Continue();
     }
 
     public void VisitVariableStatement(Statement.VariableStatement variable)

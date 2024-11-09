@@ -77,7 +77,10 @@ class AstPrinter : Expr.IVisitor<string>, Statement.IVisitor
 
     public void VisitLog(Statement.Log Statement)
     {
-        Console.WriteLine(Parenthesize("out", Statement.expression));
+        if (Statement.expression != null)
+            Console.WriteLine(Parenthesize(Statement.Keyword, Statement.expression));
+        else
+            Console.WriteLine(Parenthesize(Statement.Keyword));
     }
 
     public string VisitLogical(Expr.Logical expression)
@@ -91,6 +94,11 @@ class AstPrinter : Expr.IVisitor<string>, Statement.IVisitor
             Console.WriteLine(Parenthesize("return", Statement.Value));
         else
             Console.WriteLine(Parenthesize("return"));
+    }
+
+    public void VisitContinue(Statement.Continue statement)
+    {
+        Console.WriteLine(Parenthesize("continue"));
     }
 
     public string VisitUnary(Expr.Unary expr)
@@ -123,6 +131,11 @@ class AstPrinter : Expr.IVisitor<string>, Statement.IVisitor
     {
         Console.WriteLine(Parenthesize("while", Statement.Condition));
         Statement.Body.Accept(this);
+    }
+
+    public void VisitBreak(Statement.Break statement)
+    {
+        Console.WriteLine(Parenthesize("break"));
     }
 
     private string Parenthesize(string name, params Expr[] exprs)

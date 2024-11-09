@@ -20,6 +20,8 @@ class Scanner
         { "while", TokenType.WHILE },
         { "or", TokenType.OR },
         { "and", TokenType.AND },
+        { "break", TokenType.BREAK },
+        { "continue", TokenType.CONTINUE },
     };
 
     public Scanner(string code)

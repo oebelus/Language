@@ -12,6 +12,8 @@ abstract class Statement
         void VisitReturn(Return Statement);
         void VisitExpression(Expression Statement);
         void VisitVariableStatement(VariableStatement statement);
+        void VisitBreak(Break statement);
+        void VisitContinue(Continue statement);
     }
 
     public abstract void Accept(IVisitor visitor);
@@ -93,12 +95,20 @@ abstract class Statement
 
     public class Return(Token keyword, Expr? value) : Statement
     {
-        public readonly Token Keyworkd = keyword;
+        public readonly Token Keyword = keyword;
         public readonly Expr? Value = value;
 
         public override void Accept(IVisitor visitor)
         {
             visitor.VisitReturn(this);
+        }
+    }
+
+    public class Break : Statement
+    {
+        public override void Accept(IVisitor visitor)
+        {
+            visitor.VisitBreak(this);
         }
     }
 
@@ -130,4 +140,12 @@ abstract class Statement
             visitor.VisitVariableStatement(this);
         }
     }
+    public class Continue : Statement
+    {
+        public override void Accept(IVisitor visitor)
+        {
+            visitor.VisitContinue(this);
+        }
+    }
 }
+
