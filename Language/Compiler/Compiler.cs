@@ -2,6 +2,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
 {
     public string ByteCode = "";
     public string functions = "";
+    private Stack<string> endLabels = [];
     private int AddressCount = 0;
     private bool isFunction = false;
     private bool isLog = false;
@@ -236,6 +237,8 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
         string start_label = GenerateRandomString();
         string end_label = GenerateRandomString();
 
+        endLabels.Push(end_label);
+
         Append($" {start_label}:");
 
         CompileExpr(Statement.Condition);
@@ -265,7 +268,13 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
 
     public void VisitBreak(Statement.Break statement)
     {
-        return;
+        Console.WriteLine(endLabels.Count);
+        if (endLabels.Count > 0)
+        {
+            string address = endLabels.Pop();
+            Console.WriteLine("Address " + address);
+            Append($" {Instruction.instruction[Instructions.JUMP]} <{address}>");
+        }
     }
 
     public void VisitContinue(Statement.Continue statement)
