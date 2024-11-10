@@ -22,7 +22,6 @@ class LangFunction(Statement.Function declaration) : ICallable
 
     public object? Call(Interpreter interpreter, List<object> arguments)
     {
-        Console.WriteLine("Called");
         InterpreterEnv environment = new(Interpreter.Globals);
 
         for (int i = 0; i < Declaration.Args.Count; i++)

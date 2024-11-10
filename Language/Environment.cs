@@ -29,7 +29,16 @@ class CompilerEnv : IEnvironment<object>
 
     public void Define(string name, object value)
     {
-        addresses.Add(name, value);
+        try
+        {
+            addresses.Add(name, value);
+        }
+        catch (ArgumentException)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("Variable '" + name + "' already declared.");
+            Console.ResetColor();
+        }
     }
 
     public object? Get(string name)
@@ -89,7 +98,16 @@ class InterpreterEnv : IEnvironment<object>
 
     public void Define(string name, object value)
     {
-        values.Add(name, value);
+        try
+        {
+            values.Add(name, value);
+        }
+        catch (ArgumentException)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("Variable '" + name + "' already declared.");
+            Console.ResetColor();
+        }
     }
 
     public object Get(string name)

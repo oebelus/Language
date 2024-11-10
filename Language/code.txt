@@ -12,19 +12,19 @@ function bool isPrime(int a) {
     return true;
 }
 
-outline isPrime(23);
+println isPrime(23);
 
 function int add(int a, int b) {
     return a + b;
 }
 
-outline add(5, 5);
+println add(5, 5);
 
 function int sub(int a, int b) { 
     return a - b; 
 }
 
-outline sub(10, 5);
+println sub(10, 5);
 
 // Variable Declaration
 int x = 42;
@@ -32,26 +32,27 @@ string name = "John";
 bool isValid = true;
 int pi = 3.14159;
 
-outline x;
-outline name;
-outline isValid;
-outline pi;
+println x;
+println name;
+println isValid;
+println pi;
 
 // Comparison Operators
 int value = 42;
 if (value >= 0 and value <= 100) {
-    outline "Value is in range";
+    println "Value is in range";
 }
 
 // Complex Expression
 int result = (5 + 3) * 2 - (10 / 2);
+println result;
 
 // Unary Operators
 int negativeNum = -42;
 bool notTrue = !true;
 
-outline negativeNum;
-outline notTrue;
+println negativeNum;
+println notTrue;
 
 // Function Call with Arguments
 function string formatName(string a, string b) {
@@ -59,16 +60,16 @@ function string formatName(string a, string b) {
 }
 
 string fullName = formatName("Jane", "Smith");
-outline fullName;
+println fullName;
 
 // Nested If Statements
-int one = 10;
-int two = 10;
+int one = -10;
+int two = -6;
 if (one > 0) {
     if (two > 0) {
-        outline "Both positive";
+        println "Both positive";
     } else {
-        outline "Only the first is positive";
+        println "Only the first is positive";
     }
 }
 
@@ -78,6 +79,73 @@ while (true) {
     if (number >= 10) {
         break;
     }
-    outline number;
+    println number;
     number = number + 1;
 }
+
+// Complex While with Break and Continue
+int number_x = 0;
+while (true) {
+    if (number_x % 2 == 0) {
+        number_x = number_x + 1;
+        continue;
+    }
+    if (number_x >= 10) {
+        break;
+    }
+    println number_x;
+    number_x = number_x + 1;
+}
+
+// Function with Complex Logic
+function int findMax(int a, int b, int c) {
+    int max = a;
+    if (b > max) {
+        max = b;
+    }
+    if (c > max) {
+        max = c;
+    }
+    return max;
+}
+
+// Nested Block Scopes
+{
+    int x = 1;
+    {
+        int y = 2;
+        {
+            int z = 3;
+            print x + y + z;
+        }
+    }
+}
+
+// Complex Expression with Multiple Operators
+int complexCalc = (5 + 3 * 2) / (1 - 4 % 3) * -2;
+println complexCalc;
+
+// Multiple Variable Declarations
+int a = 1;
+int b = 2;
+int c = 3;
+println a + b + c;
+
+// Function with Multiple Returns
+function int absoluteValue(int y) {
+    if (y < 0) {
+        return -y;
+    }
+    return y;
+}
+
+println absoluteValue(-42);
+
+// Complex Logical Expression
+bool isError = true;
+int w = 1;
+int y = 2;
+int z = 3;
+bool valid = (w > 0 and y < 100) or (z == 0 and !isError);
+
+println valid;

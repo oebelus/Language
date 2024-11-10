@@ -10,7 +10,7 @@
 
 <expressionStmt>  := <expression> ";"
 
-<print>           := "out" <expression> ";"
+<print>           := "print" <expression> ";"
 
 <block>           := "{" + <declaration> + "}"
 

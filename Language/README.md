@@ -15,7 +15,7 @@ The grammar:
 
 <expressionStmt>  := <expression> ";"
 
-<print>           := "out" <expression> ";" | "outline:" <expression> ";"
+<print>           := "print" <expression> ";" | "println:" <expression> ";"
 
 <block>           := "{" + <declaration> + "}"
 

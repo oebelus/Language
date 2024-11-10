@@ -1,8 +1,12 @@
+using Instruction = Language.stackVM.Instruction;
+using Instructions = Language.stackVM.Instructions;
+
 class Compiler : Expr.IVisitor<object>, Statement.IVisitor
 {
     public string ByteCode = "";
     public string functions = "";
-    private Stack<string> endLabels = [];
+    private readonly Stack<string> breakLabels = new(24);
+    private readonly Stack<string> continueLabels = new(24);
     private int AddressCount = 0;
     private bool isFunction = false;
     private bool isLog = false;
@@ -32,8 +36,8 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
     public object? VisitLiteral(Expr.Literal literal)
     {
         if (isLog) return null;
-        if (literal.Value is bool b) Append($" {Instruction.instruction[Instructions.PUSH]} {(b ? 1 : 0)}");
-        else Append($" {Instruction.instruction[Instructions.PUSH]} {literal.Value}");
+        if (literal.Value is bool b) Append($" {Instruction.cInstruction[Instructions.PUSH]} {(b ? 1 : 0)}");
+        else Append($" {Instruction.cInstruction[Instructions.PUSH]} {literal.Value}");
 
         return null;
     }
@@ -44,17 +48,17 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
         CompileExpr(binary.Right);
 
         if (binary.Operation.Type == TokenType.LESS_EQUAL)
-            Append($" {Instruction.instruction[Instructions.GT]} {Instruction.instruction[Instructions.NOT]}");
+            Append($" {Instruction.cInstruction[Instructions.GT]} {Instruction.cInstruction[Instructions.NOT]}");
 
         else if (binary.Operation.Type == TokenType.GREATER_EQUAL)
-            Append($" {Instruction.instruction[Instructions.LT]} {Instruction.instruction[Instructions.NOT]}");
+            Append($" {Instruction.cInstruction[Instructions.LT]} {Instruction.cInstruction[Instructions.NOT]}");
 
         else if (binary.Operation.Type == TokenType.BANG_EQUAL)
         {
-            Append($" {Instruction.instruction[Instructions.EQ]} {Instruction.instruction[Instructions.NOT]}");
+            Append($" {Instruction.cInstruction[Instructions.EQ]} {Instruction.cInstruction[Instructions.NOT]}");
         }
 
-        else Append($" {Instruction.operation[binary.Operation.Type]}");
+        else Append($" {Instruction.cOperation[binary.Operation.Type]}");
 
         return null;
     }
@@ -63,7 +67,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
     {
         CompileExpr(unary.Right);
 
-        Append($" {Instruction.operation[unary.Operation.Type]}");
+        Append($" {Instruction.cOperation[unary.Operation.Type]}");
 
         return null;
     }
@@ -73,7 +77,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
         CompileExpr(logical.Left);
         CompileExpr(logical.Right);
 
-        Append($" {Instruction.operation[logical.Operation.Type]}");
+        Append($" {Instruction.cOperation[logical.Operation.Type]}");
 
         return null;
     }
@@ -87,29 +91,18 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
 
     public object? VisitVariableExpression(Expr.VariableExpression expression)
     {
-        Append($" {Instruction.instruction[Instructions.PUSH]} {Environment.Get(expression.Name.Lexeme)?.ToString()} {Instruction.instruction[Instructions.LOAD]}");
+        Append($" {Instruction.cInstruction[Instructions.PUSH]} {Environment.Get(expression.Name.Lexeme)?.ToString()} {Instruction.cInstruction[Instructions.LOAD]}");
 
         return null;
     }
 
-    /*************  ✨ Codeium Command ⭐  *************/
-    /// <summary>
-    /// Compile a variable declaration statement.
-    /// </summary>
-    /// <param name="variable">The variable declaration statement.</param>
-    /// <remarks>
-    /// The variable is added to the environment with the current address count value.
-    /// The initializer expression is compiled and its value is stored at the address.
-    /// Then the address count is incremented.
-    /// </remarks>
-    /******  2a373763-d9f3-4f1d-9505-14a65dcdda5c  *******/
     public void VisitVariableStatement(Statement.VariableStatement variable)
     {
         Environment.Define(variable.Name.Lexeme, AddressCount);
 
         CompileExpr(variable.Initializer!);
 
-        Append($" {Instruction.instruction[Instructions.PUSH]} {AddressCount} {Instruction.instruction[Instructions.STORE]}");
+        Append($" {Instruction.cInstruction[Instructions.PUSH]} {AddressCount} {Instruction.cInstruction[Instructions.STORE]}");
 
         AddressCount++;
     }
@@ -120,7 +113,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
 
         object address = Environment.Get(expression.Name.Lexeme)!;
 
-        Append($" {Instruction.instruction[Instructions.PUSH]} {address} {Instruction.instruction[Instructions.STORE]}");
+        Append($" {Instruction.cInstruction[Instructions.PUSH]} {address} {Instruction.cInstruction[Instructions.STORE]}");
 
         return null;
     }
@@ -171,7 +164,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
             for (int i = 0; i < argsLength; i++)
             {
                 object address = Environment.Get(function.Args[i].Name.Lexeme)!;
-                Append($" {Instruction.instruction[Instructions.PUSH]} {address} {Instruction.instruction[Instructions.STORE]}");
+                Append($" {Instruction.cInstruction[Instructions.PUSH]} {address} {Instruction.cInstruction[Instructions.STORE]}");
             }
             CompileBlock(function.Body, Environment);
         }
@@ -206,12 +199,12 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
         CompileExpr(Statement.Condition);
 
         // CJUMP label_1
-        Append($" {Instruction.instruction[Instructions.CJUMP]} <{label_1}>");
+        Append($" {Instruction.cInstruction[Instructions.CJUMP]} <{label_1}>");
 
         // if false: compiling ElseBranch
         Statement.ElseBranch?.Accept(this);
 
-        Append($" {Instruction.instruction[Instructions.JUMP]} <{label_2}>");
+        Append($" {Instruction.cInstruction[Instructions.JUMP]} <{label_2}>");
 
         // if true: CJUMP here
         Append($" {label_1}:");
@@ -237,22 +230,23 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
         string start_label = GenerateRandomString();
         string end_label = GenerateRandomString();
 
-        endLabels.Push(end_label);
+        breakLabels.Push(end_label);
+        continueLabels.Push(start_label);
 
         Append($" {start_label}:");
 
         CompileExpr(Statement.Condition);
 
         // Check if condition is False
-        Append($" {Instruction.instruction[Instructions.PUSH]} 0 {Instruction.instruction[Instructions.EQ]}");
+        Append($" {Instruction.cInstruction[Instructions.PUSH]} 0 {Instruction.cInstruction[Instructions.EQ]}");
 
         // Jump to end if condition is False
-        Append($" {Instruction.instruction[Instructions.CJUMP]} <{end_label}>");
+        Append($" {Instruction.cInstruction[Instructions.CJUMP]} <{end_label}>");
 
         Statement.Body.Accept(this);
 
         // Jump back to the start of the loop
-        Append($" {Instruction.instruction[Instructions.JUMP]} <{start_label}>");
+        Append($" {Instruction.cInstruction[Instructions.JUMP]} <{start_label}>");
 
         // End label for the loop
         Append($" {end_label}:");
@@ -263,23 +257,25 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
         if (statement.Value != null)
             CompileExpr(statement.Value);
 
-        Append($" {Instruction.instruction[Instructions.RET]}");
+        Append($" {Instruction.cInstruction[Instructions.RET]}");
     }
 
     public void VisitBreak(Statement.Break statement)
     {
-        Console.WriteLine(endLabels.Count);
-        if (endLabels.Count > 0)
+        if (breakLabels.Length() > 0)
         {
-            string address = endLabels.Pop();
-            Console.WriteLine("Address " + address);
-            Append($" {Instruction.instruction[Instructions.JUMP]} <{address}>");
+            string address = breakLabels.Pop();
+            Append($" {Instruction.cInstruction[Instructions.JUMP]} <{address}>");
         }
     }
 
     public void VisitContinue(Statement.Continue statement)
     {
-        throw new NotImplementedException();
+        if (continueLabels.Length() > 0)
+        {
+            string address = continueLabels.Pop();
+            Append($" {Instruction.cInstruction[Instructions.JUMP]} <{address}>");
+        }
     }
 
     public void VisitExpression(Statement.Expression statement)

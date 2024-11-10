@@ -166,7 +166,7 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
         {
             value = Evaluate(statement.expression);
 
-            if (statement.Keyword == "outline")
+            if (statement.Keyword == "println")
                 Console.WriteLine(Stringify(value));
             else
                 Console.Write(Stringify(value));
@@ -174,7 +174,7 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
 
         else
         {
-            if (statement.Keyword == "outline")
+            if (statement.Keyword == "println")
                 Console.WriteLine();
             else
                 throw new Exception("Expected an expression.");
@@ -216,15 +216,19 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
 
     public void VisitWhile(Statement.While statement)
     {
-        try
-        {
-            while (IsTruthy(Evaluate(statement.Condition)))
+        while (IsTruthy(Evaluate(statement.Condition)))
+            try
+            {
                 Execute(statement.Body);
-        }
-        catch (Break)
-        {
-            return;
-        }
+            }
+            catch (Break)
+            {
+                return;
+            }
+            catch (Continue)
+            {
+                continue;
+            }
     }
 
     public void VisitReturn(Statement.Return statement)

@@ -10,15 +10,14 @@
             }
             else
             {
-                RunCode(@"int number = 0;
-while (true) {
-    if (number >= 10) {
-        outline ""BREAKINGGGGG""; 
-        break;
-    }
-    outline number;
-    number = number + 1;
-}");
+                RunCode(@"bool isError = true;
+
+int x = 1;
+int y = 2;
+int z = 3;
+bool isValid = (x > 0 and y < 100) or (z == 0 and !isError);
+
+println isValid;");
             }
         }
 
@@ -67,6 +66,25 @@ while (true) {
             Compiler compiler = new();
             string mnemo = compiler.Compile(statements);
             Console.WriteLine(mnemo);
+
+            var mnemonics = Mnemonics.Mnemonic(mnemo);
+
+            VirtualMachine virtualMachine = new(mnemonics);
+
+            Console.WriteLine();
+
+            // List<string> toMnemo = Utils.ByteCodeToMnemonics(mnemonics);
+
+            // foreach (var item in toMnemo)
+            // {
+            //     Console.WriteLine(item);
+            // }
+
+            VirtualMachine vm = new(mnemonics);
+
+            vm.Execute();
+
+            vm.Logger();
         }
         // LanguageTest test = new();
         // test.RunTests();

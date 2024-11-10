@@ -1,8 +1,8 @@
 using Type = Language.Typer.Type;
 using Boolean = Language.Typer.Boolean;
 using Void = Language.Typer.Void;
-using String = Language.Typer.String;
-using Language.Typer;
+using Integer = Language.Typer.Number;
+using Chars = Language.Typer.String;
 
 class TypeChecker : Expr.IVisitor<Type>, Statement.IVisitor
 {
@@ -46,7 +46,7 @@ class TypeChecker : Expr.IVisitor<Type>, Statement.IVisitor
                 throw new Exception($"Right ({rightType}) and Left ({leftType}) should be of the same type");
             }
 
-            if ((rightType is not Number && rightType is not String) || (leftType is not Number && leftType is not String))
+            if ((rightType is not Integer && rightType is not Chars) || (leftType is not Integer && leftType is not Chars))
             {
                 throw new Exception($"Right ({rightType}) and Left ({leftType}) should be of type Number or String");
             }
@@ -54,7 +54,7 @@ class TypeChecker : Expr.IVisitor<Type>, Statement.IVisitor
 
         else if (booleanOps.Contains(binaryExpression.Operation.Type))
         {
-            if ((rightType is not Number && rightType is not Boolean) || (leftType is not Number && leftType is not Boolean))
+            if ((rightType is not Integer && rightType is not Boolean) || (leftType is not Integer && leftType is not Boolean))
             {
                 throw new Exception($"Right ({rightType}) and Left ({leftType}) should be of type Number or Boolean");
             }
@@ -64,7 +64,7 @@ class TypeChecker : Expr.IVisitor<Type>, Statement.IVisitor
 
         else
         {
-            if (rightType is not Number || leftType is not Number)
+            if (rightType is not Integer || leftType is not Integer)
             {
                 throw new Exception($"Right ({rightType}) and Left ({leftType}) should be of type Number");
             }
@@ -254,7 +254,7 @@ class TypeChecker : Expr.IVisitor<Type>, Statement.IVisitor
         switch (expression.Operation.Type)
         {
             case TokenType.MINUS:
-                if (type is Number) return new Number();
+                if (type is Integer) return new Integer();
                 else throw new Exception($"Operator should be of type Number, instead got \"{type}\"");
             case TokenType.BANG:
                 if (type is Boolean) return new Boolean();

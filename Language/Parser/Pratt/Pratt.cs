@@ -1,8 +1,8 @@
 using Precedence = Binding.Precedence;
-using Number = Language.Typer.Number;
 using Void = Language.Typer.Void;
 using Boolean = Language.Typer.Boolean;
-using String = Language.Typer.String;
+using Integer = Language.Typer.Number;
+using Chars = Language.Typer.String;
 using Type = Language.Typer.Type;
 using System.Data;
 
@@ -46,6 +46,8 @@ class Pratt
             [TokenType.FALSE] = Precedence.NONE,
             [TokenType.OR] = Precedence.OR,
             [TokenType.LOG] = Precedence.NONE,
+            [TokenType.BREAK] = Precedence.NONE,
+            [TokenType.CONTINUE] = Precedence.NONE,
         };
     }
 
@@ -284,13 +286,12 @@ class Pratt
 
     private Expr? ParseAtom()
     {
-        Console.WriteLine($"ParseAtom: {Look().Lexeme}");
         if (Match(TokenType.TRUE)) return new Expr.Literal(new Boolean(), true);
         if (Match(TokenType.FALSE)) return new Expr.Literal(new Boolean(), false);
         if (Match(TokenType.NIL)) return new Expr.Literal(new Void(), null);
 
-        if (Match(TokenType.NUMBER)) return new Expr.Literal(new Number(), Previous().Type == TokenType.NUMBER ? Previous().Lexeme : Look().Lexeme);
-        if (Match(TokenType.STRING)) return new Expr.Literal(new String(), Previous().Lexeme);
+        if (Match(TokenType.NUMBER)) return new Expr.Literal(new Integer(), Previous().Type == TokenType.NUMBER ? Previous().Lexeme : Look().Lexeme);
+        if (Match(TokenType.STRING)) return new Expr.Literal(new Chars(), Previous().Lexeme);
 
         if (Match(TokenType.LEFT_PAREN))
         {
@@ -463,9 +464,9 @@ class Pratt
     {
         return token.Lexeme switch
         {
-            "int" => new Number(),
+            "int" => new Integer(),
             "bool" => new Boolean(),
-            "string" => new String(),
+            "string" => new Chars(),
             _ => new Void(),
         };
     }
