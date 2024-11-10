@@ -1,0 +1,3 @@
+[submodule "Language/stackVM"]
+	path = Language/stackVM
+	url = https://github.com/oebelus/stackVM.git
