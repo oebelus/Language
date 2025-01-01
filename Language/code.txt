@@ -149,3 +149,85 @@ int z = 3;
 bool valid = (w > 0 and y < 100) or (z == 0 and !isError);
 
 println valid;
+
+function int add(int a, int b) {
+    return a + b;
+}
+
+int sum = add(1, 2);
+println(sum + 4);
+
+int a = 4;
+{
+  function void showA() {
+    print a;
+  }
+
+  showA();
+  int a = 5;
+  showA();
+}
+
+string a = ""global"";
+{
+    function void showA() {
+        println(a);
+    }
+
+    showA();
+
+    int a = 10;
+
+    showA();
+}
+// Scopes Tests with Expected Output in Static Scoping
+
+// Function Scope
+function void testFunctionScope() {
+    int a = 10;
+    function void innerFunction() {
+        println(a); // Expected output: 10
+    }
+    innerFunction();
+}
+testFunctionScope();
+
+// Block Scope
+function void testBlockScope() {
+    int a = 5;
+    {
+        int a = 10;
+        println a; // Expected output: 10
+    }
+    println(a); // Expected output: 5
+}
+testBlockScope();
+
+// Nested Block Scope
+function void testNestedBlockScope() {
+    int a = 1;
+    {
+        int b = 2;
+        {
+            int c = 3;
+            println a + b + c; // Expected output: 6
+        }
+    }
+}
+testNestedBlockScope();
+
+// Global vs Local Scope
+int a = 20;
+function void testGlobalLocalScope() {
+    println a; // Expected output: 20
+    int a = 30;
+    println a; // Expected output: 30
+}
+testGlobalLocalScope();
+println a; // Expected output: 20
+
+// Function Parameter Scope
+function void testParameterScope(int a) {
+    println a; // Expected output: 50
+}
+testParameterScope(50);

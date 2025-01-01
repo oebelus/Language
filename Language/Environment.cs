@@ -116,7 +116,7 @@ class InterpreterEnv : IEnvironment<object>
 
         else if (Enclosing != null) return Enclosing.Get(name);
 
-        else return "Undefined Variable '" + name + "'.";
+        else throw new Exception("Undefined Variable '" + name + "'.");
     }
 
     public void Assign(string name, object value)

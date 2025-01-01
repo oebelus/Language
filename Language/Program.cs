@@ -10,14 +10,14 @@
             }
             else
             {
-                RunCode(@"bool isError = true;
+                RunCode(@"int a = 4;
+{
+  int a = a + 10;
 
-int x = 1;
-int y = 2;
-int z = 3;
-bool isValid = (x > 0 and y < 100) or (z == 0 and !isError);
-
-println isValid;");
+  println a;
+}
+println a;
+");
             }
         }
 
@@ -35,7 +35,6 @@ println isValid;");
             Console.WriteLine();
 
             RDParser rDParser = new(tokens);
-            rDParser.Parse();
 
             Pratt parser = new(tokens);
 
@@ -80,11 +79,11 @@ println isValid;");
             //     Console.WriteLine(item);
             // }
 
-            VirtualMachine vm = new(mnemonics);
+            // VirtualMachine vm = new(mnemonics);
 
-            vm.Execute();
+            // vm.Execute();
 
-            vm.Logger();
+            // vm.Logger();
         }
         // LanguageTest test = new();
         // test.RunTests();

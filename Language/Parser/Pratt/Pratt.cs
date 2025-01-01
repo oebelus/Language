@@ -48,6 +48,7 @@ class Pratt
             [TokenType.LOG] = Precedence.NONE,
             [TokenType.BREAK] = Precedence.NONE,
             [TokenType.CONTINUE] = Precedence.NONE,
+            [TokenType.TYPE] = Precedence.NONE,
         };
     }
 
@@ -326,6 +327,7 @@ class Pratt
                 }
 
                 Token paren = Consume(TokenType.RIGHT_PAREN);
+                Consume(TokenType.SEMICOLON);
                 return new Expr.Call(new Expr.VariableExpression(name), paren, args);
             }
             return new Expr.VariableExpression(Previous());
@@ -336,7 +338,8 @@ class Pratt
             return null;
         }
 
-        throw new Exception();
+
+        throw new Exception($"Failed to parse atom. {Look().Type}");
     }
 
     private Expr ParseInfix(Expr left)

@@ -1,8 +1,12 @@
+using System.Reflection.Metadata;
+
 class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
 {
     public static readonly InterpreterEnv Globals = new();
     public InterpreterEnv Environment = Globals;
     public object LastResult { get; private set; } = "";
+    private readonly Dictionary<Expr, int> locals = [];
+    private bool IsFunctionDefinition = false;
 
     public void Interpret(List<Statement> statements)
     {
@@ -32,6 +36,11 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
     private void Execute(Statement statement)
     {
         statement.Accept(this);
+    }
+
+    public void Resolve(Expr expression, int depth)
+    {
+        locals.Add(expression, depth);
     }
 
     public void ExecuteBlock(List<Statement> statements, InterpreterEnv environment)
@@ -202,6 +211,8 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
 
     public void VisitFunction(Statement.Function statement)
     {
+        IsFunctionDefinition = true;
+
         LangFunction function = new(statement);
         Environment.Define(statement.Name.Lexeme, function);
     }

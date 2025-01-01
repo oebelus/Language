@@ -414,7 +414,7 @@ class RDParser(List<Token> tokens)
     private Token? Consume(TokenType type)
     {
         if (Check(type)) return Advance();
-        throw new InvalidOperationException($"Expected token of type {type}, but got {Peek().Type}.");
+        throw new InvalidOperationException($"Expected token of type {type}, but got {Peek().Type} ({Peek().Lexeme}).");
     }
 
 
