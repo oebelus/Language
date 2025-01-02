@@ -1,12 +1,9 @@
-using System.Reflection.Metadata;
-
 class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
 {
     public static readonly InterpreterEnv Globals = new();
     public InterpreterEnv Environment = Globals;
     public object LastResult { get; private set; } = "";
     private readonly Dictionary<Expr, int> locals = [];
-    private bool IsFunctionDefinition = false;
 
     public void Interpret(List<Statement> statements)
     {
@@ -158,7 +155,18 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
     public object VisitAssign(Expr.Assign expression)
     {
         object value = Evaluate(expression.Value);
-        Environment.Assign(expression.Name.Lexeme, value);
+
+        int distance = locals[expression];
+
+        if (distance != -1)
+        {
+            Environment.AssignAt(distance, expression.Name.Lexeme, value);
+        }
+        else
+        {
+            Globals.Assign(expression.Name.Lexeme, value);
+        }
+
         return value; // log a = 2; assign can be nested inside other expressions
     }
 
@@ -211,8 +219,6 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
 
     public void VisitFunction(Statement.Function statement)
     {
-        IsFunctionDefinition = true;
-
         LangFunction function = new(statement);
         Environment.Define(statement.Name.Lexeme, function);
     }
@@ -279,10 +285,9 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
         Environment.Define(variable.Name.Lexeme, value!);
     }
 
-    // smol hint: Evaluate(variable.Initializer) goes to this
     public object VisitVariableExpression(Expr.VariableExpression expression)
     {
-        return Environment.Get(expression.Name.Lexeme);
+        return LookUpVariable(expression.Name, expression);
     }
 
     private object Evaluate(Expr expr)
@@ -314,5 +319,17 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
         }
 
         return obj.ToString()!;
+    }
+
+    private object LookUpVariable(Token name, Expr expression)
+    {
+        if (locals.TryGetValue(expression, out int distance))
+        {
+            return Environment.GetAt(distance, name.Lexeme);
+        }
+        else
+        {
+            return Globals.Get(name.Lexeme);
+        }
     }
 }

@@ -4,20 +4,18 @@
     {
         public static void Main(string[] args)
         {
+
             if (args.Length == 1)
             {
                 RunCode(File.ReadAllText(args[0]));
             }
             else
             {
-                RunCode(@"int a = 4;
-{
-  int a = a + 10;
-
-  println a;
-}
-println a;
-");
+                foreach (string code in CodeSnippets.Snippets)
+                {
+                    Console.WriteLine(code);
+                    RunCode(code);
+                }
             }
         }
 
@@ -58,6 +56,10 @@ println a;
 
             Console.WriteLine();
             Interpreter interpreter = new();
+
+            Resolver resolver = new(interpreter);
+            resolver.Resolve(statements);
+
             interpreter.Interpret(statements);
 
             Console.WriteLine();

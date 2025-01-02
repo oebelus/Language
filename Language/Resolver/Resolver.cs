@@ -1,11 +1,10 @@
-using Language.Typer;
-
 class Resolver(Interpreter interpreter) : Expr.IVisitor<object>, Statement.IVisitor
 {
     private readonly Interpreter interpreter = interpreter;
     private readonly Stack<Dictionary<string, bool>> scopes = new(1024);
+    private ScopeType currentScope = ScopeType.NONE;
 
-    private void Resolve(List<Statement> statements)
+    public void Resolve(List<Statement> statements)
     {
         foreach (var statement in statements)
         {
@@ -23,7 +22,10 @@ class Resolver(Interpreter interpreter) : Expr.IVisitor<object>, Statement.IVisi
 
     public object? VisitBinary(Expr.Binary expression)
     {
-        throw new NotImplementedException();
+        Resolve(expression.Left);
+        Resolve(expression.Right);
+
+        return null;
     }
 
     public void VisitBlock(Statement.Block Statement)
@@ -35,17 +37,30 @@ class Resolver(Interpreter interpreter) : Expr.IVisitor<object>, Statement.IVisi
 
     public void VisitBreak(Statement.Break statement)
     {
-        throw new NotImplementedException();
+        if (currentScope != ScopeType.WHILE)
+        {
+            throw new Exception("Can't break outside of a loop.");
+        }
     }
 
     public object? VisitCall(Expr.Call expression)
     {
-        throw new NotImplementedException();
+        Resolve(expression.Callee);
+
+        foreach (Expr argument in expression.Arguments)
+        {
+            Resolve(argument);
+        }
+
+        return null;
     }
 
     public void VisitContinue(Statement.Continue statement)
     {
-        throw new NotImplementedException();
+        if (currentScope != ScopeType.WHILE)
+        {
+            throw new Exception("Can't continue outside of a loop.");
+        }
     }
 
     public void VisitExpression(Statement.Expression statement)
@@ -58,6 +73,9 @@ class Resolver(Interpreter interpreter) : Expr.IVisitor<object>, Statement.IVisi
         Declare(function.Name);
         Define(function.Name);
 
+        ScopeType enclosingFunction = currentScope;
+        currentScope = ScopeType.FUNCTION;
+
         BeginScope();
 
         foreach (Statement.Argument arg in function.Args)
@@ -66,52 +84,66 @@ class Resolver(Interpreter interpreter) : Expr.IVisitor<object>, Statement.IVisi
             Define(arg.Name);
         }
 
-        Resolve(function.Body);
-
         EndScope();
+
+        currentScope = enclosingFunction;
     }
 
     public object? VisitGrouping(Expr.Grouping expression)
     {
-        throw new NotImplementedException();
+        Resolve(expression.Expression);
+
+        return null;
     }
 
-    public void VisitIf(Statement.If Statement)
+    public void VisitIf(Statement.If statement)
     {
-        throw new NotImplementedException();
+        Resolve(statement.Condition);
+        Resolve(statement.ThenBranch);
+
+        if (statement.ElseBranch != null) Resolve(statement.ElseBranch);
     }
 
     public object? VisitLiteral(Expr.Literal expression)
     {
-        throw new NotImplementedException();
+        return null;
     }
 
-    public void VisitLog(Statement.Log Statement)
+    public void VisitLog(Statement.Log statement)
     {
-        throw new NotImplementedException();
+        if (statement.expression != null) Resolve(statement.expression);
     }
 
     public object? VisitLogical(Expr.Logical expression)
     {
-        throw new NotImplementedException();
+        Resolve(expression.Left);
+        Resolve(expression.Right);
+
+        return null;
     }
 
     public void VisitReturn(Statement.Return Statement)
     {
-        throw new NotImplementedException();
+        if (currentScope == ScopeType.NONE)
+        {
+            throw new Exception("Can't return from top-level code.");
+        }
+
+        if (Statement.Value != null) Resolve(Statement.Value);
     }
 
     public object? VisitUnary(Expr.Unary expression)
     {
-        throw new NotImplementedException();
+        Resolve(expression.Right);
+
+        return null;
     }
 
     public object? VisitVariableExpression(Expr.VariableExpression expression)
     {
         if (!scopes.IsEmpty() && scopes.Peek()[expression.Name.Lexeme] == false)
         {
-            // Declared but not yet defined
-            throw new Exception("Can't read local variable in its own initializer.");
+            throw new Exception("Can't read local variable in its own initializer."); // Declared but not yet defined
         }
 
         ResolveLocal(expression, expression.Name);
@@ -130,7 +162,14 @@ class Resolver(Interpreter interpreter) : Expr.IVisitor<object>, Statement.IVisi
 
     public void VisitWhile(Statement.While Statement)
     {
-        throw new NotImplementedException();
+        Resolve(Statement.Condition);
+
+        ScopeType enclosingWhile = currentScope;
+        currentScope = ScopeType.WHILE;
+
+        Resolve(Statement.Body);
+
+        currentScope = enclosingWhile;
     }
 
     private void Resolve(Statement statement)
@@ -159,6 +198,11 @@ class Resolver(Interpreter interpreter) : Expr.IVisitor<object>, Statement.IVisi
 
         Dictionary<string, bool> scope = scopes.Peek();
 
+        if (scope.ContainsKey(token.Lexeme))
+        {
+            throw new Exception("Variable with this name already declared in this scope.");
+        }
+
         scope.Add(token.Lexeme, false);
     }
 
@@ -166,12 +210,12 @@ class Resolver(Interpreter interpreter) : Expr.IVisitor<object>, Statement.IVisi
     {
         if (scopes.IsEmpty()) return;
 
-        scopes.Peek().Add(token.Lexeme, true);
+        scopes.Peek()[token.Lexeme] = true;
     }
 
     private void ResolveLocal(Expr expression, Token name)
     {
-        for (int i = scopes.Length() - 1; i >= 0; i--)
+        for (int i = scopes.head - 1; i >= 0; i--)
         {
             if (scopes.ElementAt(i).ContainsKey(name.Lexeme))
             {
@@ -179,5 +223,12 @@ class Resolver(Interpreter interpreter) : Expr.IVisitor<object>, Statement.IVisi
                 return;
             }
         }
+    }
+
+    private enum ScopeType
+    {
+        NONE,
+        FUNCTION,
+        WHILE
     }
 }

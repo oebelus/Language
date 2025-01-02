@@ -1,3 +1,6 @@
+class CodeSnippets
+{
+    static readonly string isPrimeCode = @"
 function bool isPrime(int a) {
     if (a < 2) {
         return false;
@@ -13,22 +16,27 @@ function bool isPrime(int a) {
 }
 
 println isPrime(23);
+";
 
+    static readonly string addCode = @"
 function int add(int a, int b) {
     return a + b;
 }
 
 println add(5, 5);
+";
 
+    static readonly string subCode = @"
 function int sub(int a, int b) { 
     return a - b; 
 }
 
 println sub(10, 5);
+";
 
-// Variable Declaration
+    static readonly string variableDeclarationCode = @"
 int x = 42;
-string name = "John";
+static string name = ""John"";
 bool isValid = true;
 int pi = 3.14159;
 
@@ -36,44 +44,50 @@ println x;
 println name;
 println isValid;
 println pi;
+";
 
-// Comparison Operators
+    static readonly string comparisonOperatorsCode = @"
 int value = 42;
 if (value >= 0 and value <= 100) {
-    println "Value is in range";
+    println ""Value is in range"";
 }
+";
 
-// Complex Expression
+    static readonly string complexExpressionCode = @"
 int result = (5 + 3) * 2 - (10 / 2);
 println result;
+";
 
-// Unary Operators
+    static readonly string unaryOperatorsCode = @"
 int negativeNum = -42;
 bool notTrue = !true;
 
 println negativeNum;
 println notTrue;
+";
 
-// Function Call with Arguments
-function string formatName(string a, string b) {
-    return a + " " + b;
+    static readonly string functionCallWithArgumentsCode = @"
+function static string formatName(static string a, static string b) {
+    return a + "" "" + b;
 }
 
-string fullName = formatName("Jane", "Smith");
+static string fullName = formatName(""Jane"", ""Smith"");
 println fullName;
+";
 
-// Nested If Statements
+    static readonly string nestedIfStatementsCode = @"
 int one = -10;
 int two = -6;
 if (one > 0) {
     if (two > 0) {
-        println "Both positive";
+        println ""Both positive"";
     } else {
-        println "Only the first is positive";
+        println ""Only the first is positive"";
     }
 }
+";
 
-// Complex While with Break
+    static readonly string complexWhileWithBreakCode = @"
 int number = 0;
 while (true) {
     if (number >= 10) {
@@ -82,8 +96,9 @@ while (true) {
     println number;
     number = number + 1;
 }
+";
 
-// Complex While with Break and Continue
+    static readonly string complexWhileWithBreakAndContinueCode = @"
 int number_x = 0;
 while (true) {
     if (number_x % 2 == 0) {
@@ -96,8 +111,9 @@ while (true) {
     println number_x;
     number_x = number_x + 1;
 }
+";
 
-// Function with Complex Logic
+    static readonly string functionWithComplexLogicCode = @"
 function int findMax(int a, int b, int c) {
     int max = a;
     if (b > max) {
@@ -108,8 +124,9 @@ function int findMax(int a, int b, int c) {
     }
     return max;
 }
+";
 
-// Nested Block Scopes
+    static readonly string nestedBlockScopesCode = @"
 {
     int x = 1;
     {
@@ -120,18 +137,21 @@ function int findMax(int a, int b, int c) {
         }
     }
 }
+";
 
-// Complex Expression with Multiple Operators
+    static readonly string complexExpressionWithMultipleOperatorsCode = @"
 int complexCalc = (5 + 3 * 2) / (1 - 4 % 3) * -2;
 println complexCalc;
+";
 
-// Multiple Variable Declarations
+    static readonly string multipleVariableDeclarationsCode = @"
 int a = 1;
 int b = 2;
 int c = 3;
 println a + b + c;
+";
 
-// Function with Multiple Returns
+    static readonly string functionWithMultipleReturnsCode = @"
 function int absoluteValue(int y) {
     if (y < 0) {
         return -y;
@@ -140,8 +160,9 @@ function int absoluteValue(int y) {
 }
 
 println absoluteValue(-42);
+";
 
-// Complex Logical Expression
+    static readonly string complexLogicalExpressionCode = @"
 bool isError = true;
 int w = 1;
 int y = 2;
@@ -149,14 +170,18 @@ int z = 3;
 bool valid = (w > 0 and y < 100) or (z == 0 and !isError);
 
 println valid;
+";
 
+    static readonly string addFunctionCode = @"
 function int add(int a, int b) {
     return a + b;
 }
 
 int sum = add(1, 2);
 println(sum + 4);
+";
 
+    static readonly string showACode1 = @"
 int a = 4;
 {
   function void showA() {
@@ -167,8 +192,10 @@ int a = 4;
   int a = 5;
   showA();
 }
+";
 
-string a = ""global"";
+    static readonly string showACode2 = @"
+static string a = ""global"";
 {
     function void showA() {
         println(a);
@@ -180,9 +207,9 @@ string a = ""global"";
 
     showA();
 }
-// Scopes Tests with Expected Output in Static Scoping
+";
 
-// Function Scope
+    static readonly string testFunctionScopeCode = @"
 function void testFunctionScope() {
     int a = 10;
     function void innerFunction() {
@@ -191,8 +218,9 @@ function void testFunctionScope() {
     innerFunction();
 }
 testFunctionScope();
+";
 
-// Block Scope
+    static readonly string testBlockScopeCode = @"
 function void testBlockScope() {
     int a = 5;
     {
@@ -202,8 +230,9 @@ function void testBlockScope() {
     println(a); // Expected output: 5
 }
 testBlockScope();
+";
 
-// Nested Block Scope
+    static readonly string testNestedBlockScopeCode = @"
 function void testNestedBlockScope() {
     int a = 1;
     {
@@ -215,8 +244,9 @@ function void testNestedBlockScope() {
     }
 }
 testNestedBlockScope();
+";
 
-// Global vs Local Scope
+    static readonly string testGlobalLocalScopeCode = @"
 int a = 20;
 function void testGlobalLocalScope() {
     println a; // Expected output: 20
@@ -225,9 +255,40 @@ function void testGlobalLocalScope() {
 }
 testGlobalLocalScope();
 println a; // Expected output: 20
+";
 
-// Function Parameter Scope
+    static readonly string testParameterScopeCode = @"
 function void testParameterScope(int a) {
     println a; // Expected output: 50
 }
 testParameterScope(50);
+";
+
+    public readonly static string[] Snippets = [
+        isPrimeCode,
+        addCode,
+        subCode,
+        variableDeclarationCode,
+        comparisonOperatorsCode,
+        complexExpressionCode,
+        unaryOperatorsCode,
+        functionCallWithArgumentsCode,
+        nestedIfStatementsCode,
+        complexWhileWithBreakCode,
+        complexWhileWithBreakAndContinueCode,
+        functionWithComplexLogicCode,
+        nestedBlockScopesCode,
+        complexExpressionWithMultipleOperatorsCode,
+        multipleVariableDeclarationsCode,
+        functionWithMultipleReturnsCode,
+        complexLogicalExpressionCode,
+        addFunctionCode,
+        showACode1,
+        showACode2,
+        testFunctionScopeCode,
+        testBlockScopeCode,
+        testNestedBlockScopeCode,
+        testGlobalLocalScopeCode,
+        testParameterScopeCode
+    ];
+}

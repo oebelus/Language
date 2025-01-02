@@ -134,10 +134,31 @@ class InterpreterEnv : IEnvironment<object>
         }
     }
 
+    public object GetAt(int distance, string name)
+    {
+        return Ancestor(distance).values[name];
+    }
+
+    public void AssignAt(int distance, string name, object value)
+    {
+        Ancestor(distance).values[name] = value;
+    }
+
     public bool IsDeclared(string name)
     {
         if (values.TryGetValue(name, out object? _)) return true;
         return false;
+    }
+
+    private InterpreterEnv Ancestor(int distance)
+    {
+        InterpreterEnv environment = this;
+
+        for (int i = 0; i < distance; i++)
+        {
+            environment = environment.Enclosing;
+        }
+        return environment;
     }
 
     internal void Clear()
