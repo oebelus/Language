@@ -13,7 +13,10 @@
             {
                 foreach (string code in CodeSnippets.Snippets)
                 {
+                    // changing color of code in terminal
+                    Console.ForegroundColor = ConsoleColor.Yellow;
                     Console.WriteLine(code);
+                    Console.ResetColor();
                     RunCode(code);
                 }
             }
@@ -30,8 +33,6 @@
             //     Token.TokenLogger(item);
             // }
 
-            Console.WriteLine();
-
             RDParser rDParser = new(tokens);
 
             Pratt parser = new(tokens);
@@ -44,7 +45,6 @@
             //     astPrinter.PrintStatement(statement);
             // }
 
-            Console.WriteLine();
             foreach (var statement in statements)
             {
                 Console.WriteLine(statement);
@@ -68,11 +68,11 @@
             string mnemo = compiler.Compile(statements);
             Console.WriteLine(mnemo);
 
-            var mnemonics = Mnemonics.Mnemonic(mnemo);
+            // var mnemonics = Mnemonics.Mnemonic(mnemo);
 
-            VirtualMachine virtualMachine = new(mnemonics);
+            // VirtualMachine virtualMachine = new(mnemonics);
 
-            Console.WriteLine();
+            // Console.WriteLine();
 
             // List<string> toMnemo = Utils.ByteCodeToMnemonics(mnemonics);
 
@@ -86,6 +86,10 @@
             // vm.Execute();
 
             // vm.Logger();
+
+            scanner.Reset();
+            interpreter.Reset();
+            compiler.Reset();
         }
         // LanguageTest test = new();
         // test.RunTests();

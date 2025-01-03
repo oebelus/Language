@@ -219,7 +219,7 @@ class Resolver(Interpreter interpreter) : Expr.IVisitor<object>, Statement.IVisi
         {
             if (scopes.ElementAt(i).ContainsKey(name.Lexeme))
             {
-                interpreter.Resolve(expression, scopes.Length() - 1 - i);
+                interpreter.Resolve(name.Lexeme, scopes.Length() - 1 - i);
                 return;
             }
         }

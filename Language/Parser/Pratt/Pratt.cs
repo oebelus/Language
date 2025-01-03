@@ -213,6 +213,8 @@ class Pratt
 
         Token name = Consume(TokenType.IDENTIFIER);
 
+        Console.WriteLine(name.Lexeme);
+
         Expr? initializer = null;
 
         if (Match(TokenType.EQUAL))

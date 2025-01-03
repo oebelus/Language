@@ -304,4 +304,14 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
         else
             ByteCode += code;
     }
+
+    public void Reset()
+    {
+        ByteCode = "";
+        functions = "";
+        AddressCount = 0;
+        isFunction = false;
+        isLog = false;
+        Environment.Clear();
+    }
 }

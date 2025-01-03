@@ -197,4 +197,12 @@ class Scanner
     {
         return IsAlpha(c) || char.IsDigit(c);
     }
+
+    public void Reset()
+    {
+        current = 0;
+        start = 0;
+        line = 1;
+        Tokens.Clear();
+    }
 }

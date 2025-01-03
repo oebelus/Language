@@ -10,7 +10,7 @@ function bool isPrime(int a) {
             if (a % i == 0) {
                 return false;
             }
-        i = i + 1;
+            i = i + 1;
     }
     return true;
 }
@@ -36,7 +36,7 @@ println sub(10, 5);
 
     static readonly string variableDeclarationCode = @"
 int x = 42;
-static string name = ""John"";
+string name = ""John"";
 bool isValid = true;
 int pi = 3.14159;
 
@@ -67,11 +67,11 @@ println notTrue;
 ";
 
     static readonly string functionCallWithArgumentsCode = @"
-function static string formatName(static string a, static string b) {
+function string formatName(string a, string b) {
     return a + "" "" + b;
 }
 
-static string fullName = formatName(""Jane"", ""Smith"");
+string fullName = formatName(""Jane"", ""Smith"");
 println fullName;
 ";
 
@@ -195,7 +195,7 @@ int a = 4;
 ";
 
     static readonly string showACode2 = @"
-static string a = ""global"";
+string a = ""global"";
 {
     function void showA() {
         println(a);

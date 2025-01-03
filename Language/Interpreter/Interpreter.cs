@@ -3,7 +3,7 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
     public static readonly InterpreterEnv Globals = new();
     public InterpreterEnv Environment = Globals;
     public object LastResult { get; private set; } = "";
-    private readonly Dictionary<Expr, int> locals = [];
+    private readonly Dictionary<string, int> Locals = [];
 
     public void Interpret(List<Statement> statements)
     {
@@ -15,6 +15,13 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
             }
             Execute(statement);
         }
+    }
+
+    public void Reset()
+    {
+        Environment = Globals;
+        LastResult = "";
+        Locals.Clear();
     }
 
     public List<object> InterpretExpressions(List<Expr> expressions)
@@ -35,9 +42,9 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
         statement.Accept(this);
     }
 
-    public void Resolve(Expr expression, int depth)
+    public void Resolve(string name, int depth)
     {
-        locals.Add(expression, depth);
+        Locals.Add(name, depth);
     }
 
     public void ExecuteBlock(List<Statement> statements, InterpreterEnv environment)
@@ -156,15 +163,13 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
     {
         object value = Evaluate(expression.Value);
 
-        int distance = locals[expression];
-
-        if (distance != -1)
+        if (Locals.TryGetValue(expression.Name.Lexeme, out int distance))
         {
             Environment.AssignAt(distance, expression.Name.Lexeme, value);
         }
         else
         {
-            Globals.Assign(expression.Name.Lexeme, value);
+            Environment.Assign(expression.Name.Lexeme, value);
         }
 
         return value; // log a = 2; assign can be nested inside other expressions
@@ -282,7 +287,7 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
             value = Evaluate(variable.Initializer);
         }
 
-        Environment.Define(variable.Name.Lexeme, value!);
+        Globals.Define(variable.Name.Lexeme, value!);
     }
 
     public object VisitVariableExpression(Expr.VariableExpression expression)
@@ -323,13 +328,13 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
 
     private object LookUpVariable(Token name, Expr expression)
     {
-        if (locals.TryGetValue(expression, out int distance))
+        if (Locals.TryGetValue(name.Lexeme, out int distance))
         {
             return Environment.GetAt(distance, name.Lexeme);
         }
         else
         {
-            return Globals.Get(name.Lexeme);
+            return Environment.Get(name.Lexeme);
         }
     }
 }
