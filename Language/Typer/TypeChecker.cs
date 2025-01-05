@@ -22,7 +22,7 @@ class TypeChecker : Expr.IVisitor<Type>, Statement.IVisitor
     }
     public Type? VisitAssign(Expr.Assign expression)
     {
-        Type? type = Environment.Get(expression.Name.Lexeme)[0];
+        Type? type = Environment.Get(expression.Name)[0];
         Type? valueType = expression.Value.Accept(this);
 
         // Compare the type of the assigned value to the type of the variable
@@ -102,7 +102,7 @@ class TypeChecker : Expr.IVisitor<Type>, Statement.IVisitor
         Type calleeType = call.Callee.Accept(this);
 
         // Retrieve the function types from the environment with the callee name
-        List<Type> types = Environment.Get(call.Callee.Name.Lexeme);
+        List<Type> types = Environment.Get(call.Callee.Name);
 
         Type returnType = types[0];
 
@@ -266,7 +266,7 @@ class TypeChecker : Expr.IVisitor<Type>, Statement.IVisitor
 
     public Type? VisitVariableExpression(Expr.VariableExpression expression)
     {
-        return Environment.Get(expression.Name.Lexeme)[0];
+        return Environment.Get(expression.Name)[0];
     }
 
     public void VisitVariableStatement(Statement.VariableStatement statement)

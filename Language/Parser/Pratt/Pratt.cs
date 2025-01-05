@@ -213,8 +213,6 @@ class Pratt
 
         Token name = Consume(TokenType.IDENTIFIER);
 
-        Console.WriteLine(name.Lexeme);
-
         Expr? initializer = null;
 
         if (Match(TokenType.EQUAL))
@@ -309,14 +307,16 @@ class Pratt
         if (Look().Type == TokenType.IDENTIFIER)
         {
             Token name = Look();
+
             Advance();
+
             if (Match(TokenType.EQUAL))
             {
                 Expr value = ParseExpression(Precedence.NONE);
                 if (!isForLoop) Consume(TokenType.SEMICOLON);
                 return new Expr.Assign(name, value);
             }
-            if (Match(TokenType.LEFT_PAREN))
+            else if (Match(TokenType.LEFT_PAREN))
             {
                 List<Expr> args = [];
                 if (!Check(TokenType.RIGHT_PAREN))
@@ -329,9 +329,10 @@ class Pratt
                 }
 
                 Token paren = Consume(TokenType.RIGHT_PAREN);
-                Consume(TokenType.SEMICOLON);
+
                 return new Expr.Call(new Expr.VariableExpression(name), paren, args);
             }
+
             return new Expr.VariableExpression(Previous());
         }
 
@@ -340,8 +341,7 @@ class Pratt
             return null;
         }
 
-
-        throw new Exception($"Failed to parse atom. {Look().Type}");
+        throw new Exception($"Failed to parse atom at line {Look().Line} of type {Look().Type}: '{Look().Lexeme}'.");
     }
 
     private Expr ParseInfix(Expr left)

@@ -11,14 +11,16 @@
             }
             else
             {
-                foreach (string code in CodeSnippets.Snippets)
-                {
-                    // changing color of code in terminal
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine(code);
-                    Console.ResetColor();
-                    RunCode(code);
-                }
+                RunCode(@"
+function void testFunctionScope() {
+    int a = 10;
+    function void innerFunction() {
+        println a; // Expected output: 10
+    }
+    innerFunction();
+}
+testFunctionScope();
+");
             }
         }
 
@@ -37,7 +39,7 @@
 
             Pratt parser = new(tokens);
 
-            List<Statement> statements = parser.Parse();
+            List<Statement> statements = rDParser.Parse();
 
             // AstPrinter astPrinter = new();
             // foreach (var statement in statements)
@@ -57,10 +59,9 @@
             Console.WriteLine();
             Interpreter interpreter = new();
 
-            Resolver resolver = new(interpreter);
-            resolver.Resolve(statements);
-
             interpreter.Interpret(statements);
+
+            Console.WriteLine();
 
             Console.WriteLine();
 

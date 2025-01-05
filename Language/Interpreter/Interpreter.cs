@@ -4,6 +4,7 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
     public InterpreterEnv Environment = Globals;
     public object LastResult { get; private set; } = "";
     private readonly Dictionary<string, int> Locals = [];
+    private readonly Stack<Dictionary<string, bool>> scopes = new(1024);
 
     public void Interpret(List<Statement> statements)
     {
@@ -19,7 +20,9 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
 
     public void Reset()
     {
-        Environment = Globals;
+        Environment.Clear();
+        Globals.Clear();
+        Locals.Clear();
         LastResult = "";
         Locals.Clear();
     }
@@ -44,7 +47,14 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
 
     public void Resolve(string name, int depth)
     {
-        Locals.Add(name, depth);
+        if (Locals.TryGetValue(name, out int local))
+        {
+            Locals[name] = depth;
+        }
+        else
+        {
+            Locals.Add(name, depth);
+        }
     }
 
     public void ExecuteBlock(List<Statement> statements, InterpreterEnv environment)
@@ -65,7 +75,9 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
 
     public void VisitBlock(Statement.Block statement)
     {
+        BeginScope();
         ExecuteBlock(statement.Statements, new InterpreterEnv(Environment));
+        EndScope();
     }
 
 
@@ -169,7 +181,7 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
         }
         else
         {
-            Environment.Assign(expression.Name.Lexeme, value);
+            Environment.Assign(expression.Name, value);
         }
 
         return value; // log a = 2; assign can be nested inside other expressions
@@ -274,25 +286,20 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
 
     public void VisitVariableStatement(Statement.VariableStatement variable)
     {
-        object? value = null;
-
-        /* 
-         * sends the expression back into the interpreter’s visitor implementation, 
-         * nested evaluation, 
-         * for example, `if var x = 5-4;, 5-4 will get evaluated to 1; 
-        */
-
         if (variable.Initializer != null)
         {
-            value = Evaluate(variable.Initializer);
+            object value = Evaluate(variable.Initializer);
+            Environment.Define(variable.Name.Lexeme, value);
         }
-
-        Globals.Define(variable.Name.Lexeme, value!);
+        else
+        {
+            Environment.Define(variable.Name.Lexeme, "");
+        }
     }
 
     public object VisitVariableExpression(Expr.VariableExpression expression)
     {
-        return LookUpVariable(expression.Name, expression);
+        return LookUpVariable(expression.Name);
     }
 
     private object Evaluate(Expr expr)
@@ -326,7 +333,7 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
         return obj.ToString()!;
     }
 
-    private object LookUpVariable(Token name, Expr expression)
+    private object LookUpVariable(Token name)
     {
         if (Locals.TryGetValue(name.Lexeme, out int distance))
         {
@@ -334,7 +341,17 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
         }
         else
         {
-            return Environment.Get(name.Lexeme);
+            return Environment.Get(name);
         }
+    }
+
+    private void BeginScope()
+    {
+        scopes.Push(new Dictionary<string, bool>());
+    }
+
+    private void EndScope()
+    {
+        scopes.Pop();
     }
 }

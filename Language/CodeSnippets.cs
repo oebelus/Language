@@ -40,6 +40,10 @@ string name = ""John"";
 bool isValid = true;
 int pi = 3.14159;
 
+{
+    name = ""I have changed!"";
+}
+
 println x;
 println name;
 println isValid;
@@ -83,6 +87,12 @@ if (one > 0) {
         println ""Both positive"";
     } else {
         println ""Only the first is positive"";
+    }
+} else {
+    if (two > 0) {
+        println ""Only the second is positive"";
+    } else {
+        println ""Both negative"";
     }
 }
 ";
@@ -213,7 +223,7 @@ string a = ""global"";
 function void testFunctionScope() {
     int a = 10;
     function void innerFunction() {
-        println(a); // Expected output: 10
+        println a; // Expected output: 10
     }
     innerFunction();
 }

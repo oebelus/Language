@@ -91,7 +91,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
 
     public object? VisitVariableExpression(Expr.VariableExpression expression)
     {
-        Append($" {Instruction.cInstruction[Instructions.PUSH]} {Environment.Get(expression.Name.Lexeme)?.ToString()} {Instruction.cInstruction[Instructions.LOAD]}");
+        Append($" {Instruction.cInstruction[Instructions.PUSH]} {Environment.Get(expression.Name)?.ToString()} {Instruction.cInstruction[Instructions.LOAD]}");
 
         return null;
     }
@@ -111,7 +111,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
     {
         CompileExpr(expression.Value);
 
-        object address = Environment.Get(expression.Name.Lexeme)!;
+        object address = Environment.Get(expression.Name)!;
 
         Append($" {Instruction.cInstruction[Instructions.PUSH]} {address} {Instruction.cInstruction[Instructions.STORE]}");
 
@@ -163,7 +163,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
             Append($" {function.Name.Lexeme}:");
             for (int i = 0; i < argsLength; i++)
             {
-                object address = Environment.Get(function.Args[i].Name.Lexeme)!;
+                object address = Environment.Get(function.Args[i].Name)!;
                 Append($" {Instruction.cInstruction[Instructions.PUSH]} {address} {Instruction.cInstruction[Instructions.STORE]}");
             }
             CompileBlock(function.Body, Environment);

@@ -3,8 +3,8 @@ using Type = Language.Typer.Type;
 interface IEnvironment<T>
 {
     void Define(string name, T value);
-    T? Get(string name);
-    void Assign(string name, T value);
+    T? Get(Token name);
+    void Assign(Token name, T value);
     bool IsDeclared(string name);
 }
 
@@ -41,20 +41,20 @@ class CompilerEnv : IEnvironment<object>
         }
     }
 
-    public object? Get(string name)
+    public object? Get(Token name)
     {
-        if (IsDeclared(name)) return addresses[name];
+        if (IsDeclared(name.Lexeme)) return addresses[name.Lexeme];
 
         else if (Enclosing != null) return Enclosing.Get(name);
 
         else return $"Undefined Variable '{name}'.";
     }
 
-    public void Assign(string name, object value)
+    public void Assign(Token name, object value)
     {
-        if (IsDeclared(name))
+        if (IsDeclared(name.Lexeme))
         {
-            addresses[name] = value;
+            addresses[name.Lexeme] = value;
             return;
         }
 
@@ -91,10 +91,10 @@ class InterpreterEnv : IEnvironment<object>
     // global scope’s environment
     public InterpreterEnv()
     {
-        Enclosing = null!;
+        Enclosing = null;
     }
 
-    private readonly Dictionary<string, object> values = [];
+    public readonly Dictionary<string, object> values = [];
 
     public void Define(string name, object value)
     {
@@ -110,20 +110,20 @@ class InterpreterEnv : IEnvironment<object>
         }
     }
 
-    public object Get(string name)
+    public object Get(Token name)
     {
-        if (IsDeclared(name)) return values[name];
+        if (IsDeclared(name.Lexeme)) return values[name.Lexeme];
 
         else if (Enclosing != null) return Enclosing.Get(name);
 
-        else throw new Exception("Undefined Variable '" + name + "'.");
+        else throw new Exception($"Undefined Variable '{name.Lexeme}' in line {name.Line}.");
     }
 
-    public void Assign(string name, object value)
+    public void Assign(Token name, object value)
     {
-        if (IsDeclared(name))
+        if (IsDeclared(name.Lexeme))
         {
-            values[name] = value;
+            values[name.Lexeme] = value;
             return;
         }
 
@@ -132,6 +132,8 @@ class InterpreterEnv : IEnvironment<object>
             Enclosing.Assign(name, value);
             return;
         }
+
+        throw new Exception($"Undefined Variable '{name.Lexeme} in line {name.Line}'.");
     }
 
     public object GetAt(int distance, string name)
@@ -156,6 +158,10 @@ class InterpreterEnv : IEnvironment<object>
 
         for (int i = 0; i < distance; i++)
         {
+            if (environment.Enclosing == null)
+            {
+                throw new Exception($"Invalid scope access at distance {distance}.");
+            }
             environment = environment.Enclosing;
         }
         return environment;
@@ -190,20 +196,20 @@ class TypeEnvironment : IEnvironment<List<Type>>
         values.Add(name, types);
     }
 
-    public List<Type> Get(string name)
+    public List<Type> Get(Token name)
     {
-        if (IsDeclared(name)) return values[name];
+        if (IsDeclared(name.Lexeme)) return values[name.Lexeme];
 
         else if (Enclosing != null) return Enclosing.Get(name);
 
-        else throw new Exception("Undefined Variable '" + name + "'.");
+        else throw new Exception($"Undefined Variable '{name.Lexeme}' at line {name.Line}.");
     }
 
-    public void Assign(string name, List<Type> value)
+    public void Assign(Token name, List<Type> value)
     {
-        if (IsDeclared(name))
+        if (IsDeclared(name.Lexeme))
         {
-            values[name] = value;
+            values[name.Lexeme] = value;
             return;
         }
 
