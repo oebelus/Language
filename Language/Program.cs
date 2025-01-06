@@ -12,14 +12,16 @@
             else
             {
                 RunCode(@"
-function void testFunctionScope() {
+function void A() {
     int a = 10;
-    function void innerFunction() {
+    function void B() {
+        int a = 20;
         println a; // Expected output: 10
     }
-    innerFunction();
+    println a;
+    B();
 }
-testFunctionScope();
+A();
 ");
             }
         }
@@ -60,8 +62,6 @@ testFunctionScope();
             Interpreter interpreter = new();
 
             interpreter.Interpret(statements);
-
-            Console.WriteLine();
 
             Console.WriteLine();
 

@@ -13,6 +13,7 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
             if (statement is Statement.Expression expressionStatement)
             {
                 LastResult = Evaluate(expressionStatement.expression);
+                continue;
             }
             Execute(statement);
         }
@@ -45,15 +46,15 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
         statement.Accept(this);
     }
 
-    public void Resolve(string name, int depth)
+    public void Resolve(Token name, int depth)
     {
-        if (Locals.TryGetValue(name, out int local))
+        if (Locals.TryGetValue(name.Lexeme, out int local))
         {
-            Locals[name] = depth;
+            Environment.AssignAt(depth, name.Lexeme, local);
         }
         else
         {
-            Locals.Add(name, depth);
+            Environment.Assign(name, depth);
         }
     }
 
@@ -65,7 +66,10 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
         {
             Environment = environment;
 
-            foreach (var statement in statements) Execute(statement);
+            foreach (var statement in statements)
+            {
+                Execute(statement);
+            }
         }
         finally
         {
@@ -228,10 +232,12 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
 
         if (arguments.Count != function.Arity())
         {
-            Console.WriteLine("Expected " + function.Arity() + "arguments but got " + arguments.Count + ".");
+            Console.WriteLine($"Expected {function.Arity()} argument(s) but got {arguments.Count} in function '{expression.Callee.Name.Lexeme}'.");
         }
 
-        return function.Call(this, arguments)!;
+        var result = function.Call(this, arguments)!;
+
+        return result;
     }
 
     public void VisitFunction(Statement.Function statement)
@@ -290,6 +296,11 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
         {
             object value = Evaluate(variable.Initializer);
             Environment.Define(variable.Name.Lexeme, value);
+
+            if (scopes.Count() > 0)
+            {
+                Resolve(variable.Name, scopes.Pook().Count);
+            }
         }
         else
         {
@@ -347,7 +358,7 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
 
     private void BeginScope()
     {
-        scopes.Push(new Dictionary<string, bool>());
+        scopes.Push([]);
     }
 
     private void EndScope()
