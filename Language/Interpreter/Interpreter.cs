@@ -1,10 +1,12 @@
+using System.Formats.Asn1;
+
 class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
 {
     public static readonly InterpreterEnv Globals = new();
     public InterpreterEnv Environment = Globals;
     public object LastResult { get; private set; } = "";
     private readonly Dictionary<string, int> Locals = [];
-    private readonly Stack<Dictionary<string, bool>> scopes = new(1024);
+    private readonly Stack<Dictionary<string, object>> scopes = new(1024);
 
     public void Interpret(List<Statement> statements)
     {
@@ -25,7 +27,7 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
         Globals.Clear();
         Locals.Clear();
         LastResult = "";
-        Locals.Clear();
+        scopes.Clear();
     }
 
     public List<object> InterpretExpressions(List<Expr> expressions)
@@ -60,6 +62,7 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
 
     public void ExecuteBlock(List<Statement> statements, InterpreterEnv environment)
     {
+        BeginScope();
         InterpreterEnv previous = Environment;
 
         try
@@ -75,13 +78,13 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
         {
             Environment = previous;
         }
+
+        EndScope();
     }
 
     public void VisitBlock(Statement.Block statement)
     {
-        BeginScope();
         ExecuteBlock(statement.Statements, new InterpreterEnv(Environment));
-        EndScope();
     }
 
 
@@ -177,18 +180,21 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
 
     public object VisitAssign(Expr.Assign expression)
     {
+        CheckExpressionExistence(expression.Name);
+
         object value = Evaluate(expression.Value);
 
-        if (Locals.TryGetValue(expression.Name.Lexeme, out int distance))
-        {
-            Environment.AssignAt(distance, expression.Name.Lexeme, value);
-        }
+        if (scopes.Count() == 0) Environment.Assign(expression.Name, value);
+
         else
         {
-            Environment.Assign(expression.Name, value);
+            if (scopes.Peek().ContainsKey(expression.Name.Lexeme))
+                scopes.Peek()[expression.Name.Lexeme] = value;
+            else
+                Environment.Assign(expression.Name, value);
         }
 
-        return value; // log a = 2; assign can be nested inside other expressions
+        return value;
     }
 
     public void VisitExpression(Statement.Expression statement)
@@ -221,6 +227,8 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
 
     public object VisitCall(Expr.Call expression)
     {
+        BeginScope();
+
         object callee = Evaluate(expression.Callee); // Callee()()
 
         List<object> arguments = [];
@@ -237,6 +245,8 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
 
         var result = function.Call(this, arguments)!;
 
+        EndScope();
+
         return result;
     }
 
@@ -249,9 +259,13 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
     public void VisitIf(Statement.If statement)
     {
         if (IsTruthy(Evaluate(statement.Condition)))
+        {
             Execute(statement.ThenBranch);
+        }
         else if (statement.ElseBranch != null)
+        {
             Execute(statement.ElseBranch);
+        }
     }
 
     public void VisitWhile(Statement.While statement)
@@ -292,14 +306,20 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
 
     public void VisitVariableStatement(Statement.VariableStatement variable)
     {
+        if (scopes.head > 0)
+            StatementExistence(variable.Name);
+
         if (variable.Initializer != null)
         {
             object value = Evaluate(variable.Initializer);
+
             Environment.Define(variable.Name.Lexeme, value);
 
             if (scopes.Count() > 0)
             {
                 Resolve(variable.Name, scopes.Pook().Count);
+
+                scopes.Peek()[variable.Name.Lexeme] = value;
             }
         }
         else
@@ -346,13 +366,47 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
 
     private object LookUpVariable(Token name)
     {
-        if (Locals.TryGetValue(name.Lexeme, out int distance))
+        if (scopes.head > 0)
         {
-            return Environment.GetAt(distance, name.Lexeme);
+            for (int i = scopes.head - 1; i >= 0; i--)
+            {
+                if (scopes.ElementAt(i) != null)
+                    if (scopes.ElementAt(i).ContainsKey(name.Lexeme))
+                        return scopes.ElementAt(i)[name.Lexeme];
+            }
         }
-        else
+
+        return Environment.Get(name);
+    }
+
+    private void StatementExistence(Token name)
+    {
+        if (scopes.ElementAt(scopes.head) != null)
+            if (scopes.ElementAt(scopes.head).ContainsKey(name.Lexeme))
+                throw new Exception($"Variable '{name.Lexeme}' is already defined in this scope.");
+
+        for (int i = scopes.head - 1; i >= 0; i--)
         {
-            return Environment.Get(name);
+            if (scopes.ElementAt(i) != null)
+                if (scopes.ElementAt(i).ContainsKey(name.Lexeme))
+                    throw new Exception($"A local parameter named '{name.Lexeme}' is used in an enclosing local scope to define a local.");
+        }
+
+        return;
+    }
+
+    private void CheckExpressionExistence(Token name)
+    {
+        if (Environment.Get(name) != null) return;
+
+        else if (scopes.head > 0)
+        {
+            for (int i = scopes.head; i >= 0; i--)
+            {
+                if (scopes.ElementAt(i) != null)
+                    if (scopes.ElementAt(i).ContainsKey(name.Lexeme))
+                        return;
+            }
         }
     }
 

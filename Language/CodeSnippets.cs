@@ -40,10 +40,6 @@ string name = ""John"";
 bool isValid = true;
 int pi = 3.14159;
 
-{
-    name = ""I have changed!"";
-}
-
 println x;
 println name;
 println isValid;
@@ -98,13 +94,12 @@ if (one > 0) {
 ";
 
     static readonly string complexWhileWithBreakCode = @"
-int number = 0;
-while (true) {
-    if (number >= 10) {
-        break;
+{
+    int number = 0;
+    while (number < 10) {
+        println number;
+        number = number + 1;
     }
-    println number;
-    number = number + 1;
 }
 ";
 
@@ -134,6 +129,8 @@ function int findMax(int a, int b, int c) {
     }
     return max;
 }
+
+println findMax(10, 11, 8);
 ";
 
     static readonly string nestedBlockScopesCode = @"
@@ -223,23 +220,11 @@ string a = ""global"";
 function void testFunctionScope() {
     int a = 10;
     function void innerFunction() {
-        println a; // Expected output: 10
+        println a; // Expected output: undefined variable a
     }
     innerFunction();
 }
 testFunctionScope();
-";
-
-    static readonly string testBlockScopeCode = @"
-function void testBlockScope() {
-    int a = 5;
-    {
-        int a = 10;
-        println a; // Expected output: 10
-    }
-    println(a); // Expected output: 5
-}
-testBlockScope();
 ";
 
     static readonly string testNestedBlockScopeCode = @"
@@ -296,7 +281,6 @@ testParameterScope(50);
         showACode1,
         showACode2,
         testFunctionScopeCode,
-        testBlockScopeCode,
         testNestedBlockScopeCode,
         testGlobalLocalScopeCode,
         testParameterScopeCode

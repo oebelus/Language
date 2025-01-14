@@ -11,18 +11,20 @@
             }
             else
             {
-                RunCode(@"
-function void A() {
-    int a = 10;
-    function void B() {
-        int a = 20;
-        println a; // Expected output: 10
-    }
-    println a;
-    B();
-}
-A();
-");
+                foreach (var snippet in CodeSnippets.Snippets)
+                {
+                    Console.WriteLine(snippet);
+                    try
+                    {
+                        RunCode(snippet);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine(e.Message);
+                        Console.ResetColor();
+                    }
+                }
             }
         }
 

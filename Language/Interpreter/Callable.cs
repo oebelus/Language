@@ -8,7 +8,7 @@ interface ICallable
 
 class LangFunction(Statement.Function declaration) : ICallable
 {
-    private readonly Statement.Function Declaration = declaration;
+    public readonly Statement.Function Declaration = declaration;
 
     public int Arity()
     {
