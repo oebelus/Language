@@ -1,5 +1,3 @@
-using System.Formats.Asn1;
-
 class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
 {
     public static readonly InterpreterEnv Globals = new();
@@ -77,9 +75,9 @@ class Interpreter : Expr.IVisitor<object>, Statement.IVisitor
         finally
         {
             Environment = previous;
-        }
 
-        EndScope();
+            EndScope();
+        }
     }
 
     public void VisitBlock(Statement.Block statement)

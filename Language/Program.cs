@@ -4,10 +4,9 @@
     {
         public static void Main(string[] args)
         {
-
             if (args.Length == 1)
             {
-                RunCode(File.ReadAllText(args[0]));
+                RunCode(File.ReadAllText($"./Snippets/{args[0]}"));
             }
             else
             {

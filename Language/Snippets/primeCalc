@@ -1,0 +1,25 @@
+function bool isPrime(int a) {
+    if (a < 2) {
+        return false;
+    }
+    else
+{
+    int i = 2;
+    if (a % i == 0)
+    {
+        return false;
+    }
+    i = i + 1;
+}
+return true;
+}
+
+function void main() {
+    int a = 2;
+int b = 3;
+int c = 4;
+
+println(isPrime(a));
+println(isPrime(b));
+println(isPrime(c));
+}
