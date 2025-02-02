@@ -5,6 +5,7 @@
 
 # dotenv files
 .env
+stackVM
 
 # User-specific files
 *.rsuser

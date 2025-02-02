@@ -1,5 +1,5 @@
-using Instruction = Language.stackVM.Instruction;
-using Instructions = Language.stackVM.Instructions;
+using Instruction = vm.Instruction;
+using Instructions = vm.Instructions;
 
 class Compiler : Expr.IVisitor<object>, Statement.IVisitor
 {
