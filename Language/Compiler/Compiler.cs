@@ -10,6 +10,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
     private int AddressCount = 0;
     private bool isFunction = false;
     private bool isLog = false;
+    private bool isString = false;
 
     public static readonly CompilerEnv Globals = new();
     public CompilerEnv Environment = Globals;
@@ -37,6 +38,21 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
     {
         if (isLog) return null;
         if (literal.Value is bool b) Append($" {Instruction.cInstruction[Instructions.PUSH]} {(b ? 1 : 0)}");
+        else if (literal.Value is string s)
+        {
+            isString = true;
+
+            int len = s.Length;
+
+            if (len == 1)
+            {
+                Append($" {Instruction.cInstruction[Instructions.PUSH_CHAR]} {s}");
+            }
+            else
+            {
+                Append($" {Instruction.cInstruction[Instructions.PUSH_STR]} {s.Length} {s}");
+            }
+        }
         else Append($" {Instruction.cInstruction[Instructions.PUSH]} {literal.Value}");
 
         return null;
@@ -57,8 +73,25 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
         {
             Append($" {Instruction.cInstruction[Instructions.EQ]} {Instruction.cInstruction[Instructions.NOT]}");
         }
+        else if (binary.Operation.Type == TokenType.PLUS)
+        {
+            if (isString)
+            {
+                Append($" CONCAT");
+                isString = false;
+            }
+            else
+            {
+                Append($" {Instruction.cOperation[binary.Operation.Type]}");
+            }
+        }
 
-        else Append($" {Instruction.cOperation[binary.Operation.Type]}");
+        else
+        {
+            Console.WriteLine("HEEERE appeeend not");
+            Append($" {Instruction.cOperation[binary.Operation.Type]}");
+
+        }
 
         return null;
     }

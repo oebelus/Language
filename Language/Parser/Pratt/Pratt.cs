@@ -1,6 +1,6 @@
 using Precedence = Binding.Precedence;
 using Void = Language.Typer.Void;
-using Boolean = Language.Typer.Boolean;
+using Bool = Language.Typer.Boolean;
 using Integer = Language.Typer.Number;
 using Chars = Language.Typer.String;
 using Type = Language.Typer.Type;
@@ -162,7 +162,7 @@ class Pratt
             body = new Statement.Block(bodyList);
         }
 
-        condition ??= new Expr.Literal(new Boolean(), true);
+        condition ??= new Expr.Literal(new Bool(), true);
 
         body = new Statement.While(condition, body);
 
@@ -287,8 +287,8 @@ class Pratt
 
     private Expr? ParseAtom()
     {
-        if (Match(TokenType.TRUE)) return new Expr.Literal(new Boolean(), true);
-        if (Match(TokenType.FALSE)) return new Expr.Literal(new Boolean(), false);
+        if (Match(TokenType.TRUE)) return new Expr.Literal(new Bool(), true);
+        if (Match(TokenType.FALSE)) return new Expr.Literal(new Bool(), false);
         if (Match(TokenType.NIL)) return new Expr.Literal(new Void(), null);
 
         if (Match(TokenType.NUMBER)) return new Expr.Literal(new Integer(), Previous().Type == TokenType.NUMBER ? Previous().Lexeme : Look().Lexeme);
@@ -470,7 +470,7 @@ class Pratt
         return token.Lexeme switch
         {
             "int" => new Integer(),
-            "bool" => new Boolean(),
+            "bool" => new Bool(),
             "string" => new Chars(),
             _ => new Void(),
         };

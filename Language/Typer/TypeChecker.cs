@@ -1,5 +1,5 @@
 using Type = Language.Typer.Type;
-using Boolean = Language.Typer.Boolean;
+using Bool = Language.Typer.Boolean;
 using Void = Language.Typer.Void;
 using Integer = Language.Typer.Number;
 using Chars = Language.Typer.String;
@@ -54,12 +54,12 @@ class TypeChecker : Expr.IVisitor<Type>, Statement.IVisitor
 
         else if (booleanOps.Contains(binaryExpression.Operation.Type))
         {
-            if ((rightType is not Integer && rightType is not Boolean) || (leftType is not Integer && leftType is not Boolean))
+            if ((rightType is not Integer && rightType is not Bool) || (leftType is not Integer && leftType is not Bool))
             {
-                throw new Exception($"Right ({rightType}) and Left ({leftType}) should be of type Number or Boolean");
+                throw new Exception($"Right ({rightType}) and Left ({leftType}) should be of type Number or Bool");
             }
 
-            else return new Boolean();
+            else return new Bool();
         }
 
         else
@@ -198,9 +198,9 @@ class TypeChecker : Expr.IVisitor<Type>, Statement.IVisitor
     {
         Type condition = Statement.Condition.Accept(this);
 
-        if (condition is not Boolean)
+        if (condition is not Bool)
         {
-            throw new Exception($"Condition ({condition}) should be Boolean");
+            throw new Exception($"Condition ({condition}) should be Bool");
         }
 
         Statement.ThenBranch.Accept(this);
@@ -223,19 +223,19 @@ class TypeChecker : Expr.IVisitor<Type>, Statement.IVisitor
         Type right = expression.Right.Accept(this);
         Type left = expression.Right.Accept(this);
 
-        if (left is not Boolean)
+        if (left is not Bool)
         {
-            throw new Exception($"Left ({left}) should be Boolean");
+            throw new Exception($"Left ({left}) should be Bool");
         }
         else
         {
-            if (right is not Boolean)
+            if (right is not Bool)
             {
-                throw new Exception($"Right ({right}) should be Boolean");
+                throw new Exception($"Right ({right}) should be Bool");
             }
             else
             {
-                return new Boolean();
+                return new Bool();
             }
         }
     }
@@ -257,8 +257,8 @@ class TypeChecker : Expr.IVisitor<Type>, Statement.IVisitor
                 if (type is Integer) return new Integer();
                 else throw new Exception($"Operator should be of type Number, instead got \"{type}\"");
             case TokenType.BANG:
-                if (type is Boolean) return new Boolean();
-                else throw new Exception($"Operator should be of type Boolean, instead got \"{type}\"");
+                if (type is Bool) return new Bool();
+                else throw new Exception($"Operator should be of type Bool, instead got \"{type}\"");
             default:
                 throw new Exception("Unsupported unary operation.");
         }
@@ -302,9 +302,9 @@ class TypeChecker : Expr.IVisitor<Type>, Statement.IVisitor
     public void VisitWhile(Statement.While Statement)
     {
         Type condition = Statement.Condition.Accept(this);
-        if (condition is not Boolean)
+        if (condition is not Bool)
         {
-            throw new Exception($"Condition (${condition}) should be Boolean");
+            throw new Exception($"Condition (${condition}) should be Bool");
         }
         else
         {

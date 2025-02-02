@@ -1,5 +1,5 @@
 using Type = Language.Typer.Type;
-using Boolean = Language.Typer.Boolean;
+using Bool = Language.Typer.Boolean;
 using Void = Language.Typer.Void;
 using Integer = Language.Typer.Number;
 using Chars = Language.Typer.String;
@@ -158,7 +158,7 @@ class RDParser(List<Token> tokens)
         }
 
         // If the condition is omitted, we put true to trigger an infinite loop
-        condition ??= new Expr.Literal(new Boolean(), true);
+        condition ??= new Expr.Literal(new Bool(), true);
 
         // Building the loop with the condition and the body using a primitive while loop
         body = new Statement.While(condition, body);
@@ -392,8 +392,8 @@ class RDParser(List<Token> tokens)
 
     private Expr Primary()
     {
-        if (Match(TokenType.TRUE)) return new Expr.Literal(new Boolean(), true);
-        if (Match(TokenType.FALSE)) return new Expr.Literal(new Boolean(), false);
+        if (Match(TokenType.TRUE)) return new Expr.Literal(new Bool(), true);
+        if (Match(TokenType.FALSE)) return new Expr.Literal(new Bool(), false);
         if (Match(TokenType.NIL)) return new Expr.Literal(new Void(), null);
 
         if (Match(TokenType.NUMBER)) return new Expr.Literal(new Integer(), Previous().Literal);
@@ -467,7 +467,7 @@ class RDParser(List<Token> tokens)
         return token.Lexeme switch
         {
             "int" => new Integer(),
-            "bool" => new Boolean(),
+            "bool" => new Bool(),
             "string" => new Chars(),
             _ => new Void(),
         };

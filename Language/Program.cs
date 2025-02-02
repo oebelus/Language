@@ -25,11 +25,11 @@
                 //     }
                 // }
                 RunCode(@"
-function int test() {
-    return ""Hello"";
+function string test() {
+    return ""he"" + ""l"";
 }
 
-test();
+print test();
 ");
             }
         }
