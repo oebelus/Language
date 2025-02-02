@@ -10,20 +10,27 @@
             }
             else
             {
-                foreach (var snippet in CodeSnippets.Snippets)
-                {
-                    Console.WriteLine(snippet);
-                    try
-                    {
-                        RunCode(snippet);
-                    }
-                    catch (Exception e)
-                    {
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine(e.Message);
-                        Console.ResetColor();
-                    }
-                }
+                // foreach (var snippet in CodeSnippets.Snippets)
+                // {
+                //     Console.WriteLine(snippet);
+                //     try
+                //     {
+                //         RunCode(snippet);
+                //     }
+                //     catch (Exception e)
+                //     {
+                //         Console.ForegroundColor = ConsoleColor.Red;
+                //         Console.WriteLine(e.Message);
+                //         Console.ResetColor();
+                //     }
+                // }
+                RunCode(@"
+function int test() {
+    return ""Hello"";
+}
+
+test();
+");
             }
         }
 
@@ -70,31 +77,28 @@
             string mnemo = compiler.Compile(statements);
             Console.WriteLine(mnemo);
 
-            // var mnemonics = Mnemonics.Mnemonic(mnemo);
+            var mnemonics = Mnemonics.Mnemonic(mnemo);
 
-            // VirtualMachine virtualMachine = new(mnemonics);
+            VirtualMachine virtualMachine = new(mnemonics);
 
-            // Console.WriteLine();
+            Console.WriteLine();
 
-            // List<string> toMnemo = Utils.ByteCodeToMnemonics(mnemonics);
+            List<string> toMnemo = MnemoHelpers.ByteCodeToMnemonics(mnemonics);
 
             // foreach (var item in toMnemo)
             // {
             //     Console.WriteLine(item);
             // }
 
-            // VirtualMachine vm = new(mnemonics);
+            VirtualMachine vm = new(mnemonics);
 
-            // vm.Execute();
+            vm.Execute();
 
-            // vm.Logger();
+            vm.Logger();
 
             scanner.Reset();
             interpreter.Reset();
             compiler.Reset();
         }
-        // LanguageTest test = new();
-        // test.RunTests();
-
     }
 }
