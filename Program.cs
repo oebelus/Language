@@ -25,11 +25,13 @@
                 //     }
                 // }
                 RunCode(@"
-function string test() {
-    return ""he"" + ""l"";
-}
+// string a = ""Hello "";
+// string b = ""Fuck"";
+// string c = a + b;
 
-print test();
+int d = 1;
+int e = 2;
+int f = d + e;
 ");
             }
         }
@@ -90,11 +92,11 @@ print test();
             //     Console.WriteLine(item);
             // }
 
-            VirtualMachine vm = new(mnemonics);
+            VirtualMachine stackVM = new(mnemonics);
 
-            vm.Execute();
+            stackVM.Execute();
 
-            vm.Logger();
+            stackVM.Logger();
 
             scanner.Reset();
             interpreter.Reset();

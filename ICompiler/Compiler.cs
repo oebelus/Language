@@ -1,5 +1,7 @@
-using Instruction = vm.Instruction;
-using Instructions = vm.Instructions;
+using System.ComponentModel;
+using System.Text;
+using Instruction = Language.ICompiler.CInstruction;
+using Instructions = stackVM.Instructions;
 
 class Compiler : Expr.IVisitor<object>, Statement.IVisitor
 {
@@ -10,10 +12,15 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
     private int AddressCount = 0;
     private bool isFunction = false;
     private bool isLog = false;
+
     private bool isString = false;
+    private int stringSize = 0;
 
     public static readonly CompilerEnv Globals = new();
     public CompilerEnv Environment = Globals;
+
+    private static int HEAP_INDEX = 0;
+    private static Dictionary<int, int> Allocated = [];
 
     public string Compile(List<Statement> statements)
     {
@@ -37,7 +44,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
     public object? VisitLiteral(Expr.Literal literal)
     {
         if (isLog) return null;
-        if (literal.Value is bool b) Append($" {Instruction.cInstruction[Instructions.PUSH]} {(b ? 1 : 0)}");
+        if (literal.Value is bool b) Append($" {Instruction.CInstructions[Instructions.PUSH]} {(b ? 1 : 0)}");
         else if (literal.Value is string s)
         {
             isString = true;
@@ -46,14 +53,24 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
 
             if (len == 1)
             {
-                Append($" {Instruction.cInstruction[Instructions.PUSH_CHAR]} {s}");
+                Append($" {Instruction.CInstructions[Instructions.PUSH_CHAR]} {s}");
             }
             else
             {
-                Append($" {Instruction.cInstruction[Instructions.PUSH_STR]} {s.Length} {s}");
+                int length = Encoding.UTF8.GetBytes(s).Length;
+
+                Append($" PUSH {HEAP_INDEX} PUSH {length} {Instruction.CInstructions[Instructions.GSTORE_STR]} \"{s}\"");
+
+                int offset = HEAP_INDEX + length;
+
+                HEAP_INDEX += offset % 4 == 0 ? offset : offset + (4 - offset % 4);
+
+                isString = true;
+
+                stringSize = length;
             }
         }
-        else Append($" {Instruction.cInstruction[Instructions.PUSH]} {literal.Value}");
+        else Append($" {Instruction.CInstructions[Instructions.PUSH]} {literal.Value}");
 
         return null;
     }
@@ -64,14 +81,14 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
         CompileExpr(binary.Right);
 
         if (binary.Operation.Type == TokenType.LESS_EQUAL)
-            Append($" {Instruction.cInstruction[Instructions.GT]} {Instruction.cInstruction[Instructions.NOT]}");
+            Append($" {Instruction.CInstructions[Instructions.GT]} {Instruction.CInstructions[Instructions.NOT]}");
 
         else if (binary.Operation.Type == TokenType.GREATER_EQUAL)
-            Append($" {Instruction.cInstruction[Instructions.LT]} {Instruction.cInstruction[Instructions.NOT]}");
+            Append($" {Instruction.CInstructions[Instructions.LT]} {Instruction.CInstructions[Instructions.NOT]}");
 
         else if (binary.Operation.Type == TokenType.BANG_EQUAL)
         {
-            Append($" {Instruction.cInstruction[Instructions.EQ]} {Instruction.cInstruction[Instructions.NOT]}");
+            Append($" {Instruction.CInstructions[Instructions.EQ]} {Instruction.CInstructions[Instructions.NOT]}");
         }
         else if (binary.Operation.Type == TokenType.PLUS)
         {
@@ -82,14 +99,14 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
             }
             else
             {
-                Append($" {Instruction.cOperation[binary.Operation.Type]}");
+                Append($" {Instruction.COperation[binary.Operation.Type]}");
             }
         }
 
         else
         {
             Console.WriteLine("HEEERE appeeend not");
-            Append($" {Instruction.cOperation[binary.Operation.Type]}");
+            Append($" {Instruction.COperation[binary.Operation.Type]}");
 
         }
 
@@ -100,7 +117,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
     {
         CompileExpr(unary.Right);
 
-        Append($" {Instruction.cOperation[unary.Operation.Type]}");
+        Append($" {Instruction.COperation[unary.Operation.Type]}");
 
         return null;
     }
@@ -110,7 +127,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
         CompileExpr(logical.Left);
         CompileExpr(logical.Right);
 
-        Append($" {Instruction.cOperation[logical.Operation.Type]}");
+        Append($" {Instruction.COperation[logical.Operation.Type]}");
 
         return null;
     }
@@ -124,7 +141,15 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
 
     public object? VisitVariableExpression(Expr.VariableExpression expression)
     {
-        Append($" {Instruction.cInstruction[Instructions.PUSH]} {Environment.Get(expression.Name)?.ToString()} {Instruction.cInstruction[Instructions.LOAD]}");
+        if (Environment.Get(expression.Name) != null && int.TryParse(Environment.Get(expression.Name)!.ToString(), out int address))
+        {
+            if (Allocated.TryGetValue(address, out int value)) // Strings
+            {
+                Append($" {Instruction.CInstructions[Instructions.PUSH]} {address} {Instruction.CInstructions[Instructions.PUSH]} {value}");
+            }
+
+            else Append($" {Instruction.CInstructions[Instructions.PUSH]} {Environment.Get(expression.Name)?.ToString()} {Instruction.CInstructions[Instructions.LOAD]}");
+        }
 
         return null;
     }
@@ -132,10 +157,14 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
     public void VisitVariableStatement(Statement.VariableStatement variable)
     {
         Environment.Define(variable.Name.Lexeme, AddressCount);
-
         CompileExpr(variable.Initializer!);
 
-        Append($" {Instruction.cInstruction[Instructions.PUSH]} {AddressCount} {Instruction.cInstruction[Instructions.STORE]}");
+        Append($" {Instruction.CInstructions[Instructions.PUSH]} {AddressCount} {Instruction.CInstructions[Instructions.STORE]}");
+
+        if (isString)
+        {
+            Allocated.Add(AddressCount, stringSize);
+        }
 
         AddressCount++;
     }
@@ -146,7 +175,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
 
         object address = Environment.Get(expression.Name)!;
 
-        Append($" {Instruction.cInstruction[Instructions.PUSH]} {address} {Instruction.cInstruction[Instructions.STORE]}");
+        Append($" {Instruction.CInstructions[Instructions.PUSH]} {address} {Instruction.CInstructions[Instructions.STORE]}");
 
         return null;
     }
@@ -197,7 +226,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
             for (int i = 0; i < argsLength; i++)
             {
                 object address = Environment.Get(function.Args[i].Name)!;
-                Append($" {Instruction.cInstruction[Instructions.PUSH]} {address} {Instruction.cInstruction[Instructions.STORE]}");
+                Append($" {Instruction.CInstructions[Instructions.PUSH]} {address} {Instruction.CInstructions[Instructions.STORE]}");
             }
             CompileBlock(function.Body, Environment);
         }
@@ -232,12 +261,12 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
         CompileExpr(Statement.Condition);
 
         // CJUMP label_1
-        Append($" {Instruction.cInstruction[Instructions.CJUMP]} <{label_1}>");
+        Append($" {Instruction.CInstructions[Instructions.CJUMP]} <{label_1}>");
 
         // if false: compiling ElseBranch
         Statement.ElseBranch?.Accept(this);
 
-        Append($" {Instruction.cInstruction[Instructions.JUMP]} <{label_2}>");
+        Append($" {Instruction.CInstructions[Instructions.JUMP]} <{label_2}>");
 
         // if true: CJUMP here
         Append($" {label_1}:");
@@ -271,15 +300,15 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
         CompileExpr(Statement.Condition);
 
         // Check if condition is False
-        Append($" {Instruction.cInstruction[Instructions.PUSH]} 0 {Instruction.cInstruction[Instructions.EQ]}");
+        Append($" {Instruction.CInstructions[Instructions.PUSH]} 0 {Instruction.CInstructions[Instructions.EQ]}");
 
         // Jump to end if condition is False
-        Append($" {Instruction.cInstruction[Instructions.CJUMP]} <{end_label}>");
+        Append($" {Instruction.CInstructions[Instructions.CJUMP]} <{end_label}>");
 
         Statement.Body.Accept(this);
 
         // Jump back to the start of the loop
-        Append($" {Instruction.cInstruction[Instructions.JUMP]} <{start_label}>");
+        Append($" {Instruction.CInstructions[Instructions.JUMP]} <{start_label}>");
 
         // End label for the loop
         Append($" {end_label}:");
@@ -290,7 +319,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
         if (statement.Value != null)
             CompileExpr(statement.Value);
 
-        Append($" {Instruction.cInstruction[Instructions.RET]}");
+        Append($" {Instruction.CInstructions[Instructions.RET]}");
     }
 
     public void VisitBreak(Statement.Break statement)
@@ -298,7 +327,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
         if (breakLabels.Length() > 0)
         {
             string address = breakLabels.Pop();
-            Append($" {Instruction.cInstruction[Instructions.JUMP]} <{address}>");
+            Append($" {Instruction.CInstructions[Instructions.JUMP]} <{address}>");
         }
     }
 
@@ -307,7 +336,7 @@ class Compiler : Expr.IVisitor<object>, Statement.IVisitor
         if (continueLabels.Length() > 0)
         {
             string address = continueLabels.Pop();
-            Append($" {Instruction.cInstruction[Instructions.JUMP]} <{address}>");
+            Append($" {Instruction.CInstructions[Instructions.JUMP]} <{address}>");
         }
     }
 

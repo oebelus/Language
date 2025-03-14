@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\stackVM\vm.csproj" />
+    <ProjectReference Include="stackVM\stackVM.csproj" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -10,6 +10,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <StartupObject>Language.Program</StartupObject>
   </PropertyGroup>
 
 </Project>
